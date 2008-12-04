@@ -3,7 +3,6 @@
  * Copyright (C) Peter Leonov
  */
 
-
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
@@ -67,16 +66,16 @@ static ngx_http_module_t  ngx_http_js_module_ctx = {
 
 ngx_module_t  ngx_http_js_module = {
     NGX_MODULE_V1,
-    &ngx_http_js_module_ctx,             /* module context */
-    ngx_http_js_commands,                /* module directives */
+    &ngx_http_js_module_ctx,               /* module context */
+    ngx_http_js_commands,                  /* module directives */
     NGX_HTTP_MODULE,                       /* module type */
     NULL,                                  /* init master */
     NULL,                                  /* init module */
-    NULL,             /* init process */
+    NULL,                                  /* init process */
     NULL,                                  /* init thread */
     NULL,                                  /* exit thread */
     NULL,                                  /* exit process */
-    NULL,                    /* exit master */
+    NULL,                                  /* exit master */
     NGX_MODULE_V1_PADDING
 };
 
