@@ -1,35 +1,56 @@
 
-if (self.Nginx)
-(function(){
+// Nginx wrapers
+if (!self.Nginx)
+	throw 'global.Nginx is undefined'
+
+;(function(){
 	var N = Nginx
 	function flat (args) { return Array.prototype.slice.apply(args).join(', ') }
-	N.log   = function () { this.logError(this.NGX_LOG_WARN,  flat(arguments)) } // NGX_LOG_DEBUG
-	N.info  = function () { this.logError(this.NGX_LOG_INFO,  flat(arguments)) }
-	N.warn  = function () { this.logError(this.NGX_LOG_WARN,  flat(arguments)) }
-	N.error = function () { this.logError(this.NGX_LOG_ERR,   flat(arguments)) }
-	log = function () { N.log.apply(N, arguments) }
-})()
-
-load('lib.js')
+	N.log   = function () { this.logError(this.LOG_WARN,  flat(arguments)) } // LOG_DEBUG
+	N.info  = function () { this.logError(this.LOG_INFO,  flat(arguments)) }
+	N.warn  = function () { this.logError(this.LOG_WARN,  flat(arguments)) }
+	N.error = function () { this.logError(this.LOG_ERR,   flat(arguments)) }
+	self.log = function () { N.log.apply(N, arguments) }
+})();
 
 
-// try
-// {
-// Nginx.warn('warn')
-// // Nginx.logError(null, 'error')
-// Nginx.warn('warn')
-// }
-// catch (ex) { Nginx.error(ex) }
+// basic library loading
+;(function(){
 
-function processRequest (r)
+var JSLIB = environment.JSLIB, lib = self.lib = JSLIB ? String(JSLIB).split(':') : []
+lib.unshift(__FILE__.replace(/\/[^\/]+$/, ''))
+lib.required = {}
+self.require = function (fname)
 {
-	// log(r.uri, r.method, r.remoteAddr)
-	r.sendHttpHeader('text/html; charset=utf-8')
-	r.printString("Привет, Петя!" + r.uri + r.method + r.remoteAddr)
+	// log('require ' + fname)
+	if (lib.required[fname])
+		return lib.required[fname]
 	
-	return Nginx.NGX_HTTP_OK
+	if (fname[0] === '/')
+	{
+		load(lib.required[fname] = fname)
+		return fname
+	}
+	else
+	{
+		for (var i = 0; i < lib.length; i++)
+		{
+			var path = lib[i] + '/' + fname
+			log(path)
+			if (new File(path).exists)
+			{
+				load(lib.required[fname] = path)
+				// log(fname + ' is loaded by path ' + path)
+				return path
+			}
+		}
+		throw 'Can`t find "' + fname + '" in [' + lib.join(', ') + ']'
+	}
 }
 
+})();
 
-log("Nginx.js loaded")
+require('proto.js')
+
+// log('Nginx.js loaded')
 
