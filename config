@@ -34,3 +34,6 @@ fi
 NGX_HTTP_JS_CONF_PATH="$NGX_PREFIX/js/nginx.js"
 have=NGX_HTTP_JS_CONF_PATH value="\"$NGX_HTTP_JS_CONF_PATH\""
 . auto/define
+
+have=XP_UNIX value="\"1\""
+. auto/define

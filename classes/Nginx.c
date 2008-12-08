@@ -158,3 +158,7 @@ static JSClass js_nginx_class =
 };
 
 
+	// // Nginx
+	// nginxobj = JS_DefineObject(cx, global, "Nginx", &js_nginx_class, NULL, JSPROP_ENUMERATE);
+	// JS_DefineProperties(cx, nginxobj, js_nginx_class_props);
+	// JS_DefineFunctions(cx, nginxobj, js_nginx_class_funcs);
