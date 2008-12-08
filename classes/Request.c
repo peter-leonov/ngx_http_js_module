@@ -244,4 +244,12 @@ static JSFunctionSpec js_nginx_request_class_funcs[] = {
     {"request",           method_request,              1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
+	// static JSObject *ngx_http_js__request_prototype = NULL;
+	// // Nginx.Request
+	// ngx_http_js__request_prototype = JS_InitClass(cx, nginxobj, NULL, &js_nginx_request_class,  NULL, 0,  js_nginx_request_class_props, js_nginx_request_class_funcs,  NULL, NULL);
+	// if (!ngx_http_js__request_prototype)
+	// {
+	// 	ngx_log_error(NGX_LOG_ERR, cf->log, 0, "Can`t JS_InitClass(Nginx.Request)");
+	// 	return NGX_ERROR;
+	// }
 

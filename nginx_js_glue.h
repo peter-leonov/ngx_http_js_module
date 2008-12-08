@@ -25,8 +25,8 @@ typedef struct {
 } ngx_http_js_loc_conf_t;
 
 typedef struct {
-    JSContext   *js;
-    JSObject    *global;
+    JSContext   *js_cx;
+    JSObject    *js_global;
     // HV                *nginx;
     ngx_array_t        requires;
 } ngx_http_js_main_conf_t;

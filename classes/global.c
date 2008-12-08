@@ -65,4 +65,5 @@ static JSClass global_class =
     JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
+// JS_DefineFunction(cx, global, "load", js_global_func_load, 0, 0);
 
