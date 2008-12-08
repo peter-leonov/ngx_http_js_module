@@ -201,24 +201,121 @@ ngx_http_js_handler(ngx_http_request_t *r)
 	return NGX_DONE;
 }
 
+// static ngx_int_t
+// ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
+// {
+//  char       **script;
+//  ngx_uint_t   i;
+//  JSScript    *jss;
+//  jsval       rval;
+//  
+//  script = requires->elts;
+//  for (i = 0; i < requires->nelts; i++) {
+//      fprintf(stderr, "load %s\n", script[i]);
+//      
+//      jss = JS_CompileFile(cx, global, script[i]);
+//      if (!jss)
+//          return NGX_ERROR;
+//      
+//      if (!JS_ExecuteScript(cx, global, jss, &rval))
+//          return NGX_ERROR;
+//  }
+//  
+//  return NGX_OK;
+// }
+
+static ngx_int_t
+ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
+{
+	jsval           fval, rval, strval;
+	JSString       *fnstring;
+	// JSObject       *require;
+	
+	if (!JS_GetProperty(cx, global, "load", &fval))
+	{
+		JS_ReportError(cx, "global.load is undefined");
+		return NGX_ERROR;
+	}
+	if (!JSVAL_IS_OBJECT(fval) || !JS_ValueToFunction(cx, fval))
+	{
+		JS_ReportError(cx, "global.load is not a function");
+		return NGX_ERROR;
+	}
+	
+	fnstring = JS_NewStringCopyZ(cx, filename);
+	if (!fnstring)
+		return NGX_ERROR;
+		
+	strval = STRING_TO_JSVAL(fnstring);
+	
+	if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
+	{
+		JS_ReportError(cx, "error calling global.load from nginx");
+		return NGX_ERROR;
+	}
+	
+	
+	// filename = JS_NewStringCopyZ(cx, NGX_HTTP_JS_CONF_PATH);
+	// strval = STRING_TO_JSVAL(filename);
+	// if (!JS_SetProperty(cx, global, "__FILE__", &strval))
+	// {
+	// 	JS_ReportError(cx, "unable to set global.__FILE__ to '%s'", NGX_HTTP_JS_CONF_PATH);
+	// 	return NGX_ERROR;
+	// }
+	// 
+	// jss = JS_CompileFile(cx, global, NGX_HTTP_JS_CONF_PATH);
+	// if (!jss)
+	// {
+	// 	JS_ReportError(cx, "error compiling NGX_HTTP_JS_CONF_PATH");
+	// 	return NGX_ERROR;
+	// }
+	// 
+	// if (!JS_ExecuteScript(cx, global, jss, &rval))
+	// {
+	// 	JS_ReportError(cx, "error executing NGX_HTTP_JS_CONF_PATH");
+	// 	return NGX_ERROR;
+	// }
+	
+	return NGX_OK;
+}
+
 static ngx_int_t
 ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
 {
-	char       **script;
-	ngx_uint_t   i;
-	JSScript    *jss;
-	jsval       rval;
+	// ngx_str_t     **script;
+	char          **script;
+	ngx_uint_t      i;
+	jsval           rval, strval, fval;
+	// ngx_str_t      *value;
+	char           *value;
+	// JSObject       *require;
+	
+	if (ngx_http_js_load(cx, global, NGX_HTTP_JS_CONF_PATH) != NGX_OK)
+		return NGX_ERROR;
+	
+	if (!JS_GetProperty(cx, global, "require", &fval))
+	{
+		JS_ReportError(cx, "global.require is undefined");
+		return NGX_ERROR;
+	}
+	if (!JSVAL_IS_OBJECT(fval) || !JS_ValueToFunction(cx, fval))
+	{
+		JS_ReportError(cx, "global.require is not a Function object");
+		return NGX_ERROR;
+	}
 	
 	script = requires->elts;
-	for (i = 0; i < requires->nelts; i++) {
-		fprintf(stderr, "load %s\n", script[i]);
+	for (i = 0; i < requires->nelts; i++)
+	{
+		value = script[i];
+		// fprintf(stderr, "load %s\n", value);
 		
-		jss = JS_CompileFile(cx, global, script[i]);
-		if (!jss)
+		strval = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, (char*)value));
+		if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
+		{
+			JS_ReportError(cx, "error calling global.require from nginx");
 			return NGX_ERROR;
-		
-		if (!JS_ExecuteScript(cx, global, jss, &rval))
-			return NGX_ERROR;
+		}
 	}
 	
 	return NGX_OK;
@@ -252,10 +349,10 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	ngx_str_t                  *value;
 	ngx_http_core_loc_conf_t   *clcf;
 	ngx_http_js_main_conf_t    *jsmcf;
-	jsval                       v;
+	jsval                       sub;
 	
 	value = cf->args->elts;
-	
+	fprintf(stderr, "js %s\n", value[1].data);
 	if (jslcf->handler.data)
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);
@@ -271,16 +368,19 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	jslcf->handler = value[1];
 	
 	// ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "js = %p, global = %p", jsmcf->js, jsmcf->global);
-	if (!JS_GetProperty(jsmcf->js, jsmcf->global, "processRequest", &v))
+	// if (!JS_GetProperty(jsmcf->js, jsmcf->global, "processRequest", &sub))
+		// return NGX_CONF_ERROR;
+	
+	if (!JS_EvaluateScript(jsmcf->js, jsmcf->global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &sub))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(v) || !JS_ValueToFunction(jsmcf->js, v))
+	if (!JSVAL_IS_OBJECT(sub) || !JS_ValueToFunction(jsmcf->js, sub))
 	{
-		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "processRequest is not a Function object");
+		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "processRequest is not a function");
 		return NGX_CONF_ERROR;
 	}
 	
-	jslcf->sub = JSVAL_TO_OBJECT(v);
+	jslcf->sub = JSVAL_TO_OBJECT(sub);
 	
 	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
 	clcf->handler = ngx_http_js_handler;
@@ -332,16 +432,16 @@ static char *
 ngx_http_js_init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
 {
 	static JSRuntime *rt;
-	static JSContext *cx = NULL;
+	static JSContext *static_cx = NULL;
 	static JSObject  *global;
-	JSContext                       *tcx;
+	JSContext        *cx;
 	
-	if (cx)
+	if (static_cx)
 	{
 		if (ngx_set_environment(cf->cycle, NULL) == NULL)
 			return NGX_CONF_ERROR;
 		
-		jsmcf->js = cx;
+		jsmcf->js = static_cx;
 		jsmcf->global = global;
 		
 		return NGX_CONF_OK;
@@ -352,31 +452,31 @@ ngx_http_js_init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
 	if (rt == NULL)
 		return NGX_CONF_ERROR;
 	
-	tcx = JS_NewContext(rt, 8192);
-	if (tcx == NULL)
+	cx = JS_NewContext(rt, 8192);
+	if (cx == NULL)
 		return NGX_CONF_ERROR;
 	
-	JS_SetOptions(tcx, JSOPTION_VAROBJFIX);
-	JS_SetVersion(tcx, 170);
-	JS_SetErrorReporter(tcx, reportError);
+	JS_SetOptions(cx, JSOPTION_VAROBJFIX);
+	JS_SetVersion(cx, 170);
+	JS_SetErrorReporter(cx, reportError);
 	
-	global = JS_NewObject(tcx, &global_class, NULL, NULL);
+	global = JS_NewObject(cx, &global_class, NULL, NULL);
 	if (global == NULL)
 		return NGX_CONF_ERROR;
 	
-	JS_SetGlobalObject(tcx, global);
-	JS_DefineProperty(tcx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0);
+	JS_SetGlobalObject(cx, global);
+	JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0);
 	
-	if (!JS_InitStandardClasses(tcx, global))
+	if (!JS_InitStandardClasses(cx, global))
 		return NGX_CONF_ERROR;
 	
-	if (ngx_http_js_init_interpreter_nginx(cf, jsmcf, tcx, global) != NGX_OK)
+	if (ngx_http_js_init_interpreter_nginx(cf, jsmcf, cx, global) != NGX_OK)
 		return NGX_CONF_ERROR;
 	
-	jsmcf->js = cx = tcx;
+	jsmcf->js = static_cx = cx;
 	jsmcf->global = global;
 	
-	if (ngx_http_js_run_requires(cx, global, &jsmcf->requires, cf->log) != NGX_OK)
+	if (ngx_http_js_run_requires(static_cx, global, &jsmcf->requires, cf->log) != NGX_OK)
 		return NGX_CONF_ERROR;
 	
 	return NGX_CONF_OK;
@@ -404,33 +504,44 @@ ngx_http_js_create_loc_conf(ngx_conf_t *cf)
 // Nginx
 
 static JSBool
-js_global_func_load(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+js_global_func_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	uintN i;
 	JSString *str;
-	const char *filename;
+	const char *filename, *filevar;
 	JSScript *script;
 	JSBool ok;
-	jsval result;
+	jsval result, name, old;
 	uint32 oldopts;
+	JSObject *global;
+	// FILE *fileh;
+	
+	global = JS_GetGlobalObject(cx);
+	filevar = "__FILE__";
 	
 	for (i = 0; i < argc; i++)
 	{
 		str = JS_ValueToString(cx, argv[i]);
 		if (!str)
 			return JS_FALSE;
-		argv[i] = STRING_TO_JSVAL(str);
+		name = argv[i] = STRING_TO_JSVAL(str);
 		filename = JS_GetStringBytes(str);
-		fprintf(stderr, "load %s\n", filename);
+		fprintf(stderr, "global.load %s\n", filename);
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
-		script = JS_CompileFile(cx, obj, filename);
-		
+		script = JS_CompileFile(cx, this, filename);
+		// fprintf(stderr, "Error: %i.\n", strerror(errno));
+		// if (errno == ENOENT)
 		if (!script)
 			ok = JS_FALSE;
 		else
-			ok = JS_ExecuteScript(cx, obj, script, &result);
+		{
+			JS_GetProperty(cx, global, filevar, &old);
+			JS_SetProperty(cx, global, filevar, &name);
+			ok = JS_ExecuteScript(cx, this, script, &result);
+			JS_SetProperty(cx, global, filevar, &old);
+		}
 		JS_SetOptions(cx, oldopts);
 		if (!ok)
 			return JS_FALSE;
@@ -442,7 +553,7 @@ js_global_func_load(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
 
 
 static JSBool
-js_nginx_class_func_log_error(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+js_nginx_class_func_log_error(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_js_context_private_t  *private;
 	JSString                       *jsstr;
@@ -461,7 +572,7 @@ js_nginx_class_func_log_error(JSContext *cx, JSObject *obj, uintN argc, jsval *a
 	level = JSVAL_TO_INT(argv[0]);
 	jsstr = JSVAL_TO_STRING(argv[1]);
 	
-	// ngx_log_error(level, private->log, 0, "%s", JS_GetStringBytes(jsstr));
+	ngx_log_error(level, private->log, 0, "%s", JS_GetStringBytes(jsstr));
 	// ngx_log_error(level, private->log, 0, "%d", JS_GetStringLength(jsstr));
 	
 	return JS_TRUE;
@@ -475,55 +586,55 @@ static JSFunctionSpec js_nginx_class_funcs[] = {
 static JSPropertySpec js_nginx_class_props[] =
 {
 	// NGX_LOG*
-	{"NGX_LOG_STDERR", 1, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_EMERG", 2, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_ALERT", 3, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_CRIT", 4, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_ERR", 5, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_WARN", 6, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_NOTICE", 7, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_INFO", 8, JSPROP_READONLY, NULL, NULL},
-	{"NGX_LOG_DEBUG", 9, JSPROP_READONLY, NULL, NULL},
+	{"LOG_STDERR", 1, JSPROP_READONLY, NULL, NULL},
+	{"LOG_EMERG", 2, JSPROP_READONLY, NULL, NULL},
+	{"LOG_ALERT", 3, JSPROP_READONLY, NULL, NULL},
+	{"LOG_CRIT", 4, JSPROP_READONLY, NULL, NULL},
+	{"LOG_ERR", 5, JSPROP_READONLY, NULL, NULL},
+	{"LOG_WARN", 6, JSPROP_READONLY, NULL, NULL},
+	{"LOG_NOTICE", 7, JSPROP_READONLY, NULL, NULL},
+	{"LOG_INFO", 8, JSPROP_READONLY, NULL, NULL},
+	{"LOG_DEBUG", 9, JSPROP_READONLY, NULL, NULL},
 	
 	// NGX_HTTP*
-	{"NGX_HTTP_OK", 10, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_CREATED", 11, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_NO_CONTENT", 12, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_PARTIAL_CONTENT", 13, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_SPECIAL_RESPONSE", 14, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_MOVED_PERMANENTLY", 15, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_MOVED_TEMPORARILY", 16, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_NOT_MODIFIED", 17, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_BAD_REQUEST", 18, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_UNAUTHORIZED", 19, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_FORBIDDEN", 20, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_NOT_FOUND", 21, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_NOT_ALLOWED", 22, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_REQUEST_TIME_OUT", 23, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_CONFLICT", 24, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_LENGTH_REQUIRED", 25, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_PRECONDITION_FAILED", 26, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_REQUEST_ENTITY_TOO_LARGE", 27, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_REQUEST_URI_TOO_LARGE", 28, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_UNSUPPORTED_MEDIA_TYPE", 29, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_RANGE_NOT_SATISFIABLE", 30, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_CLOSE", 31, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_OWN_CODES", 32, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTPS_CERT_ERROR", 33, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTPS_NO_CERT", 34, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_TO_HTTPS", 35, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_CLIENT_CLOSED_REQUEST", 36, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_INTERNAL_SERVER_ERROR", 37, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_NOT_IMPLEMENTED", 38, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_BAD_GATEWAY", 39, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_SERVICE_UNAVAILABLE", 40, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_GATEWAY_TIME_OUT", 41, JSPROP_READONLY, NULL, NULL},
-	{"NGX_HTTP_INSUFFICIENT_STORAGE", 42, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_OK", 10, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_CREATED", 11, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_NO_CONTENT", 12, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_PARTIAL_CONTENT", 13, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_SPECIAL_RESPONSE", 14, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_MOVED_PERMANENTLY", 15, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_MOVED_TEMPORARILY", 16, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_NOT_MODIFIED", 17, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_BAD_REQUEST", 18, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_UNAUTHORIZED", 19, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_FORBIDDEN", 20, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_NOT_FOUND", 21, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_NOT_ALLOWED", 22, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_REQUEST_TIME_OUT", 23, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_CONFLICT", 24, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_LENGTH_REQUIRED", 25, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_PRECONDITION_FAILED", 26, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_REQUEST_ENTITY_TOO_LARGE", 27, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_REQUEST_URI_TOO_LARGE", 28, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_UNSUPPORTED_MEDIA_TYPE", 29, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_RANGE_NOT_SATISFIABLE", 30, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_CLOSE", 31, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_OWN_CODES", 32, JSPROP_READONLY, NULL, NULL},
+	{"HTTPS_CERT_ERROR", 33, JSPROP_READONLY, NULL, NULL},
+	{"HTTPS_NO_CERT", 34, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_TO_HTTPS", 35, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_CLIENT_CLOSED_REQUEST", 36, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_INTERNAL_SERVER_ERROR", 37, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_NOT_IMPLEMENTED", 38, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_BAD_GATEWAY", 39, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_SERVICE_UNAVAILABLE", 40, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_GATEWAY_TIME_OUT", 41, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_INSUFFICIENT_STORAGE", 42, JSPROP_READONLY, NULL, NULL},
     {0, 0, 0, NULL, NULL}
 };
 
 static JSBool
-js_nginx_class_getProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
+js_nginx_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
 	// fprintf(stderr, "Nginx property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
@@ -597,13 +708,13 @@ static JSClass js_nginx_class =
 enum js_nginx_request_class_propid { JS_REQUEST_URI, JS_REQUEST_METHOD, JS_REQUEST_REMOTE_ADDR };
 
 static JSBool
-js_nginx_request_class_getProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
+js_nginx_request_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
 	ngx_http_request_t *r;
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, obj);
+	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
 	if (!r)
 	{
-		JS_ReportError(cx, "Trying to use Request with NULL native request pointer");
+		JS_ReportError(cx, "Trying to use a Request instance with a NULL native request pointer");
 		return JS_FALSE;
 	}
 	
@@ -631,11 +742,11 @@ js_nginx_request_class_getProperty(JSContext *cx, JSObject *obj, jsval id, jsval
 
 static JSClass js_nginx_request_class =
 {
-    "Request",
-    0,
-    JS_PropertyStub, JS_PropertyStub, js_nginx_request_class_getProperty, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-    JSCLASS_NO_OPTIONAL_MEMBERS
+	"Request",
+	JSCLASS_HAS_PRIVATE,
+	JS_PropertyStub, JS_PropertyStub, js_nginx_request_class_getProperty, JS_PropertyStub,
+	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+	JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
 static JSPropertySpec js_nginx_request_class_props[] =
@@ -655,7 +766,7 @@ static JSPropertySpec js_nginx_request_class_props[] =
 
 
 static ngx_buf_t *
-js_nginx_str2buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
+js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 {
 	ngx_buf_t           *b;
 	const char          *p;
@@ -677,7 +788,7 @@ js_nginx_str2buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 }
 
 static ngx_int_t
-js_nginx_str2ngxstr(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, size_t len)
+js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, size_t len)
 {
 	const char          *p;
 	
@@ -706,10 +817,10 @@ js_nginx_str2ngxstr(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s
 
 
 static JSBool
-js_nginx_request_class_func_send_http_header(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+js_nginx_request_class_func_send_http_header(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, obj);
+	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
 	if (!r)
 	{
 		JS_ReportError(cx, "Trying to use Request with NULL native request pointer");
@@ -730,9 +841,9 @@ js_nginx_request_class_func_send_http_header(JSContext *cx, JSObject *obj, uintN
 		}
 		
 		
-		if (js_nginx_str2ngxstr(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0) != NGX_OK)
+		if (js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0) != NGX_OK)
 		{
-			JS_ReportError(cx, "Can`t js_nginx_str2ngxstr(argv[1], content_type)");
+			JS_ReportError(cx, "Can`t js_str2ngx_str(argv[1], content_type)");
 			*rval = JSVAL_FALSE;
 			return JS_TRUE;
 		}
@@ -754,15 +865,15 @@ js_nginx_request_class_func_send_http_header(JSContext *cx, JSObject *obj, uintN
 
 
 static JSBool
-js_nginx_request_class_func_print_string(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+js_nginx_request_class_func_print_string(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
 	JSString            *str;
+	ngx_chain_t          out;	
 	
-	
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, obj);
+	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
 	if (!r)
 	{
 		JS_ReportError(cx, "Trying to use Request with NULL native request pointer");
@@ -771,7 +882,7 @@ js_nginx_request_class_func_print_string(JSContext *cx, JSObject *obj, uintN arg
 	
 	if (argc != 1 || !JSVAL_IS_STRING(argv[0]))
 	{
-		JS_ReportError(cx, "Request.printString takes 1 argument of type String");
+		JS_ReportError(cx, "Request#printString takes 1 argument of type str:String");
 		return JS_FALSE;
 	}
 	
@@ -779,13 +890,96 @@ js_nginx_request_class_func_print_string(JSContext *cx, JSObject *obj, uintN arg
 	len = JS_GetStringLength(str);
 	if (len == 0)
 		return JS_TRUE;
-	b = js_nginx_str2buf(cx, str, r->pool, len);
+	b = js_str2ngx_buf(cx, str, r->pool, len);
 	
 	
-	ngx_chain_t           out;
 	out.buf = b;
 	out.next = NULL;
 	ngx_http_output_filter(r, &out);
+	
+	return JS_TRUE;
+}
+
+static ngx_int_t
+js_nginx_request_class_func_request_handler(ngx_http_request_t *r, void *data, ngx_int_t rc)
+{
+	fprintf(stderr, "js_nginx_request_class_func_request_handler(%p, %p, %d)", r, data, (int)rc);
+	
+	if (rc == NGX_ERROR || r->connection->error || r->request_output)
+		return rc;
+	
+	return NGX_OK;
+}
+
+
+static JSBool
+js_nginx_request_class_func_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_int_t                    rc;
+	ngx_http_request_t          *r, *sr;
+	ngx_http_post_subrequest_t  *psr;
+	ngx_str_t                   *uri, args;
+	ngx_uint_t                   flags;
+	size_t                       len;
+	JSString                    *str;
+	
+	
+	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
+	if (!r)
+	{
+		JS_ReportError(cx, "trying to use Request with NULL native request pointer");
+		return JS_FALSE;
+	}
+	
+	
+	if (argc != 2 || !JSVAL_IS_STRING(argv[0]) || !JSVAL_IS_OBJECT(argv[1]) || !JS_ValueToFunction(cx, argv[1]))
+	{
+		JS_ReportError(cx, "Request#request takes 2 argument of types uri:String and callback:Function");
+		return JS_FALSE;
+	}
+	
+	str = JSVAL_TO_STRING(argv[0]);
+	len = JS_GetStringLength(str);
+	if (len == 0)
+	{
+		JS_ReportError(cx, "empty uri passed");
+		return JS_FALSE;
+	}
+	
+	uri = ngx_palloc(r->pool, sizeof(ngx_str_t));
+	if (js_str2ngx_str(cx, str, r->pool, uri, len) != NGX_OK)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	
+	psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t));
+	if (psr == NULL)
+	{
+		// JS_ReportError(cx, "Can`t ngx_palloc()");
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	psr->handler = js_nginx_request_class_func_request_handler;
+	// a callback
+	psr->data = JSVAL_TO_OBJECT(argv[0]);
+	
+	
+	
+	flags = 0;
+	args.len = 0;
+	args.data = NULL;
+	
+	if (ngx_http_parse_unsafe_uri(r, uri, &args, &flags) != NGX_OK)
+	{
+		JS_ReportError(cx, "Error in ngx_http_parse_unsafe_uri(%s)", uri->data);
+		return JS_FALSE;
+	}
+	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
+	
+	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
+	*rval = INT_TO_JSVAL(rc);
 	
 	return JS_TRUE;
 }
@@ -794,8 +988,13 @@ js_nginx_request_class_func_print_string(JSContext *cx, JSObject *obj, uintN arg
 static JSFunctionSpec js_nginx_request_class_funcs[] = {
     {"sendHttpHeader",    js_nginx_request_class_func_send_http_header,     1, 0, 0},
     {"printString",       js_nginx_request_class_func_print_string,         1, 0, 0},
+    {"request",           js_nginx_request_class_func_request,              1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
+
+#include "environment.c"
+
+extern char **environ;
 
 static JSObject *request_proto_obj = NULL;
 
@@ -803,8 +1002,7 @@ static ngx_int_t
 ngx_http_js_init_interpreter_nginx(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf, JSContext *cx, JSObject  *global)
 {
 	static ngx_http_js_context_private_t   private;
-	JSObject *nginx_obj;
-	
+	JSObject *nginxobj, *envobj;
 	
 	if (JS_GetContextPrivate(cx))
 		return NGX_ERROR;
@@ -815,23 +1013,26 @@ ngx_http_js_init_interpreter_nginx(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmc
 	
 	JS_SetContextPrivate(cx, &private);
 	
+	// environment
+	envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
+	if (!envobj || !JS_SetPrivate(cx, envobj, environ))
+		return 1;
+	
+	
 	JS_DefineFunction(cx, global, "load", js_global_func_load, 0, 0);
 	
 	// Nginx
-	nginx_obj = JS_DefineObject(cx, global, "Nginx", &js_nginx_class, NULL, JSPROP_ENUMERATE);
-	JS_DefineProperties(cx, nginx_obj, js_nginx_class_props);
-	JS_DefineFunctions(cx, nginx_obj, js_nginx_class_funcs);
+	nginxobj = JS_DefineObject(cx, global, "Nginx", &js_nginx_class, NULL, JSPROP_ENUMERATE);
+	JS_DefineProperties(cx, nginxobj, js_nginx_class_props);
+	JS_DefineFunctions(cx, nginxobj, js_nginx_class_funcs);
 	
 	// Nginx.Request
-	request_proto_obj = JS_InitClass(cx, nginx_obj, NULL, &js_nginx_request_class,  NULL, 0,  js_nginx_request_class_props, js_nginx_request_class_funcs,  NULL, NULL);
+	request_proto_obj = JS_InitClass(cx, nginxobj, NULL, &js_nginx_request_class,  NULL, 0,  js_nginx_request_class_props, js_nginx_request_class_funcs,  NULL, NULL);
 	if (!request_proto_obj)
 	{
 		ngx_log_error(NGX_LOG_ERR, cf->log, 0, "Can`t JS_InitClass(Nginx.Request)");
 		return NGX_ERROR;
 	}
-	// JSObject *obj = JS_DefineObject(cx, nginx_obj, "Request", &js_nginx_request_class, NULL, JSPROP_ENUMERATE);
-	// JS_DefineProperties(cx, obj, js_nginx_request_class_props);
-	// JS_DefineFunctions(cx, obj, js_nginx_request_class_funcs);
 	
 	
 	return NGX_OK;
@@ -855,6 +1056,8 @@ ngx_http_js_init_interpreter_nginx(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmc
 // 	return NGX_HTTP_OK;
 // }
 
+//#define unless(a) if(!(a))
+
 static ngx_int_t
 ngx_http_js_call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r, JSObject *sub, ngx_str_t *handler)
 {
@@ -864,22 +1067,34 @@ ngx_http_js_call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r,
 	jsval              req;
 	// fprintf(stderr, "%s", (char *) r->uri.data);
 	status = NGX_HTTP_OK;
+	jsval              rval;
+	static char        *JS_REQUEST_ROOT_NAME = "Nginx.Request instance";
 	
 	// ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "ngx_http_js_call_handler(%p)", r);
 	
 	request = JS_NewObject(cx, &js_nginx_request_class, request_proto_obj, NULL);
+	if (!request)
+	{
+		JS_ReportOutOfMemory(cx);
+		return NGX_ERROR;
+	}
+	
+	if (!JS_AddNamedRoot(cx, &request, JS_REQUEST_ROOT_NAME))
+	{
+		JS_ReportError(cx, "Can`t add new root %s", JS_REQUEST_ROOT_NAME);
+		return NGX_ERROR;
+	}
 	JS_SetPrivate(cx, request, r);
 	req = OBJECT_TO_JSVAL(request);
 	
 	c = r->connection;
 	
-	jsval rval;
 	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(sub), 1, &req, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
 		{
 			status = NGX_ERROR;
-			JS_ReportError(cx, "Request processor must return Integer");
+			JS_ReportError(cx, "Request processor must return an Integer");
 		}
 		else
 			status = JSVAL_TO_INT(rval);

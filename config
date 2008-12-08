@@ -5,10 +5,10 @@ NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_js_module.c"
 echo "checking for JavaScript"
 NGX_JS="js"
 NGX_JS_VER=`$NGX_JS -v 2>&1  |  grep '^JavaScript-C' 2>&1  |  sed -e 's/^JavaScript-C \(.*\)/\1/'`
-
 if test -n "$NGX_JS_VER"; then
     echo " + JavaScript version: $NGX_JS_VER"
     
+    # trying to eval some code for version => 1.7
     if [ "`echo 'let a; print("OK")' | $NGX_JS -version 170 2>&1`" != OK ]; then
         echo
         echo "$0: error: JavaScript 1.7.0 or higher is required"
@@ -17,14 +17,20 @@ if test -n "$NGX_JS_VER"; then
         exit 1;
     fi
     
+    # this is to help a compiller find our ngx_http_js_module.h
     CFLAGS="-I $ngx_addon_dir $CFLAGS"
     
-    # CORE_LINK="$CORE_LINK -ljs"
+    # for proper linking with libjs
     CORE_LIBS="$CORE_LIBS -ljs"
 else
     echo
-    echo "$0: error: JavaScript 1.7.0 or higher is required, none was founded"
+    echo "$0: error: JavaScript 1.7.0 or higher is required: none was founded"
     echo
     
     exit 1;
 fi
+
+# defining path for main js-file: nginx.js
+NGX_HTTP_JS_CONF_PATH="$NGX_PREFIX/js/nginx.js"
+have=NGX_HTTP_JS_CONF_PATH value="\"$NGX_HTTP_JS_CONF_PATH\""
+. auto/define
