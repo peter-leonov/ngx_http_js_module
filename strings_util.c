@@ -6,7 +6,7 @@
 #include <js/jsapi.h>
 
 
-static ngx_buf_t *
+ngx_buf_t *
 js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 {
 	ngx_buf_t           *b;
@@ -28,7 +28,7 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 	return b;
 }
 
-static ngx_int_t
+ngx_int_t
 js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, size_t len)
 {
 	const char          *p;

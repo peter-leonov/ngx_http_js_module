@@ -5,8 +5,14 @@
 
 #include <js/jsapi.h>
 
+#include "ngx_http_js_module.h"
+#include "nginx_js_glue.h"
+
 
 static ngx_str_t  ngx_null_name = ngx_null_string;
+
+static ngx_int_t
+ngx_http_js_handler(ngx_http_request_t *r);
 
 
 // callbacks
@@ -38,8 +44,6 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	ngx_str_t                  *value;
 	ngx_http_core_loc_conf_t   *clcf;
-	ngx_http_js_main_conf_t    *jsmcf;
-	jsval                       sub;
 	
 	value = cf->args->elts;
 	// fprintf(stderr, "js %s\n", value[1].data);
@@ -48,28 +52,11 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);
 		return NGX_CONF_ERROR;
 	}
-	
-	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-	
-	if (jsmcf->js == NULL)
-		if (ngx_http_js_init_interpreter(cf, jsmcf) != NGX_CONF_OK)
-			return NGX_CONF_ERROR;
-	
 	jslcf->handler = value[1];
 	
-	if (!JS_EvaluateScript(jsmcf->js, jsmcf->global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &sub))
-		return NGX_CONF_ERROR;
-	
-	if (!JSVAL_IS_OBJECT(sub) || !JS_ValueToFunction(jsmcf->js, sub))
-	{
-		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "processRequest is not a function");
-		return NGX_CONF_ERROR;
-	}
-	
-	jslcf->sub = JSVAL_TO_OBJECT(sub);
 	
 	// JS side of question
-	if (ngx_http_js__nginx_js_set_callback(cf, cmd, jsmcf) != NGX_CONF_OK)
+	if (ngx_http_js__glue__set_callback(cf, cmd, jslcf) != NGX_CONF_OK)
 		return NGX_CONF_ERROR;
 	
 	
@@ -108,7 +95,7 @@ ngx_http_js_handler(ngx_http_request_t *r)
 		if (ctx == NULL)
 		{
 			ngx_http_finalize_request(r, NGX_ERROR);
-			return;
+			return NGX_DONE;
 		}
 		
 		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
@@ -129,12 +116,12 @@ ngx_http_js_handler(ngx_http_request_t *r)
         ctx->next = NULL;
     }
 	
-	rc = ngx_http_js__nginx_js_call_handler(jsmcf->js, jsmcf->global, r, sub, handler);
+	rc = ngx_http_js__glue__call_handler(jsmcf->js_cx, jsmcf->js_global, r, sub, handler);
 
     }
 
     if (rc == NGX_DONE) {
-        return;
+        return NGX_DONE;
     }
 
     if (rc > 600) {
@@ -156,12 +143,12 @@ ngx_http_js_handler(ngx_http_request_t *r)
     ctx->redirect_uri.len = 0;
 
     if (ctx->done || ctx->next) {
-        return;
+        return NGX_DONE;
     }
 
     if (uri.len) {
         ngx_http_internal_redirect(r, &uri, &args);
-        return;
+        return NGX_DONE;
     }
 
     if (rc == NGX_OK || rc == NGX_HTTP_OK) {
@@ -200,7 +187,7 @@ ngx_http_js_create_main_conf(ngx_conf_t *cf)
 static char *
 ngx_http_js_init_main_conf(ngx_conf_t *cf, void *conf)
 {
-	return ngx_http_js__nginx_js__init_interpreter(cf, (ngx_http_js_main_conf_t*)conf);
+	return ngx_http_js__glue__init_interpreter(cf, (ngx_http_js_main_conf_t*)conf);
 }
 
 

@@ -1,43 +1,16 @@
 
-#ifndef _NGX_HTTP_JS_MODULE_H_INCLUDED_
-#define _NGX_HTTP_JS_MODULE_H_INCLUDED_
+#ifndef _NGX_HTTP_JS_GLUE_H_INCLUDED_
+#define _NGX_HTTP_JS_GLUE_H_INCLUDED_
 
-typedef ngx_http_request_t   *nginx;
+extern char *
+ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf);
 
-typedef struct {
-    ngx_str_t                 filename;
-    ngx_str_t                 redirect_uri;
-    ngx_str_t                 redirect_args;
+extern ngx_int_t
+ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r, JSObject *sub, ngx_str_t *handler);
 
-    JSObject                 *next;
-
-    ngx_uint_t                done;       /* unsigned  done:1; */
+extern char *
+ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf);
 
 
-#if (NGX_HTTP_SSI)
-    ngx_http_ssi_ctx_t       *ssi;
-#endif
-} ngx_http_js_ctx_t;
-
-typedef struct {
-    JSObject          *sub;
-    ngx_str_t          handler;
-} ngx_http_js_loc_conf_t;
-
-typedef struct {
-    JSContext   *js_cx;
-    JSObject    *js_global;
-    // HV                *nginx;
-    ngx_array_t        requires;
-} ngx_http_js_main_conf_t;
-
-typedef struct {
-	ngx_conf_t *cf;
-	ngx_http_js_main_conf_t *jsmcf;
-	ngx_log_t *log;
-} ngx_http_js_context_private_t;
-
-
-extern ngx_module_t  ngx_http_js_module;
 
 #endif
