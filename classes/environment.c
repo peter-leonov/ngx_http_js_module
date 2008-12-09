@@ -1,7 +1,5 @@
 // token from SpiderMonkey 1.7.0 source (js.c:2740)
 
-#include <js/jsapi.h>
-
 static JSBool
 env_setProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
 {
@@ -116,19 +114,5 @@ static JSClass env_class = {
     JS_ConvertStub,   JS_FinalizeStub,
     JSCLASS_NO_OPTIONAL_MEMBERS
 };
-
-
-extern char **environ;
-
-static JSBool
-ngx_http_js_init_interpreter_nginx(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf, JSContext *cx, JSObject  *global)
-{
-	JSObject *envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
-	if (!envobj || !JS_SetPrivate(cx, envobj, environ))
-		return JS_FALSE;
-	
-	return JS_TRUE;
-}
-
 
 

@@ -249,7 +249,7 @@ JSClass ngx_http_js__nginx_request_class =
 
 JSObject *ngx_http_js__nginx_request_prototype;
 
-static JSBool
+JSBool
 ngx_http_js__nginx_request__init(JSContext *cx)
 {
 	JSObject    *nginxobj;
