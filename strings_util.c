@@ -28,7 +28,7 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 	return b;
 }
 
-ngx_int_t
+JSBool
 js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, size_t len)
 {
 	const char          *p;
@@ -37,21 +37,25 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, siz
 	s->data = NULL;
 	
 	if (len == 0)
-		len = JS_GetStringLength(str);
-	
-	if (len == 0)
-		return NGX_OK;
+		if ((len = JS_GetStringLength(str)) == 0)
+			return JS_TRUE;
 	
 	p = JS_GetStringBytes(str);
 	if (p == NULL)
-		return NGX_ERROR;
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
 	s->data = ngx_palloc(pool, len);
 	if (s->data == NULL)
-		return NGX_ERROR;
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
 	ngx_memcpy(s->data, p, len);
 	s->len = len;
 	
-	return NGX_OK;
+	return JS_TRUE;
 }

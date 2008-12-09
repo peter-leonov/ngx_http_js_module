@@ -10,51 +10,45 @@
 
 #include "../strings_util.h"
 
+#define LOG(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
+// #define LOG(mess)
+
+#define GET_PRIVATE() \
+if ( (r = JS_GetPrivate(cx, this)) == NULL ) \
+{ JS_ReportError(cx, "trying to use wrapper object with NULL private pointer"); return JS_FALSE; }
+
+// Enshure wrapper
+#define E(expr, mess, args...) \
+if (!(expr)) { JS_ReportError(cx, mess, ##args); LOG(#expr); return JS_FALSE; }
+
+
+
 
 static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
-	if (!r)
-	{
-		JS_ReportError(cx, "Trying to use Request with NULL native request pointer");
-		return JS_FALSE;
-	}
+	GET_PRIVATE();
 	
-	// ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "method_sendHttpHeader");
+	LOG("Nginx.Request#sendHttpHeader");
 	
 	if (r->headers_out.status == 0)
 		r->headers_out.status = NGX_HTTP_OK;
 	
 	if (argc == 1)
 	{
-		if (!JSVAL_IS_STRING(argv[0]))
-		{
-			JS_ReportError(cx, "sendHttpHeader() takes one optional argument of type String");
-			return JS_FALSE;
-		}
+		E(JSVAL_IS_STRING(argv[0]), "sendHttpHeader() takes one optional argument: contentType:String");
 		
+		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0),
+			"Can`t js_str2ngx_str(cx, contentType)")
 		
-		if (js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0) != NGX_OK)
-		{
-			JS_ReportError(cx, "Can`t js_str2ngx_str(argv[1], content_type)");
-			*rval = JSVAL_FALSE;
-			return JS_TRUE;
-		}
-
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
     }
 	
-	if (ngx_http_set_content_type(r) != NGX_OK)
-	{
-		JS_ReportError(cx, "Can`t ngx_http_set_content_type(r)");
-		*rval = JSVAL_FALSE;
-		return JS_TRUE;
-	}
+	E(ngx_http_set_content_type(r) == NGX_OK, "Can`t ngx_http_set_content_type(r)")
+	E(ngx_http_send_header(r) == NGX_OK, "Can`t ngx_http_send_header(r)");
 	
-	ngx_http_send_header(r);
-	
+	*rval = JSVAL_TRUE;
 	return JS_TRUE;
 }
 
@@ -68,18 +62,9 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	JSString            *str;
 	ngx_chain_t          out;	
 	
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
-	if (!r)
-	{
-		JS_ReportError(cx, "Trying to use Request with NULL native request pointer");
-		return JS_FALSE;
-	}
+	GET_PRIVATE();
 	
-	if (argc != 1 || !JSVAL_IS_STRING(argv[0]))
-	{
-		JS_ReportError(cx, "Request#printString takes 1 argument of type str:String");
-		return JS_FALSE;
-	}
+	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
@@ -98,7 +83,7 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 static ngx_int_t
 method_request_handler(ngx_http_request_t *r, void *data, ngx_int_t rc)
 {
-	fprintf(stderr, "method_request_handler(%p, %p, %d)", r, data, (int)rc);
+	LOG("method_request_handler(%p, %p, %d)", r, data, (int)rc);
 	
 	if (rc == NGX_ERROR || r->connection->error || r->request_output)
 		return rc;
@@ -119,45 +104,22 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	JSString                    *str;
 	
 	
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
-	if (!r)
-	{
-		JS_ReportError(cx, "trying to use Request with NULL native request pointer");
-		return JS_FALSE;
-	}
+	GET_PRIVATE();
 	
-	
-	if (argc != 2 || !JSVAL_IS_STRING(argv[0]) || !JSVAL_IS_OBJECT(argv[1]) || !JS_ValueToFunction(cx, argv[1]))
-	{
-		JS_ReportError(cx, "Request#request takes 2 argument of types uri:String and callback:Function");
-		return JS_FALSE;
-	}
+	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
+		"Request#request takes 2 arguments of types uri:String and callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
-	if (len == 0)
-	{
-		JS_ReportError(cx, "empty uri passed");
-		return JS_FALSE;
-	}
+	E(len, "empty uri passed");
 	
-	uri = ngx_palloc(r->pool, sizeof(ngx_str_t));
-	if (js_str2ngx_str(cx, str, r->pool, uri, len) != NGX_OK)
-	{
-		JS_ReportOutOfMemory(cx);
-		return JS_FALSE;
-	}
+	E(uri = ngx_palloc(r->pool, sizeof(ngx_str_t)), "Can`t ngx_palloc(...)");
+	E(js_str2ngx_str(cx, str, r->pool, uri, len), "Can`t js_str2ngx_str(...)")
 	
 	
-	psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t));
-	if (psr == NULL)
-	{
-		// JS_ReportError(cx, "Can`t ngx_palloc()");
-		JS_ReportOutOfMemory(cx);
-		return JS_FALSE;
-	}
+	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
 	psr->handler = method_request_handler;
-	// a callback
+	// a js-callback
 	psr->data = JSVAL_TO_OBJECT(argv[0]);
 	
 	
@@ -166,11 +128,8 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	args.len = 0;
 	args.data = NULL;
 	
-	if (ngx_http_parse_unsafe_uri(r, uri, &args, &flags) != NGX_OK)
-	{
-		JS_ReportError(cx, "Error in ngx_http_parse_unsafe_uri(%s)", uri->data);
-		return JS_FALSE;
-	}
+	E(ngx_http_parse_unsafe_uri(r, uri, &args, &flags) == NGX_OK, "Error in ngx_http_parse_unsafe_uri(%s)", uri->data)
+	
 	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
@@ -186,12 +145,8 @@ static JSBool
 request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
 	ngx_http_request_t *r;
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
-	if (!r)
-	{
-		JS_ReportError(cx, "Trying to use a Request instance with a NULL native request pointer");
-		return JS_FALSE;
-	}
+	
+	GET_PRIVATE();
 	
 	// fprintf(stderr, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
@@ -258,20 +213,12 @@ ngx_http_js__nginx_request__init(JSContext *cx)
 	
 	global = JS_GetGlobalObject(cx);
 	
-	if (!JS_GetProperty(cx, global, "Nginx", &vp))
-	{
-		JS_ReportError(cx, "global.Nginx is undefined or is not a function");
-		return JS_FALSE;
-	}
+	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
-	ngx_http_js__nginx_request_prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  NULL, 0,  ngx_http_js__nginx_request_props, ngx_http_js__nginx_request_funcs,  NULL, NULL);
-	if (!ngx_http_js__nginx_request_prototype)
-	{
-		// ngx_log_error(NGX_LOG_ERR, cf->log, 0, "Can`t JS_InitClass(Nginx.Request)");
-		JS_ReportError(cx, "Can`t JS_InitClass(Nginx.Request)");
-		return JS_FALSE;
-	}
+	ngx_http_js__nginx_request_prototype =JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  NULL, 0,
+		ngx_http_js__nginx_request_props, ngx_http_js__nginx_request_funcs,  NULL, NULL);
+	E(ngx_http_js__nginx_request_prototype, "Can`t JS_InitClass(Nginx.Request)");
 	
 	return JS_TRUE;
 }
