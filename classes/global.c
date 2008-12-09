@@ -2,11 +2,10 @@
 // global class
 
 #include <ngx_config.h>
-#include <ngx_core.h>
-#include <ngx_http.h>
-#include <nginx.h>
 
 #include <js/jsapi.h>
+
+#include "environment.c"
 
 
 static JSBool
@@ -66,16 +65,58 @@ static JSClass global_class =
 };
 
 
-static JSBool
+extern char **environ;
+
+JSBool
 ngx_http_js__global__init(JSContext *cx)
 {
-	JSObject *global = JS_NewObject(cx, &global_class, NULL, NULL);
+	JSObject *global;
+	JSObject *envobj;
+	
+	if (JS_GetGlobalObject(cx))
+	{
+		JS_ReportError(cx, "global object already defined");
+		return JS_FALSE;
+	}
+	
+	global = JS_NewObject(cx, &global_class, NULL, NULL);
 	if (global == NULL)
 		return JS_FALSE;
 	
 	JS_SetGlobalObject(cx, global);
-	JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0);
-	JS_DefineFunction(cx, global, "load", global_load, 0, 0);
+	
+	if (!JS_InitStandardClasses(cx, global))
+	{
+		JS_ReportError(cx, "Can`t JS_InitStandardClasses()");
+		return JS_FALSE;
+	}
+	
+	if (!JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0))
+	{
+		JS_ReportError(cx, "Can`t define property global.self");
+		return JS_FALSE;
+	}
+	
+	if (!JS_DefineProperty(cx, global, "global", OBJECT_TO_JSVAL(global), NULL, NULL, 0))
+	{
+		JS_ReportError(cx, "Can`t define property global.global");
+		return JS_FALSE;
+	}
+	
+	if (!JS_DefineFunction(cx, global, "load", global_load, 0, 0))
+	{
+		JS_ReportError(cx, "Can`t define function global.load");
+		return JS_FALSE;
+	}
+	
+	envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
+	if (!envobj || !JS_SetPrivate(cx, envobj, environ))
+	{
+		JS_ReportError(cx, "Can`t define object global.environment");
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
 }
 
 

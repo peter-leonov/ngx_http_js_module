@@ -6,6 +6,7 @@
 #include <js/jsapi.h>
 
 #include "ngx_http_js_module.h"
+#include "classes/global.h"
 #include "classes/Nginx.h"
 #include "classes/Request.h"
 
@@ -37,6 +38,8 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 	jsval           fval, rval, strval;
 	JSString       *fnstring;
 	// JSObject       *require;
+	
+	fprintf(stderr, "ngx_http_js_load(%s)\n", filename);
 	
 	if (!JS_GetProperty(cx, global, "load", &fval))
 	{
@@ -113,7 +116,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 {
 	static JSRuntime *rt;
 	static JSContext *static_cx = NULL;
-	static JSObject  *global;
+	JSObject  *global;
 	static ngx_http_js_context_private_t   private;
 	JSContext        *cx;
 	
@@ -126,7 +129,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 			return NGX_CONF_ERROR;
 		
 		jsmcf->js_cx = static_cx;
-		jsmcf->js_global = global;
+		jsmcf->js_global = JS_GetGlobalObject(static_cx);
 		
 		return NGX_CONF_OK;
 	}
@@ -149,11 +152,28 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	JS_SetContextPrivate(cx, &private);
 	JS_SetErrorReporter(cx, reportError);
 	
-	// global
-	global = NULL;
 	
-	if (!JS_InitStandardClasses(cx, global))
+	// global
+	if (!ngx_http_js__global__init(cx))
+	{
+		JS_ReportError(cx, "Can`t initialize global object");
 		return NGX_CONF_ERROR;
+	}
+	global = JS_GetGlobalObject(cx);
+	
+	// Nginx
+	if (!ngx_http_js__nginx__init(cx))
+	{
+		JS_ReportError(cx, "Can`t initialize Nginx object");
+		return NGX_CONF_ERROR;
+	}
+	
+	// Nginx.Request
+	if (!ngx_http_js__nginx_request__init(cx))
+	{
+		JS_ReportError(cx, "Can`t initialize Nginx.Request class");
+		return NGX_CONF_ERROR;
+	}
 	
 	
 	// call some external func
@@ -169,30 +189,31 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 }
 
 
-
-
-
 char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
 {
 	ngx_str_t                  *value;
 	ngx_http_js_main_conf_t    *jsmcf;
 	JSContext                  *cx;
+	JSObject                   *global;
 	jsval                       sub;
 	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
 	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-	cx = jsmcf->js_cx;
 	
 	if (jsmcf->js_cx == NULL)
 		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
 			return NGX_CONF_ERROR;
 	
+	cx = jsmcf->js_cx;
+	global = jsmcf->js_global;
+	
+	
 	value = cf->args->elts;
-	if (!JS_EvaluateScript(jsmcf->js_cx, jsmcf->js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &sub))
+	if (!JS_EvaluateScript(cx, global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &sub))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(sub) || !JS_ValueToFunction(jsmcf->js_cx, sub))
+	if (!JSVAL_IS_OBJECT(sub) || !JS_ValueToFunction(cx, sub))
 	{
 		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "processRequest is not a function");
 		return NGX_CONF_ERROR;
