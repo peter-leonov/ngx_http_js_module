@@ -5,8 +5,9 @@
 
 #include <js/jsapi.h>
 
-
-static ngx_str_t  ngx_null_name = ngx_null_string;
+#include "ngx_http_js_module.h"
+#include "classes/Nginx.h"
+#include "classes/Request.h"
 
 
 void
@@ -30,9 +31,7 @@ reportError(JSContext *cx, const char *message, JSErrorReport *report)
 }
 
 
-
-
-static ngx_int_t
+static JSBool
 ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 {
 	jsval           fval, rval, strval;
@@ -42,49 +41,27 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 	if (!JS_GetProperty(cx, global, "load", &fval))
 	{
 		JS_ReportError(cx, "global.load is undefined");
-		return NGX_ERROR;
+		return JS_FALSE;
 	}
 	if (!JSVAL_IS_OBJECT(fval) || !JS_ValueToFunction(cx, fval))
 	{
 		JS_ReportError(cx, "global.load is not a function");
-		return NGX_ERROR;
+		return JS_FALSE;
 	}
 	
 	fnstring = JS_NewStringCopyZ(cx, filename);
 	if (!fnstring)
-		return NGX_ERROR;
+		return JS_FALSE;
 		
 	strval = STRING_TO_JSVAL(fnstring);
 	
 	if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
 	{
 		JS_ReportError(cx, "error calling global.load from nginx");
-		return NGX_ERROR;
+		return JS_FALSE;
 	}
 	
-	
-	// filename = JS_NewStringCopyZ(cx, NGX_HTTP_JS_CONF_PATH);
-	// strval = STRING_TO_JSVAL(filename);
-	// if (!JS_SetProperty(cx, global, "__FILE__", &strval))
-	// {
-	// 	JS_ReportError(cx, "unable to set global.__FILE__ to '%s'", NGX_HTTP_JS_CONF_PATH);
-	// 	return NGX_ERROR;
-	// }
-	// 
-	// jss = JS_CompileFile(cx, global, NGX_HTTP_JS_CONF_PATH);
-	// if (!jss)
-	// {
-	// 	JS_ReportError(cx, "error compiling NGX_HTTP_JS_CONF_PATH");
-	// 	return NGX_ERROR;
-	// }
-	// 
-	// if (!JS_ExecuteScript(cx, global, jss, &rval))
-	// {
-	// 	JS_ReportError(cx, "error executing NGX_HTTP_JS_CONF_PATH");
-	// 	return NGX_ERROR;
-	// }
-	
-	return NGX_OK;
+	return JS_TRUE;
 }
 
 static ngx_int_t
@@ -98,7 +75,7 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 	char           *value;
 	// JSObject       *require;
 	
-	if (ngx_http_js_load(cx, global, NGX_HTTP_JS_CONF_PATH) != NGX_OK)
+	if (!ngx_http_js_load(cx, global, NGX_HTTP_JS_CONF_PATH))
 		return NGX_ERROR;
 	
 	if (!JS_GetProperty(cx, global, "require", &fval))
@@ -131,16 +108,13 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 
 
 
-
-
-
-
-static char *
-ngx_http_js__nginx_js__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
+char *
+ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
 {
 	static JSRuntime *rt;
 	static JSContext *static_cx = NULL;
 	static JSObject  *global;
+	static ngx_http_js_context_private_t   private;
 	JSContext        *cx;
 	
 	if (jsmcf->js_cx != NULL)
@@ -157,6 +131,10 @@ ngx_http_js__nginx_js__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t 
 		return NGX_CONF_OK;
 	}
 	
+	private.cf = cf;
+	private.jsmcf = jsmcf;
+	private.log = cf->log;
+	
 	
 	rt = JS_NewRuntime(32L * 1024L * 1024L);
 	if (rt == NULL)
@@ -168,43 +146,17 @@ ngx_http_js__nginx_js__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t 
 	
 	JS_SetOptions(cx, JSOPTION_VAROBJFIX);
 	JS_SetVersion(cx, 170);
+	JS_SetContextPrivate(cx, &private);
 	JS_SetErrorReporter(cx, reportError);
 	
-	global = JS_NewObject(cx, &global_class, NULL, NULL);
-	if (global == NULL)
-		return NGX_CONF_ERROR;
-	
-	JS_SetGlobalObject(cx, global);
-	JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0);
+	// global
+	global = NULL;
 	
 	if (!JS_InitStandardClasses(cx, global))
 		return NGX_CONF_ERROR;
 	
 	
-	
-	
-	// if (ngx_http_js_init_interpreter_nginx(cf, jsmcf, cx, global) != NGX_OK)
-	// 	return NGX_CONF_ERROR;
-	
-	static ngx_http_js_context_private_t   private;
-	JSObject *nginxobj;
-	
-	if (JS_GetContextPrivate(cx))
-		return NGX_ERROR;
-	
-	private.cf = cf;
-	private.jsmcf = jsmcf;
-	private.log = cf->log;
-	
-	JS_SetContextPrivate(cx, &private);
-	
-
 	// call some external func
-	
-	
-	return NGX_OK;
-	
-	
 	
 	
 	jsmcf->js_cx = static_cx = cx;
@@ -220,30 +172,23 @@ ngx_http_js__nginx_js__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t 
 
 
 
-static char *
-ngx_http_js__nginx_js_set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
+char *
+ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
 {
 	ngx_str_t                  *value;
-	ngx_http_core_loc_conf_t   *clcf;
 	ngx_http_js_main_conf_t    *jsmcf;
+	JSContext                  *cx;
 	jsval                       sub;
-	
-	value = cf->args->elts;
-	// fprintf(stderr, "js %s\n", value[1].data);
-	if (jslcf->handler.data)
-	{
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);
-		return NGX_CONF_ERROR;
-	}
+	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
 	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
+	cx = jsmcf->js_cx;
 	
 	if (jsmcf->js_cx == NULL)
-		if (ngx_http_js_init_interpreter(cf, jsmcf) != NGX_CONF_OK)
+		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
 			return NGX_CONF_ERROR;
 	
-	jslcf->handler = value[1];
-	
+	value = cf->args->elts;
 	if (!JS_EvaluateScript(jsmcf->js_cx, jsmcf->js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &sub))
 		return NGX_CONF_ERROR;
 	
@@ -254,14 +199,12 @@ ngx_http_js__nginx_js_set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_
 	}
 	
 	jslcf->sub = JSVAL_TO_OBJECT(sub);
-	
-	// JS side of question
-	if (ngx_http_js__nginx_js_set_callback(cf, cmd, jsmcf) != NGX_CONF_OK)
+	if (!JS_AddNamedRoot(cx, &jslcf->sub, JS_CALLBACK_ROOT_NAME))
+	{
+		JS_ReportError(cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
 		return NGX_CONF_ERROR;
+	}
 	
-	
-	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
-	clcf->handler = ngx_http_js_handler;
 	
 	return NGX_CONF_OK;
 }
@@ -271,8 +214,8 @@ ngx_http_js__nginx_js_set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_
 
 //#define unless(a) if(!(a))
 
-static ngx_int_t
-ngx_http_js__nginx_js_call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r, JSObject *sub, ngx_str_t *handler)
+ngx_int_t
+ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r, JSObject *sub, ngx_str_t *handler)
 {
 	int                status;
 	ngx_connection_t  *c;
@@ -285,7 +228,7 @@ ngx_http_js__nginx_js_call_handler(JSContext *cx, JSObject *global, ngx_http_req
 	
 	// ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "ngx_http_js_call_handler(%p)", r);
 	
-	request = JS_NewObject(cx, &js_nginx_request_class, ngx_http_js__request_prototype, NULL);
+	request = JS_NewObject(cx, &ngx_http_js__nginx_request_class, ngx_http_js__nginx_request_prototype, NULL);
 	if (!request)
 	{
 		JS_ReportOutOfMemory(cx);

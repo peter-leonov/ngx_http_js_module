@@ -15,26 +15,27 @@ typedef struct {
 
 
 #if (NGX_HTTP_SSI)
-    ngx_http_ssi_ctx_t       *ssi;
+    ngx_http_ssi_ctx_t        *ssi;
 #endif
 } ngx_http_js_ctx_t;
 
 typedef struct {
-    JSObject          *sub;
-    ngx_str_t          handler;
+    JSObject                  *sub;
+    ngx_str_t                  handler;
 } ngx_http_js_loc_conf_t;
 
 typedef struct {
-    JSContext   *js;
-    JSObject    *global;
-    // HV                *nginx;
-    ngx_array_t        requires;
+    // JSContext              *js;
+    // JSObject               *global;
+    void                      *js_cx;
+    void                      *js_global;
+    ngx_array_t                requires;
 } ngx_http_js_main_conf_t;
 
 typedef struct {
-	ngx_conf_t *cf;
-	ngx_http_js_main_conf_t *jsmcf;
-	ngx_log_t *log;
+	ngx_conf_t                *cf;
+	ngx_http_js_main_conf_t   *jsmcf;
+	ngx_log_t                 *log;
 } ngx_http_js_context_private_t;
 
 

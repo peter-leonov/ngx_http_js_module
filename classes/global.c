@@ -65,5 +65,17 @@ static JSClass global_class =
     JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
-// JS_DefineFunction(cx, global, "load", js_global_func_load, 0, 0);
+
+static JSBool
+ngx_http_js__global__init(JSContext *cx)
+{
+	JSObject *global = JS_NewObject(cx, &global_class, NULL, NULL);
+	if (global == NULL)
+		return JS_FALSE;
+	
+	JS_SetGlobalObject(cx, global);
+	JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0);
+	JS_DefineFunction(cx, global, "load", global_load, 0, 0);
+}
+
 

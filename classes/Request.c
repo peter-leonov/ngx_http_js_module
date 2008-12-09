@@ -8,65 +8,7 @@
 
 #include <js/jsapi.h>
 
-
-enum request_propid { REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR };
-
-static JSBool
-request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
-{
-	ngx_http_request_t *r;
-	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
-	if (!r)
-	{
-		JS_ReportError(cx, "Trying to use a Request instance with a NULL native request pointer");
-		return JS_FALSE;
-	}
-	
-	// fprintf(stderr, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
-	if (JSVAL_IS_INT(id))
-	{
-		switch (JSVAL_TO_INT(id))
-		{
-			case REQUEST_URI:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->uri.data, r->uri.len));
-			break;
-			
-			case REQUEST_METHOD:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->method_name.data, r->method_name.len));
-			break;
-			
-			case REQUEST_REMOTE_ADDR:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->connection->addr_text.data, r->connection->addr_text.len));
-			break;
-			
-		}
-	}
-	return JS_TRUE;
-}
-
-static JSClass ngx_http_js_nginx_request_class =
-{
-	"Request",
-	JSCLASS_HAS_PRIVATE,
-	JS_PropertyStub, JS_PropertyStub, request_getProperty, JS_PropertyStub,
-	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-	JSCLASS_NO_OPTIONAL_MEMBERS
-};
-
-JSPropertySpec ngx_http_js_nginx_request_props[] =
-{
-	{"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
-	// {"discardRequestBody",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
-	{"method",   REQUEST_METHOD,       JSPROP_READONLY,   NULL, NULL},
-	// {"headerOnly",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
-	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY,  NULL, NULL},
-	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"requestBodyFile",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"allowRanges",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"headerOnly",      MY_RDONLY,      JSPROP_READONLY,   NULL, NULL},
-	{0, 0, 0, NULL, NULL}
-};
+#include "../strings_util.h"
 
 
 static JSBool
@@ -238,18 +180,98 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 }
 
 
-static JSFunctionSpec js_nginx_request_class_funcs[] = {
+enum request_propid { REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR };
+
+static JSBool
+request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+{
+	ngx_http_request_t *r;
+	r = (ngx_http_request_t *) JS_GetPrivate(cx, this);
+	if (!r)
+	{
+		JS_ReportError(cx, "Trying to use a Request instance with a NULL native request pointer");
+		return JS_FALSE;
+	}
+	
+	// fprintf(stderr, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
+	if (JSVAL_IS_INT(id))
+	{
+		switch (JSVAL_TO_INT(id))
+		{
+			case REQUEST_URI:
+			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->uri.data, r->uri.len));
+			break;
+			
+			case REQUEST_METHOD:
+			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->method_name.data, r->method_name.len));
+			break;
+			
+			case REQUEST_REMOTE_ADDR:
+			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->connection->addr_text.data, r->connection->addr_text.len));
+			break;
+			
+		}
+	}
+	return JS_TRUE;
+}
+
+JSPropertySpec ngx_http_js__nginx_request_props[] =
+{
+	{"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
+	// {"discardRequestBody",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
+	{"method",   REQUEST_METHOD,       JSPROP_READONLY,   NULL, NULL},
+	// {"headerOnly",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
+	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY,  NULL, NULL},
+	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
+	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
+	// {"requestBodyFile",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
+	// {"allowRanges",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
+	// {"headerOnly",      MY_RDONLY,      JSPROP_READONLY,   NULL, NULL},
+	{0, 0, 0, NULL, NULL}
+};
+
+
+JSFunctionSpec ngx_http_js__nginx_request_funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,     1, 0, 0},
     {"printString",       method_printString,         1, 0, 0},
     {"request",           method_request,              1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
-	// static JSObject *ngx_http_js__request_prototype = NULL;
-	// // Nginx.Request
-	// ngx_http_js__request_prototype = JS_InitClass(cx, nginxobj, NULL, &js_nginx_request_class,  NULL, 0,  js_nginx_request_class_props, js_nginx_request_class_funcs,  NULL, NULL);
-	// if (!ngx_http_js__request_prototype)
-	// {
-	// 	ngx_log_error(NGX_LOG_ERR, cf->log, 0, "Can`t JS_InitClass(Nginx.Request)");
-	// 	return NGX_ERROR;
-	// }
 
+JSClass ngx_http_js__nginx_request_class =
+{
+	"Request",
+	JSCLASS_HAS_PRIVATE,
+	JS_PropertyStub, JS_PropertyStub, request_getProperty, JS_PropertyStub,
+	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+	JSCLASS_NO_OPTIONAL_MEMBERS
+};
+
+JSObject *ngx_http_js__nginx_request_prototype;
+
+static JSBool
+ngx_http_js__nginx_request__init(JSContext *cx)
+{
+	JSObject    *nginxobj;
+	JSObject    *global;
+	jsval        vp;
+	
+	global = JS_GetGlobalObject(cx);
+	
+	if (!JS_GetProperty(cx, global, "Nginx", &vp))
+	{
+		JS_ReportError(cx, "global.Nginx is undefined or is not a function");
+		return JS_FALSE;
+	}
+	nginxobj = JSVAL_TO_OBJECT(vp);
+	
+	ngx_http_js__nginx_request_prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  NULL, 0,  ngx_http_js__nginx_request_props, ngx_http_js__nginx_request_funcs,  NULL, NULL);
+	if (!ngx_http_js__nginx_request_prototype)
+	{
+		// ngx_log_error(NGX_LOG_ERR, cf->log, 0, "Can`t JS_InitClass(Nginx.Request)");
+		JS_ReportError(cx, "Can`t JS_InitClass(Nginx.Request)");
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
