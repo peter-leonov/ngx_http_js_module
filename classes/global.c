@@ -33,7 +33,7 @@ global_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 			return JS_FALSE;
 		name = argv[i] = STRING_TO_JSVAL(str);
 		filename = JS_GetStringBytes(str);
-		LOG("global.load %s\n", filename);
+		LOG2("global.load %s\n", filename);
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);

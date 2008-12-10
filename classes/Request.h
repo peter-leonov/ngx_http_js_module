@@ -11,5 +11,8 @@ extern JSFunctionSpec ngx_http_js__nginx_request_class_funcs;
 extern JSBool
 ngx_http_js__nginx_request__init(JSContext *cx);
 
+extern JSObject *
+ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r);
+
 
 #endif
