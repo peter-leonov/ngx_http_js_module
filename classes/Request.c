@@ -7,16 +7,67 @@
 #include <nginx.h>
 
 #include <js/jsapi.h>
-
+#include <assert.h>
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
 #include "../macroses.h"
+
+//#define unless(a) if(!(a))
+#define JS_REQUEST_ROOT_NAME "Nginx.Request instance"
 
 
 JSObject *ngx_http_js__nginx_request_prototype;
 JSClass ngx_http_js__nginx_request_class;
 
 
+JSObject *
+ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
+{
+	LOG("ngx_http_js__wrap_nginx_request(%p, %p)", cx, r);
+	
+	JSObject                  *request;
+	ngx_http_js_ctx_t         *ctx;
+	
+	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	{
+		if (!ctx->js_cx)
+			ctx->js_cx = cx;
+		if (ctx->js_request)
+			return ctx->js_request;
+	}
+	else
+	{
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return NULL;
+		}
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	
+	request = JS_NewObject(cx, &ngx_http_js__nginx_request_class, ngx_http_js__nginx_request_prototype, NULL);
+	if (!request)
+	{
+		JS_ReportOutOfMemory(cx);
+		return NULL;
+	}
+	
+	if (!JS_AddNamedRoot(cx, &request, JS_REQUEST_ROOT_NAME))
+	{
+		JS_ReportError(cx, "Can`t add new root %s", JS_REQUEST_ROOT_NAME);
+		return NULL;
+	}
+	
+	JS_SetPrivate(cx, request, r);
+	
+	ctx->js_request = request;
+	ctx->js_cx = cx;
+	
+	return request;
+}
 
 static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
@@ -24,7 +75,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 	ngx_http_request_t *r;
 	GET_PRIVATE();
 	
-	LOG("Nginx.Request#sendHttpHeader");
+	LOG2("Nginx.Request#sendHttpHeader");
 	
 	if (r->headers_out.status == 0)
 		r->headers_out.status = NGX_HTTP_OK;
@@ -50,7 +101,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 static JSBool
 method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	LOG("Nginx.Request#printString");
+	LOG2("Nginx.Request#printString");
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
@@ -76,29 +127,27 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 }
 
 static ngx_int_t
-method_request_handler(ngx_http_request_t *r, void *data, ngx_int_t rc)
+method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
-	
-	LOG("method_request_handler(%p, %p, %d)", r, data, (int)rc);
+	LOG2("method_request_handler(%p, %p, %d)", r, data, (int)rc);
 	
 	ngx_http_js_context_private_t    *private;
-	ngx_http_js_ctx_t                *ctx;
-	JSObject                         *request, *func;
+	ngx_http_js_ctx_t                *mctx; // *ctx, 
+	JSObject                         *request, *subrequest, *func;
 	JSContext                        *cx;
-	jsval                             rval;//, req;
+	jsval                             rval, req;
 	
 	func = data;
+	LOG("sr = %p", sr);
+	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
 	
-	ctx = ngx_http_get_module_ctx(r->main, ngx_http_js_module);
+	assert(mctx);
 	
-	if (!ctx)
-		return NGX_ERROR;
+	request = mctx->js_request;
+	cx = mctx->js_cx;
+	subrequest = ngx_http_js__wrap_nginx_request(cx, sr);
 	
-	request = ctx->js_request;
-	cx = ctx->js_cx;
-	
-	if (!func || !request || !cx)
-		return NGX_ERROR;
+	assert(func && request && subrequest && cx);
 	
 	// LOG("data = %p", data);
 	// LOG("cx = %p", cx);
@@ -109,14 +158,14 @@ method_request_handler(ngx_http_request_t *r, void *data, ngx_int_t rc)
 	private = JS_GetContextPrivate(cx);
 	if (!JS_ObjectIsFunction(cx, func))
 	{
-		ngx_log_error(NGX_LOG_ERR, private->log, 0, "callback is not a function");
+		ngx_log_error(NGX_LOG_ERR, private->log, 0, "subrequest callback is not a function");
 		return NGX_ERROR;
 	}
 	
-	// req = OBJECT_TO_JSVAL(request);
-	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 0, NULL, &rval);
+	req = OBJECT_TO_JSVAL(subrequest);
+	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 1, &req, &rval);
 	
-	if (rc == NGX_ERROR || r->connection->error || r->request_output)
+	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
 		return rc;
 	
 	
@@ -128,7 +177,7 @@ static JSBool
 method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_int_t                    rc;
-	ngx_http_js_ctx_t           *ctx;
+	// ngx_http_js_ctx_t           *ctx;
 	ngx_http_request_t          *r, *sr;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
@@ -168,14 +217,24 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	
 	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	
+	sr = NULL;
+	LOG("before");
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
+	LOG("after");
+	if (sr == NULL || rc == NGX_ERROR)
+	{
+		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
+		return JS_FALSE;
+	}
 	sr->filter_need_in_memory = 1;
+	LOG("sr = %p", sr);
 	
-	E(request = JS_NewObject(cx, &ngx_http_js__nginx_request_class, ngx_http_js__nginx_request_prototype, NULL), "Can`t JS_NewObject()");
-	
-	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-	// ctx->js_request = request;
-	// ctx->js_cx = cx;
+	request = ngx_http_js__wrap_nginx_request(cx, sr);
+	if (request == NULL)
+	{
+		ngx_http_finalize_request(sr, NGX_ERROR);
+		return NGX_ERROR;
+	}
 	
 	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
@@ -191,7 +250,7 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 	
 	GET_PRIVATE();
 	
-	// LOG("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
+	// LOG2("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
 	{
 		switch (JSVAL_TO_INT(id))
