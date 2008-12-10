@@ -8,6 +8,7 @@
 
 #include <js/jsapi.h>
 
+#include "../ngx_http_js_module.h"
 #include "../strings_util.h"
 
 #define LOG(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
@@ -21,6 +22,9 @@ if ( (r = JS_GetPrivate(cx, this)) == NULL ) \
 #define E(expr, mess, args...) \
 if (!(expr)) { JS_ReportError(cx, mess, ##args); LOG(#expr); return JS_FALSE; }
 
+
+JSObject *ngx_http_js__nginx_request_prototype;
+JSClass ngx_http_js__nginx_request_class;
 
 
 
@@ -56,6 +60,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 static JSBool
 method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
+	LOG("Nginx.Request#printString");
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
@@ -83,10 +88,47 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 static ngx_int_t
 method_request_handler(ngx_http_request_t *r, void *data, ngx_int_t rc)
 {
+	
 	LOG("method_request_handler(%p, %p, %d)", r, data, (int)rc);
+	
+	ngx_http_js_context_private_t    *private;
+	ngx_http_js_ctx_t                *ctx;
+	JSObject                         *request, *func;
+	JSContext                        *cx;
+	jsval                             rval;//, req;
+	
+	func = data;
+	
+	ctx = ngx_http_get_module_ctx(r->main, ngx_http_js_module);
+	
+	if (!ctx)
+		return NGX_ERROR;
+	
+	request = ctx->js_request;
+	cx = ctx->js_cx;
+	
+	if (!func || !request || !cx)
+		return NGX_ERROR;
+	
+	// LOG("data = %p", data);
+	// LOG("cx = %p", cx);
+	// LOG("request = %p", request);
+	
+	
+	
+	private = JS_GetContextPrivate(cx);
+	if (!JS_ObjectIsFunction(cx, func))
+	{
+		ngx_log_error(NGX_LOG_ERR, private->log, 0, "callback is not a function");
+		return NGX_ERROR;
+	}
+	
+	// req = OBJECT_TO_JSVAL(request);
+	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 0, NULL, &rval);
 	
 	if (rc == NGX_ERROR || r->connection->error || r->request_output)
 		return rc;
+	
 	
 	return NGX_OK;
 }
@@ -96,18 +138,20 @@ static JSBool
 method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_int_t                    rc;
+	ngx_http_js_ctx_t           *ctx;
 	ngx_http_request_t          *r, *sr;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
 	size_t                       len;
 	JSString                    *str;
+	JSObject                    *request;
 	
 	
 	GET_PRIVATE();
 	
 	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
-		"Request#request takes 2 arguments of types uri:String and callback:Function");
+		"Request#request takes 2 arguments: uri:String and callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
@@ -120,9 +164,11 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
 	psr->handler = method_request_handler;
 	// a js-callback
-	psr->data = JSVAL_TO_OBJECT(argv[0]);
+	psr->data = JSVAL_TO_OBJECT(argv[1]);
 	
-	
+	// LOG("psr->data = %p", psr->data);
+	// LOG("cx = %p", cx);
+	// LOG("request = %p", this);
 	
 	flags = 0;
 	args.len = 0;
@@ -133,8 +179,15 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
-	*rval = INT_TO_JSVAL(rc);
+	sr->filter_need_in_memory = 1;
 	
+	E(request = JS_NewObject(cx, &ngx_http_js__nginx_request_class, ngx_http_js__nginx_request_prototype, NULL), "Can`t JS_NewObject()");
+	
+	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+	// ctx->js_request = request;
+	// ctx->js_cx = cx;
+	
+	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
 }
 
@@ -202,8 +255,6 @@ JSClass ngx_http_js__nginx_request_class =
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
-JSObject *ngx_http_js__nginx_request_prototype;
-
 JSBool
 ngx_http_js__nginx_request__init(JSContext *cx)
 {
@@ -216,7 +267,7 @@ ngx_http_js__nginx_request__init(JSContext *cx)
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
-	ngx_http_js__nginx_request_prototype =JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  NULL, 0,
+	ngx_http_js__nginx_request_prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  NULL, 0,
 		ngx_http_js__nginx_request_props, ngx_http_js__nginx_request_funcs,  NULL, NULL);
 	E(ngx_http_js__nginx_request_prototype, "Can`t JS_InitClass(Nginx.Request)");
 	
