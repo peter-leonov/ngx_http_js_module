@@ -8,6 +8,7 @@
 #include "ngx_http_js_module.h"
 #include "nginx_js_glue.h"
 
+#include "macroses.h"
 
 static ngx_str_t  ngx_null_name = ngx_null_string;
 
@@ -46,7 +47,7 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	ngx_http_core_loc_conf_t   *clcf;
 	
 	value = cf->args->elts;
-	// fprintf(stderr, "js %s\n", value[1].data);
+	// LOG("js %s\n", value[1].data);
 	if (jslcf->handler.data)
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);

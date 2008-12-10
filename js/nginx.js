@@ -36,7 +36,6 @@ self.require = function (fname)
 		for (var i = 0; i < lib.length; i++)
 		{
 			var path = lib[i] + '/' + fname
-			log(path)
 			if (new File(path).exists)
 			{
 				load(lib.required[fname] = path)

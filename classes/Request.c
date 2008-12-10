@@ -10,17 +10,7 @@
 
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
-
-#define LOG(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
-// #define LOG(mess)
-
-#define GET_PRIVATE() \
-if ( (r = JS_GetPrivate(cx, this)) == NULL ) \
-{ JS_ReportError(cx, "trying to use wrapper object with NULL private pointer"); return JS_FALSE; }
-
-// Enshure wrapper
-#define E(expr, mess, args...) \
-if (!(expr)) { JS_ReportError(cx, mess, ##args); LOG(#expr); return JS_FALSE; }
+#include "../macroses.h"
 
 
 JSObject *ngx_http_js__nginx_request_prototype;
@@ -201,7 +191,7 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 	
 	GET_PRIVATE();
 	
-	// fprintf(stderr, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
+	// LOG("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
 	{
 		switch (JSVAL_TO_INT(id))

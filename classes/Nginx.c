@@ -9,6 +9,7 @@
 #include <js/jsapi.h>
 
 #include "../ngx_http_js_module.h"
+#include "../macroses.h"
 
 static JSBool
 method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
@@ -38,7 +39,7 @@ method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 static JSBool
 js_nginx_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
-	// fprintf(stderr, "Nginx property id = %d\n", JSVAL_TO_INT(id));
+	// LOG("Nginx property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
 	{
 		switch (JSVAL_TO_INT(id))
