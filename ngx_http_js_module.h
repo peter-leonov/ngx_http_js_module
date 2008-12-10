@@ -10,6 +10,8 @@ typedef struct {
     ngx_str_t                 redirect_args;
 
     JSObject                 *next;
+    JSObject                 *js_request;
+    JSContext                *js_cx;
 
     ngx_uint_t                done;       /* unsigned  done:1; */
 

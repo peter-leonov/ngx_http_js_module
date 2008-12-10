@@ -10,6 +10,7 @@
 #include "classes/Nginx.h"
 #include "classes/Request.h"
 
+#define LOG(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
 
 void
 reportError(JSContext *cx, const char *message, JSErrorReport *report)
@@ -39,7 +40,7 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 	JSString       *fnstring;
 	// JSObject       *require;
 	
-	fprintf(stderr, "ngx_http_js_load(%s)\n", filename);
+	LOG("ngx_http_js_load(%s)\n", filename);
 	
 	if (!JS_GetProperty(cx, global, "load", &fval))
 	{
@@ -70,6 +71,8 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 static ngx_int_t
 ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
 {
+	LOG("ngx_http_js_run_requires(...)");
+	
 	// ngx_str_t     **script;
 	char          **script;
 	ngx_uint_t      i;
@@ -114,6 +117,8 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 char *
 ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
 {
+	LOG("ngx_http_js__glue__init_interpreter(...)");
+	
 	static JSRuntime *rt;
 	static JSContext *static_cx = NULL;
 	JSObject  *global;
@@ -192,6 +197,8 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
 {
+	LOG("ngx_http_js__glue__set_callback(...)");
+	
 	ngx_str_t                  *value;
 	ngx_http_js_main_conf_t    *jsmcf;
 	JSContext                  *cx;
@@ -235,17 +242,24 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 
 //#define unless(a) if(!(a))
 
+#define JS_REQUEST_ROOT_NAME "Nginx.Request instance"
+
 ngx_int_t
 ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r, JSObject *sub, ngx_str_t *handler)
 {
-	int                status;
-	ngx_connection_t  *c;
-	JSObject          *request;
-	jsval              req;
-	// fprintf(stderr, "%s", (char *) r->uri.data);
+	LOG("ngx_http_js__glue__call_handler(...)");
+	
+	int                        status;
+	ngx_connection_t          *c;
+	JSObject                  *request;
+	jsval                      req;
+	jsval                      rval;
+	ngx_http_js_ctx_t          *ctx;
+	
 	status = NGX_HTTP_OK;
-	jsval              rval;
-	static char        *JS_REQUEST_ROOT_NAME = "Nginx.Request instance";
+	
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	
 	
 	// ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "ngx_http_js_call_handler(%p)", r);
 	
@@ -262,10 +276,13 @@ ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_reques
 		return NGX_ERROR;
 	}
 	JS_SetPrivate(cx, request, r);
-	req = OBJECT_TO_JSVAL(request);
+	
+	ctx->js_request = request;
+	ctx->js_cx = cx;
 	
 	c = r->connection;
 	
+	req = OBJECT_TO_JSVAL(request);
 	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(sub), 1, &req, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
