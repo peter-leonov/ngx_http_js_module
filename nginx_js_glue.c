@@ -10,7 +10,7 @@
 #include "classes/Nginx.h"
 #include "classes/Request.h"
 
-#define LOG(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
+#include "macroses.h"
 
 void
 reportError(JSContext *cx, const char *message, JSErrorReport *report)
@@ -99,7 +99,7 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 	for (i = 0; i < requires->nelts; i++)
 	{
 		value = script[i];
-		// fprintf(stderr, "load %s\n", value);
+		// LOG("load %s\n", value);
 		
 		strval = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, (char*)value));
 		if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
@@ -306,6 +306,6 @@ ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_reques
 	
 	if (c->destroyed)
 		return NGX_DONE;
-	// fprintf(stderr, "%d", status);
+	// LOG("%d", status);
 	return (ngx_int_t) status;
 }

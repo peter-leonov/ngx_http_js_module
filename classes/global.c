@@ -7,6 +7,8 @@
 
 #include "environment.c"
 
+#include "../macroses.h"
+
 
 static JSBool
 global_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
@@ -31,12 +33,12 @@ global_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 			return JS_FALSE;
 		name = argv[i] = STRING_TO_JSVAL(str);
 		filename = JS_GetStringBytes(str);
-		fprintf(stderr, "global.load %s\n", filename);
+		LOG("global.load %s\n", filename);
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
 		script = JS_CompileFile(cx, this, filename);
-		// fprintf(stderr, "Error: %i.\n", strerror(errno));
+		// LOG("Error: %i.\n", strerror(errno));
 		// if (errno == ENOENT)
 		if (!script)
 			ok = JS_FALSE;
