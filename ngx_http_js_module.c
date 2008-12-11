@@ -157,7 +157,7 @@ ngx_http_js_handler(ngx_http_request_t *r)
         ctx->done = 1;
     }
 
-    //ngx_http_finalize_request(r, rc);
+    ngx_http_finalize_request(r, rc);
 	
 	return rc;
 }

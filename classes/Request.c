@@ -13,20 +13,28 @@
 #include "../macroses.h"
 
 //#define unless(a) if(!(a))
-#define JS_REQUEST_ROOT_NAME "Nginx.Request instance"
+#define JS_REQUEST_ROOT_NAME          "Nginx.Request instance"
+#define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request callback function"
 
 
+static JSObject *requests_cache_array;
 JSObject *ngx_http_js__nginx_request_prototype;
 JSClass ngx_http_js__nginx_request_class;
+
+static void
+cleanup_hendler(void *data);
 
 
 JSObject *
 ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 {
-	LOG("ngx_http_js__wrap_nginx_request(%p, %p)", cx, r);
+	LOG2("ngx_http_js__wrap_nginx_request(%p, %p)", cx, r);
 	
 	JSObject                  *request;
 	ngx_http_js_ctx_t         *ctx;
+	ngx_http_cleanup_t        *cln;
+	// jsuint                     length;
+	// jsval                      req;
 	
 	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 	{
@@ -55,11 +63,28 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
-	if (!JS_AddNamedRoot(cx, &request, JS_REQUEST_ROOT_NAME))
+	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
 		JS_ReportError(cx, "Can`t add new root %s", JS_REQUEST_ROOT_NAME);
 		return NULL;
 	}
+	
+	// if (!JS_GetArrayLength(cx, requests_cache_array, &length))
+	// {
+	// 	JS_ReportError(cx, "Can`t get __requests_cache lenght");
+	// 	return NULL;
+	// }
+	// 
+	// req = OBJECT_TO_JSVAL(request);
+	// if (!JS_SetElement(cx, requests_cache_array, length, &req))
+	// {
+	// 	JS_ReportError(cx, "Can`t set __requests_cache %u-th element", length);
+	// 	return NULL;
+	// }
+	
+	cln = ngx_http_cleanup_add(r, 0);
+	cln->data = r;
+	cln->handler = cleanup_hendler;
 	
 	JS_SetPrivate(cx, request, r);
 	
@@ -68,6 +93,41 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 	
 	return request;
 }
+
+
+
+static void
+cleanup_hendler(void *data)
+{
+	ngx_http_request_t        *r;
+	ngx_http_js_ctx_t         *ctx;
+	// JSContext                 *cx;
+	// JSObject                  *request;
+	
+	r = data;
+	
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	assert(ctx);
+	assert(ctx->js_cx && ctx->js_request);
+	// LOG("cleanup");
+	
+	JS_SetPrivate(ctx->js_cx, ctx->js_request, NULL);
+	
+	if (!JS_RemoveRoot(ctx->js_cx, &ctx->js_request))
+	{
+		JS_ReportError(ctx->js_cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
+		return;
+	}
+	
+	if (ctx->js_callback)
+		if (!JS_RemoveRoot(ctx->js_cx, &ctx->js_callback))
+		{
+			JS_ReportError(ctx->js_cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+			return;
+		}
+}
+
+
 
 static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
@@ -132,13 +192,15 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	LOG2("method_request_handler(%p, %p, %d)", r, data, (int)rc);
 	
 	ngx_http_js_context_private_t    *private;
-	ngx_http_js_ctx_t                *mctx; // *ctx, 
+	ngx_http_js_ctx_t                *mctx, *ctx;
 	JSObject                         *request, *subrequest, *func;
 	JSContext                        *cx;
 	jsval                             rval, req;
 	
-	func = data;
-	LOG("sr = %p", sr);
+	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
+		return rc;
+	
+	// LOG("sr in callback = %p", sr);
 	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
 	
 	assert(mctx);
@@ -146,8 +208,12 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	request = mctx->js_request;
 	cx = mctx->js_cx;
 	subrequest = ngx_http_js__wrap_nginx_request(cx, sr);
+	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+	// func = ctx->js_callback;
+	func = data;
 	
-	assert(func && request && subrequest && cx);
+	// LOG("%p, %p, %p, %p, %p", ctx, func, request, subrequest, cx);
+	assert(ctx && func && request && subrequest && cx);
 	
 	// LOG("data = %p", data);
 	// LOG("cx = %p", cx);
@@ -165,10 +231,6 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	req = OBJECT_TO_JSVAL(subrequest);
 	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 1, &req, &rval);
 	
-	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
-		return rc;
-	
-	
 	return NGX_OK;
 }
 
@@ -176,21 +238,25 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 static JSBool
 method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
+	LOG2("method_request(...)");
+	
 	ngx_int_t                    rc;
-	// ngx_http_js_ctx_t           *ctx;
+	ngx_http_js_ctx_t           *ctx;
 	ngx_http_request_t          *r, *sr;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
 	size_t                       len;
 	JSString                    *str;
-	JSObject                    *request;
+	JSObject                    *request, *callback;
 	
 	
 	GET_PRIVATE();
 	
 	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
 		"Request#request takes 2 arguments: uri:String and callback:Function");
+	
+	callback = JSVAL_TO_OBJECT(argv[1]);
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
@@ -202,12 +268,7 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	
 	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
 	psr->handler = method_request_handler;
-	// a js-callback
-	psr->data = JSVAL_TO_OBJECT(argv[1]);
-	
-	// LOG("psr->data = %p", psr->data);
-	// LOG("cx = %p", cx);
-	// LOG("request = %p", this);
+	psr->data = callback;
 	
 	flags = 0;
 	args.len = 0;
@@ -218,16 +279,17 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	
 	sr = NULL;
-	LOG("before");
+	// LOG("before");
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
-	LOG("after");
+	// LOG("after");
 	if (sr == NULL || rc == NGX_ERROR)
 	{
 		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
 		return JS_FALSE;
 	}
 	sr->filter_need_in_memory = 1;
-	LOG("sr = %p", sr);
+	
+	// LOG("sr in request() = %p", sr);
 	
 	request = ngx_http_js__wrap_nginx_request(cx, sr);
 	if (request == NULL)
@@ -235,6 +297,12 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 		ngx_http_finalize_request(sr, NGX_ERROR);
 		return NGX_ERROR;
 	}
+	
+	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+	assert(ctx);
+	// this helps to prevent wrong JS garbage collection
+	ctx->js_callback = callback;
+	E(JS_AddNamedRoot(cx, &ctx->js_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
 	
 	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
@@ -312,6 +380,9 @@ ngx_http_js__nginx_request__init(JSContext *cx)
 	jsval        vp;
 	
 	global = JS_GetGlobalObject(cx);
+	
+	E(requests_cache_array = JS_NewArrayObject(cx, 0, NULL), "Can`t create array for global.__requests_cache");
+	
 	
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
