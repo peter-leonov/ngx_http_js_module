@@ -11,6 +11,7 @@ typedef struct {
 
     JSObject                 *next;
     JSObject                 *js_request;
+    JSObject                 *js_callback;
     JSContext                *js_cx;
 
     ngx_uint_t                done;       /* unsigned  done:1; */
