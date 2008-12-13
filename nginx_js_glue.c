@@ -222,7 +222,7 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	
 	if (!JSVAL_IS_OBJECT(sub) || !JS_ValueToFunction(cx, sub))
 	{
-		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "processRequest is not a function");
+		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
 		return NGX_CONF_ERROR;
 	}
 	
