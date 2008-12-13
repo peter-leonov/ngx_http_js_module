@@ -8,9 +8,12 @@
 // #define LOG(mess, args...)
 #define LOG2(mess, args...)
 
-#define GET_PRIVATE() \
+#define GET_PRIVATE(args...) \
 if ( (r = JS_GetPrivate(cx, this)) == NULL ) \
-{ JS_ReportError(cx, "trying to use wrapper object with NULL private pointer"); return JS_FALSE; }
+{ \
+	JS_ReportError(cx, "wrapper object has NULL private pointer in %s\n%s: %u", __FUNCTION__, __FILE__, __LINE__); \
+	return JS_FALSE; \
+}
 
 // Enshure wrapper
 #define E(expr, mess, args...) \

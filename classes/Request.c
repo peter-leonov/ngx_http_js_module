@@ -17,12 +17,12 @@
 #define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request callback function"
 
 
-static JSObject *requests_cache_array;
+// static JSObject *requests_cache_array;
 JSObject *ngx_http_js__nginx_request_prototype;
 JSClass ngx_http_js__nginx_request_class;
 
 static void
-cleanup_hendler(void *data);
+cleanup_handler(void *data);
 
 
 JSObject *
@@ -84,7 +84,7 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 	
 	cln = ngx_http_cleanup_add(r, 0);
 	cln->data = r;
-	cln->handler = cleanup_hendler;
+	cln->handler = cleanup_handler;
 	
 	JS_SetPrivate(cx, request, r);
 	
@@ -97,36 +97,47 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 
 
 static void
-cleanup_hendler(void *data)
+cleanup_handler(void *data)
 {
 	ngx_http_request_t        *r;
 	ngx_http_js_ctx_t         *ctx;
-	// JSContext                 *cx;
-	// JSObject                  *request;
+	JSContext                 *cx;
+	JSObject                  *request;
+	jsval                      rval;
 	
 	r = data;
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	assert(ctx);
-	assert(ctx->js_cx && ctx->js_request);
+	cx = ctx->js_cx;
+	request = ctx->js_request;
+	assert(cx && request);
+	
 	// LOG("cleanup");
+	// JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval);
+	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
+		JS_ReportError(cx, "Can`t call Nginx.Request#cleanup");
 	
-	JS_SetPrivate(ctx->js_cx, ctx->js_request, NULL);
-	
-	if (!JS_RemoveRoot(ctx->js_cx, &ctx->js_request))
-	{
-		JS_ReportError(ctx->js_cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
-		return;
-	}
+	// second param has to be &ctx->js_request
+	// because JS_AddRoot was used with it's address
+	if (!JS_RemoveRoot(cx, &ctx->js_request))
+		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 	
 	if (ctx->js_callback)
-		if (!JS_RemoveRoot(ctx->js_cx, &ctx->js_callback))
-		{
-			JS_ReportError(ctx->js_cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
-			return;
-		}
+		if (!JS_RemoveRoot(cx, &ctx->js_callback))
+			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+	
+	// finaly mark the object as inactive
+	// after that the GET_PRIVATE macros will throw an exception when is called 
+	JS_SetPrivate(cx, request, NULL);
 }
 
+
+static JSBool
+method_cleanup(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	return JS_TRUE;
+}
 
 
 static JSBool
@@ -191,45 +202,55 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
 	LOG2("method_request_handler(%p, %p, %d)", r, data, (int)rc);
 	
-	ngx_http_js_context_private_t    *private;
-	ngx_http_js_ctx_t                *mctx, *ctx;
+	// ngx_http_js_context_private_t    *private;
+	ngx_http_js_ctx_t                *ctx, *mctx;
 	JSObject                         *request, *subrequest, *func;
+	// JSString                         *body;
 	JSContext                        *cx;
-	jsval                             rval, req;
+	jsval                             rval, args[2];
 	
 	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
 		return rc;
 	
 	// LOG("sr in callback = %p", sr);
-	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
-	
-	assert(mctx);
-	
-	request = mctx->js_request;
-	cx = mctx->js_cx;
-	subrequest = ngx_http_js__wrap_nginx_request(cx, sr);
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-	// func = ctx->js_callback;
-	func = data;
+	if (!ctx)
+		return NGX_ERROR;
 	
-	// LOG("%p, %p, %p, %p, %p", ctx, func, request, subrequest, cx);
-	assert(ctx && func && request && subrequest && cx);
+	cx = ctx->js_cx;
+	assert(cx);
+	subrequest = ngx_http_js__wrap_nginx_request(cx, sr);
+	func = data;
+	assert(func && subrequest);
+	
+	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
+	assert(mctx);
+	request = mctx->js_request;
+	assert(request);
 	
 	// LOG("data = %p", data);
 	// LOG("cx = %p", cx);
 	// LOG("request = %p", request);
 	
+	// LOG("sr->upstream = %p", sr->upstream);
+	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
+	
+	if (sr->upstream)
+		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
+	else
+		args[1] = JSVAL_VOID;
 	
 	
-	private = JS_GetContextPrivate(cx);
+	// private = JS_GetContextPrivate(cx);
 	if (!JS_ObjectIsFunction(cx, func))
 	{
-		ngx_log_error(NGX_LOG_ERR, private->log, 0, "subrequest callback is not a function");
+		// ngx_log_error(NGX_LOG_ERR, private->log, 0, "subrequest callback is not a function");
+		JS_ReportError(cx, "subrequest callback is not a function");
 		return NGX_ERROR;
 	}
 	
-	req = OBJECT_TO_JSVAL(subrequest);
-	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 1, &req, &rval);
+	args[0] = OBJECT_TO_JSVAL(subrequest);
+	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 2, args, &rval);
 	
 	return NGX_OK;
 }
@@ -287,7 +308,7 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
 		return JS_FALSE;
 	}
-	sr->filter_need_in_memory = 1;
+	// sr->filter_need_in_memory = 1;
 	
 	// LOG("sr in request() = %p", sr);
 	
@@ -309,6 +330,13 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 }
 
 
+static JSBool
+request_constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	return JS_TRUE;
+}
+
+
 enum request_propid { REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR };
 
 static JSBool
@@ -316,9 +344,11 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
 	ngx_http_request_t *r;
 	
+	// LOG("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
+	// JS_ReportError(cx, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
+	
 	GET_PRIVATE();
 	
-	// LOG2("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
 	{
 		switch (JSVAL_TO_INT(id))
@@ -357,9 +387,10 @@ JSPropertySpec ngx_http_js__nginx_request_props[] =
 
 
 JSFunctionSpec ngx_http_js__nginx_request_funcs[] = {
-    {"sendHttpHeader",    method_sendHttpHeader,     1, 0, 0},
-    {"printString",       method_printString,         1, 0, 0},
-    {"request",           method_request,              1, 0, 0},
+    {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
+    {"printString",       method_printString,          1, 0, 0},
+    {"request",           method_request,              2, 0, 0},
+    {"cleanup",           method_cleanup,              0, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 
@@ -381,13 +412,13 @@ ngx_http_js__nginx_request__init(JSContext *cx)
 	
 	global = JS_GetGlobalObject(cx);
 	
-	E(requests_cache_array = JS_NewArrayObject(cx, 0, NULL), "Can`t create array for global.__requests_cache");
+	// E(requests_cache_array = JS_NewArrayObject(cx, 0, NULL), "Can`t create array for global.__requests_cache");
 	
 	
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
-	ngx_http_js__nginx_request_prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  NULL, 0,
+	ngx_http_js__nginx_request_prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  request_constructor, 0,
 		ngx_http_js__nginx_request_props, ngx_http_js__nginx_request_funcs,  NULL, NULL);
 	E(ngx_http_js__nginx_request_prototype, "Can`t JS_InitClass(Nginx.Request)");
 	
