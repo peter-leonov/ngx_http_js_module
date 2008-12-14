@@ -4,6 +4,7 @@
 #include <nginx.h>
 
 #include <js/jsapi.h>
+#include <assert.h>
 
 #include "ngx_http_js_module.h"
 #include "classes/global.h"
@@ -240,22 +241,47 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 
 
 ngx_int_t
-ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_request_t *r, JSObject *sub, ngx_str_t *handler)
+ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
 	LOG2("ngx_http_js__glue__call_handler(...)");
 	
-	int                        status;
-	ngx_connection_t          *c;
-	JSObject                  *request;
-	jsval                      req;
-	jsval                      rval;
-	// ngx_http_js_ctx_t         *ctx;
+	ngx_int_t                    rc;
+	ngx_connection_t            *c;
+	JSObject                    *global, *request, *sub;
+	jsval                        req;
+	jsval                        rval;
+	// ngx_http_js_ctx_t           *ctx;
+	ngx_http_js_loc_conf_t      *jslcf;
+	ngx_http_js_main_conf_t     *jsmcf;
+	ngx_http_js_ctx_t           *ctx;
+	JSContext                   *cx;
 	
-	status = NGX_HTTP_OK;
+	assert(r);
+	
+	if (r->zero_in_uri)
+		return NGX_HTTP_NOT_FOUND;
+	
+	
+	jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
+	assert(jsmcf);
+	
+	cx = jsmcf->js_cx;
+	global = jsmcf->js_global;
+	assert(cx && global);
+	
+	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
+	sub = jslcf->sub;
+	assert(sub);
+	
+	rc = NGX_HTTP_OK;
 	
 	request = ngx_http_js__wrap_nginx_request(cx, r);
 	if (request == NULL)
 		return NGX_ERROR;
+	
+	// ctx was allocated in ngx_http_js__wrap_nginx_request
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	assert(ctx);
 	
 	c = r->connection;
 	
@@ -264,26 +290,36 @@ ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_reques
 	{
 		if (!JSVAL_IS_INT(rval))
 		{
-			status = NGX_ERROR;
+			rc = NGX_ERROR;
 			JS_ReportError(cx, "Request processor must return an Integer");
 		}
 		else
-			status = JSVAL_TO_INT(rval);
+			rc = (ngx_int_t)JSVAL_TO_INT(rval);
 	}
 	else
-		status = NGX_ERROR;
+		rc = NGX_ERROR;
 	
 	// if (r->headers_out.status == 0)
 	// 	r->headers_out.status = NGX_HTTP_OK;
 	// ngx_http_send_header(r);
 	
-	// it is done in cleanup now
-	// JS_SetPrivate(cx, request, NULL);
-	
 	JS_MaybeGC(cx);
 	
 	if (c->destroyed)
+		rc = NGX_DONE;
+	// LOG("%d", rc);
+	
+	if (rc == NGX_DONE)
 		return NGX_DONE;
-	// LOG("%d", status);
-	return (ngx_int_t) status;
+	
+	if (rc > 600)
+		rc = NGX_OK;
+	
+	if (rc == NGX_OK || rc == NGX_HTTP_OK)
+	{
+		ngx_http_send_special(r, NGX_HTTP_LAST);
+		// ctx->done = 1;
+	}
+	
+	return rc;
 }

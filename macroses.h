@@ -4,8 +4,9 @@
 
 
 #define LOG(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
-// #define LOG2(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
 // #define LOG(mess, args...)
+
+// #define LOG2(mess, args...) fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__)
 #define LOG2(mess, args...)
 
 #define GET_PRIVATE(args...) \

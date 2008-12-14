@@ -3,14 +3,14 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
-#include <js/jsapi.h>
+// #include <js/jsapi.h>
 
 #include "ngx_http_js_module.h"
 #include "nginx_js_glue.h"
 
 #include "macroses.h"
 
-static ngx_str_t  ngx_null_name = ngx_null_string;
+// static ngx_str_t  ngx_null_name = ngx_null_string;
 
 static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r);
@@ -78,86 +78,91 @@ ngx_http_js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r)
 {
-	if (r->zero_in_uri)
-		return NGX_HTTP_NOT_FOUND;
+	// if (r->zero_in_uri)
+	// 	return NGX_HTTP_NOT_FOUND;
 	
-	JSObject                   *sub;
 	ngx_int_t                   rc;
-	ngx_str_t                   uri, args, *handler;
-	ngx_http_js_ctx_t          *ctx;
-	ngx_http_js_loc_conf_t     *jslcf;
-	ngx_http_js_main_conf_t    *jsmcf;
+	// ngx_str_t                   uri, args;//, *handler;
+	// ngx_http_js_ctx_t          *ctx;
+	// ngx_http_js_loc_conf_t     *jslcf;
+	// ngx_http_js_main_conf_t    *jsmcf;
 	
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	// ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	// 
+	// if (ctx == NULL)
+	// {
+	// 	ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+	// 	if (ctx == NULL)
+	// 	{
+	// 		ngx_http_finalize_request(r, NGX_ERROR);
+	// 		return NGX_DONE;
+	// 	}
+	// 	
+	// 	ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	// }
 	
-	if (ctx == NULL)
-	{
-		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
-		if (ctx == NULL)
-		{
-			ngx_http_finalize_request(r, NGX_ERROR);
-			return NGX_DONE;
-		}
-		
-		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
-	}
-
-    jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
-
-    {
-
-    if (ctx->next == NULL) {
-        jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
-        sub = jslcf->sub;
-        handler = &jslcf->handler;
-
-    } else {
-        sub = ctx->next;
-        handler = &ngx_null_name;
-        ctx->next = NULL;
-    }
+	// ngx_http_get_module_ctx will be made by ngx_http_js__wrap_nginx_request()
 	
-	rc = ngx_http_js__glue__call_handler(jsmcf->js_cx, jsmcf->js_global, r, sub, handler);
-
-    }
-
-    if (rc == NGX_DONE) {
-        return NGX_DONE;
-    }
-
-    if (rc > 600) {
-        rc = NGX_OK;
-    }
-
-    ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
-                   "js handler done: %i", rc);
-
-    if (ctx->redirect_uri.len) {
-        uri = ctx->redirect_uri;
-        args = ctx->redirect_args;
-
-    } else {
-        uri.len = 0;
-    }
-
-    ctx->filename.data = NULL;
-    ctx->redirect_uri.len = 0;
-
-    if (ctx->done || ctx->next) {
-        return NGX_DONE;
-    }
-
-    if (uri.len) {
-        ngx_http_internal_redirect(r, &uri, &args);
-        return NGX_DONE;
-    }
-
-    if (rc == NGX_OK || rc == NGX_HTTP_OK) {
-        ngx_http_send_special(r, NGX_HTTP_LAST);
-        ctx->done = 1;
-    }
-
-    ngx_http_finalize_request(r, rc);
+	// jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
+	
+	// {
+	// 	
+	// 	if (ctx->next == NULL) {
+	// 		jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
+	// 		sub = jslcf->sub;
+	// 		// handler = &jslcf->handler;
+	// 		
+	//     	}
+	// 	else
+	// 	{
+	// 		sub = ctx->next;
+	// 		// handler = &ngx_null_name;
+	// 		ctx->next = NULL;
+	// 	}
+	// 	
+	// 	rc = ngx_http_js__glue__call_handler(jsmcf->js_cx, jsmcf->js_global, r);
+	// }
+	
+	// rc = ngx_http_js__glue__call_handler(jsmcf->js_cx, jsmcf->js_global, r);
+	rc = ngx_http_js__glue__call_handler(r);
+	
+	// if (rc == NGX_DONE)
+	// 	return NGX_DONE;
+	// 
+	// if (rc > 600)
+	// 	rc = NGX_OK;
+	
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i", rc);
+	
+	// if (ctx->redirect_uri.len)
+	// {
+	// 	uri = ctx->redirect_uri;
+	// 	args = ctx->redirect_args;
+	// }
+	// else
+	// 	uri.len = 0;
+	// 
+	// ctx->filename.data = NULL;
+	// ctx->redirect_uri.len = 0;
+	// 
+	// // if (ctx->done || ctx->next)
+	// if (ctx->done)
+	// 	return NGX_DONE;
+	// 
+	// if (uri.len)
+	// {
+	// 	ngx_http_internal_redirect(r, &uri, &args);
+	// 	return NGX_DONE;
+	// }
+	
+	// if (rc == NGX_OK || rc == NGX_HTTP_OK)
+	// {
+	// 	ngx_http_send_special(r, NGX_HTTP_LAST);
+	// 	ctx->done = 1;
+	// }
+	
+	// ngx_http_finalize_request(r, rc);
 	
 	return rc;
 }
