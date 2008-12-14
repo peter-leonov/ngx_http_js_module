@@ -315,9 +315,11 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	if (rc > 600)
 		rc = NGX_OK;
 	
-	if (rc == NGX_OK || rc == NGX_HTTP_OK)
+	// if (rc == NGX_OK || rc == NGX_HTTP_OK)
+	if (rc == NGX_HTTP_OK)
 	{
 		ngx_http_send_special(r, NGX_HTTP_LAST);
+		// LOG("ngx_http_send_special");
 		// ctx->done = 1;
 	}
 	
