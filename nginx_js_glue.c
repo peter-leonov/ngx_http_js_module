@@ -277,7 +277,8 @@ ngx_http_js__glue__call_handler(JSContext *cx, JSObject *global, ngx_http_reques
 	// 	r->headers_out.status = NGX_HTTP_OK;
 	// ngx_http_send_header(r);
 	
-	JS_SetPrivate(cx, request, NULL);
+	// it is done in cleanup now
+	// JS_SetPrivate(cx, request, NULL);
 	
 	JS_MaybeGC(cx);
 	

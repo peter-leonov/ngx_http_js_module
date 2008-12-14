@@ -114,9 +114,8 @@ cleanup_handler(void *data)
 	assert(cx && request);
 	
 	// LOG("cleanup");
-	// JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval);
 	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
-		JS_ReportError(cx, "Can`t call Nginx.Request#cleanup");
+		JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
 	
 	// second param has to be &ctx->js_request
 	// because JS_AddRoot was used with it's address
@@ -202,7 +201,6 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
 	LOG2("method_request_handler(%p, %p, %d)", r, data, (int)rc);
 	
-	// ngx_http_js_context_private_t    *private;
 	ngx_http_js_ctx_t                *ctx, *mctx;
 	JSObject                         *request, *subrequest, *func;
 	// JSString                         *body;
@@ -220,8 +218,9 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	cx = ctx->js_cx;
 	assert(cx);
 	subrequest = ngx_http_js__wrap_nginx_request(cx, sr);
+	assert(subrequest);
 	func = data;
-	assert(func && subrequest);
+	assert(func);
 	
 	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
 	assert(mctx);
@@ -241,10 +240,8 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		args[1] = JSVAL_VOID;
 	
 	
-	// private = JS_GetContextPrivate(cx);
 	if (!JS_ObjectIsFunction(cx, func))
 	{
-		// ngx_log_error(NGX_LOG_ERR, private->log, 0, "subrequest callback is not a function");
 		JS_ReportError(cx, "subrequest callback is not a function");
 		return NGX_ERROR;
 	}
