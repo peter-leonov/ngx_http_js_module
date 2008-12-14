@@ -287,15 +287,15 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	ngx_uint_t                   flags;
 	size_t                       len;
 	JSString                    *str;
-	JSObject                    *request, *callback;
+	JSObject                    *callback;
 	
 	
 	GET_PRIVATE();
 	
-	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
-		"Request#request takes 2 arguments: uri:String and callback:Function");
-	
-	callback = JSVAL_TO_OBJECT(argv[1]);
+	// LOG("argc = %u", argc);
+	E((argc == 1 && JSVAL_IS_STRING(argv[0]))
+		|| (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1])),
+		"Request#request takes 1 argument: uri:String; and 1 optional callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
@@ -305,20 +305,29 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	E(js_str2ngx_str(cx, str, r->pool, uri, len), "Can`t js_str2ngx_str(...)")
 	
 	
-	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
-	psr->handler = method_request_handler;
-	psr->data = callback;
-	
 	flags = 0;
 	args.len = 0;
 	args.data = NULL;
 	
 	E(ngx_http_parse_unsafe_uri(r, uri, &args, &flags) == NGX_OK, "Error in ngx_http_parse_unsafe_uri(%s)", uri->data)
 	
-	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
+	psr = NULL;
+	if (argc == 2)
+	{
+		callback = JSVAL_TO_OBJECT(argv[1]);
+		assert(callback);
+		
+		E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
+		psr->handler = method_request_handler;
+		psr->data = callback;
+		
+		flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
+	}
+	
 	
 	sr = NULL;
 	// LOG("before");
+	// if subrequest is finished quickly, the callback will be called immediately
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
 	// LOG("after");
 	if (sr == NULL || rc == NGX_ERROR)
@@ -328,20 +337,25 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	}
 	// sr->filter_need_in_memory = 1;
 	
-	// LOG("sr in request() = %p", sr);
-	
-	request = ngx_http_js__wrap_nginx_request(cx, sr);
-	if (request == NULL)
+	if (argc == 2)
 	{
-		ngx_http_finalize_request(sr, NGX_ERROR);
-		return NGX_ERROR;
+		assert(sr);
+		ngx_http_js__wrap_nginx_request(cx, sr);
+		ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+		assert(ctx);
+		// this helps to prevent wrong JS garbage collection
+		ctx->js_callback = psr->data;
+		E(JS_AddNamedRoot(cx, &ctx->js_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
 	}
 	
-	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-	assert(ctx);
-	// this helps to prevent wrong JS garbage collection
-	ctx->js_callback = callback;
-	E(JS_AddNamedRoot(cx, &ctx->js_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+	// LOG("sr in request() = %p", sr);
+	
+	// request = ngx_http_js__wrap_nginx_request(cx, sr);
+	// if (request == NULL)
+	// {
+	// 	ngx_http_finalize_request(sr, NGX_ERROR);
+	// 	return NGX_ERROR;
+	// }
 	
 	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
