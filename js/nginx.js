@@ -11,6 +11,11 @@ if (!self.Nginx)
 	N.warn  = function () { this.logError(this.LOG_WARN,  flat(arguments)) }
 	N.error = function () { this.logError(this.LOG_ERR,   flat(arguments)) }
 	self.log = function () { N.log.apply(N, arguments) }
+	
+	N.resultNames = {}
+	var names = ["OK", "ERROR", "DONE", "AGAIN"]
+	for (var i = 0; i < names.length; i++)
+		N.resultNames[N[names[i]]] = names[i]
 })();
 
 

@@ -8,6 +8,7 @@
 
 #include <js/jsapi.h>
 #include <assert.h>
+
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
 #include "../macroses.h"
@@ -176,7 +177,8 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	ngx_buf_t           *b;
 	size_t               len;
 	JSString            *str;
-	ngx_chain_t          out;	
+	ngx_chain_t          out;
+	ngx_int_t            rc;
 	
 	GET_PRIVATE();
 	
@@ -191,15 +193,34 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	
 	out.buf = b;
 	out.next = NULL;
-	ngx_http_output_filter(r, &out);
+	rc = ngx_http_output_filter(r, &out);
 	
+	*rval = INT_TO_JSVAL(rc);
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
+method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	LOG2("Nginx.Request#sendSpecial");
+	ngx_http_request_t  *r;
+	ngx_int_t            rc;
+	
+	GET_PRIVATE();
+	
+	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
+	
+	rc = ngx_http_send_special(r, (ngx_uint_t)JSVAL_TO_INT(argv[0]));
+	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
 }
 
 static ngx_int_t
 method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
-	LOG2("method_request_handler(%p, %p, %d)", r, data, (int)rc);
+	LOG2("method_request_handler(%p, %p, %d)", sr, data, (int)rc);
 	
 	ngx_http_js_ctx_t                *ctx, *mctx;
 	JSObject                         *request, *subrequest, *func;
@@ -388,6 +409,7 @@ JSFunctionSpec ngx_http_js__nginx_request_funcs[] = {
     {"printString",       method_printString,          1, 0, 0},
     {"request",           method_request,              2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},
+    {"sendSpecial",       method_sendSpecial,          1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 

@@ -98,6 +98,11 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			case 47: *vp = INT_TO_JSVAL(NGX_DONE); break;
 			case 48: *vp = INT_TO_JSVAL(NGX_DECLINED); break;
 			case 49: *vp = INT_TO_JSVAL(NGX_ABORT); break;
+			
+			// flags NGX_HTTP_
+			case 50: *vp = INT_TO_JSVAL(NGX_HTTP_LAST); break;
+			case 51: *vp = INT_TO_JSVAL(NGX_HTTP_FLUSH); break;
+			
 		}
 	}
 	return JS_TRUE;
@@ -159,7 +164,11 @@ static JSPropertySpec nginx_class_props[] =
 	{"DONE",                               47, JSPROP_READONLY, NULL, NULL},
 	{"DECLINED",                           48, JSPROP_READONLY, NULL, NULL},
 	{"ABORT",                              49, JSPROP_READONLY, NULL, NULL},
-
+	
+	// flags NGX_HTTP_
+	{"HTTP_LAST",                          50, JSPROP_READONLY, NULL, NULL},
+	{"HTTP_FLUSH",                         51, JSPROP_READONLY, NULL, NULL},
+	
 	
     {0, 0, 0, NULL, NULL}
 };

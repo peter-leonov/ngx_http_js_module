@@ -9,12 +9,12 @@ typedef struct {
     ngx_str_t                 redirect_uri;
     ngx_str_t                 redirect_args;
 
-    JSObject                 *next;
-    JSObject                 *js_request;
-    JSObject                 *js_callback;
-    JSContext                *js_cx;
+    // void                 *next; // JSObject
+    void                     *js_request; // JSObject
+    void                     *js_callback; // JSObject
+    void                     *js_cx; // JSContext
 
-    ngx_uint_t                done;       /* unsigned  done:1; */
+    // ngx_uint_t                done;       /* unsigned  done:1; */
 
 
 #if (NGX_HTTP_SSI)
@@ -22,18 +22,22 @@ typedef struct {
 #endif
 } ngx_http_js_ctx_t;
 
+
+
 typedef struct {
-    JSObject                  *sub;
+    void                      *sub; // JSObject
     ngx_str_t                  handler;
 } ngx_http_js_loc_conf_t;
 
-typedef struct {
-    // JSContext              *js;
-    // JSObject               *global;
-    void                      *js_cx;
-    void                      *js_global;
+
+
+typedef struct{
+    void                      *js_cx; // JSContext
+    void                      *js_global; // JSObject
     ngx_array_t                requires;
 } ngx_http_js_main_conf_t;
+
+
 
 typedef struct {
 	ngx_conf_t                *cf;
