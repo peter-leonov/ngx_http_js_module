@@ -231,7 +231,7 @@ method_printOnlyString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, j
 	
 	if (argc == 2)
 	{
-		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0),
+		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[1]), r->pool, &r->headers_out.content_type, 0),
 			"Can`t js_str2ngx_str(cx, contentType)")
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
@@ -244,8 +244,9 @@ method_printOnlyString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, j
 	out.next = NULL;
 	rc = ngx_http_output_filter(r, &out);
 	
-	*rval = INT_TO_JSVAL(rc);
+	ngx_http_send_special(r, NGX_HTTP_FLUSH);
 	
+	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
 }
 
