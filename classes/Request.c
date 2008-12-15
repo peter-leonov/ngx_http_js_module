@@ -202,6 +202,55 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 
 
 static JSBool
+method_printOnlyString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	LOG2("Nginx.Request#printOnlyString");
+	ngx_http_request_t  *r;
+	ngx_buf_t           *b;
+	size_t               len;
+	JSString            *str;
+	ngx_chain_t          out;
+	ngx_int_t            rc;
+	
+	GET_PRIVATE();
+	
+	E(((argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1]))),
+		"Nginx.Request#printOnlyString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
+	
+	str = JSVAL_TO_STRING(argv[0]);
+	len = JS_GetStringLength(str);
+	if (len == 0)
+		return JS_TRUE;
+	b = js_str2ngx_buf(cx, str, r->pool, len);
+	
+	ngx_http_clear_content_length(r);
+	r->headers_out.content_length_n = len;
+	
+	if (r->headers_out.status == 0)
+		r->headers_out.status = NGX_HTTP_OK;
+	
+	if (argc == 2)
+	{
+		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0),
+			"Can`t js_str2ngx_str(cx, contentType)")
+		
+		r->headers_out.content_type_len = r->headers_out.content_type.len;
+    }
+	
+	E(ngx_http_set_content_type(r) == NGX_OK, "Can`t ngx_http_set_content_type(r)")
+	E(ngx_http_send_header(r) == NGX_OK, "Can`t ngx_http_send_header(r)");
+	
+	out.buf = b;
+	out.next = NULL;
+	rc = ngx_http_output_filter(r, &out);
+	
+	*rval = INT_TO_JSVAL(rc);
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	LOG2("Nginx.Request#sendSpecial");
@@ -421,6 +470,7 @@ JSPropertySpec ngx_http_js__nginx_request_props[] =
 JSFunctionSpec ngx_http_js__nginx_request_funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
     {"printString",       method_printString,          1, 0, 0},
+    {"printOnlyString",   method_printOnlyString,      1, 0, 0},
     {"request",           method_request,              2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
