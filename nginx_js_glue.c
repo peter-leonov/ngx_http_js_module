@@ -10,6 +10,7 @@
 #include "classes/global.h"
 #include "classes/Nginx.h"
 #include "classes/Request.h"
+#include "classes/Headers.h"
 
 #include "macroses.h"
 
@@ -181,6 +182,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 		return NGX_CONF_ERROR;
 	}
 	
+	// Nginx.Headers
+	if (!ngx_http_js__nginx_headers__init(cx))
+	{
+		JS_ReportError(cx, "Can`t initialize Nginx.Headers class");
+		return NGX_CONF_ERROR;
+	}
+	
 	
 	// call some external func
 	
@@ -275,11 +283,11 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	rc = NGX_HTTP_OK;
 	
-	request = ngx_http_js__wrap_nginx_request(cx, r);
+	request = ngx_http_js__nginx_request__wrap(cx, r);
 	if (request == NULL)
 		return NGX_ERROR;
 	
-	// ctx was allocated in ngx_http_js__wrap_nginx_request
+	// ctx was allocated in ngx_http_js__nginx_request__wrap
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	assert(ctx);
 	
