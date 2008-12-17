@@ -11,25 +11,25 @@
 
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
+#include "Headers.h"
+
 #include "../macroses.h"
 
-//#define unless(a) if(!(a))
-#define JS_REQUEST_ROOT_NAME          "Nginx.Request instance"
+#define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
 #define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request callback function"
 
 
-// static JSObject *requests_cache_array;
-JSObject *ngx_http_js__nginx_request_prototype;
-JSClass ngx_http_js__nginx_request_class;
+JSObject *ngx_http_js__nginx_request__prototype;
+JSClass ngx_http_js__nginx_request__class;
 
 static void
 cleanup_handler(void *data);
 
 
 JSObject *
-ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
+ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
-	LOG2("ngx_http_js__wrap_nginx_request(%p, %p)", cx, r);
+	LOG2("ngx_http_js__nginx_request__wrap(%p, %p)", cx, r);
 	
 	JSObject                  *request;
 	ngx_http_js_ctx_t         *ctx;
@@ -46,6 +46,7 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 	}
 	else
 	{
+		// ngx_pcalloc fills allocated memory with zeroes
 		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
 		if (ctx == NULL)
 		{
@@ -57,7 +58,7 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 	}
 	
 	
-	request = JS_NewObject(cx, &ngx_http_js__nginx_request_class, ngx_http_js__nginx_request_prototype, NULL);
+	request = JS_NewObject(cx, &ngx_http_js__nginx_request__class, ngx_http_js__nginx_request__prototype, NULL);
 	if (!request)
 	{
 		JS_ReportOutOfMemory(cx);
@@ -69,19 +70,6 @@ ngx_http_js__wrap_nginx_request(JSContext *cx, ngx_http_request_t *r)
 		JS_ReportError(cx, "Can`t add new root %s", JS_REQUEST_ROOT_NAME);
 		return NULL;
 	}
-	
-	// if (!JS_GetArrayLength(cx, requests_cache_array, &length))
-	// {
-	// 	JS_ReportError(cx, "Can`t get __requests_cache lenght");
-	// 	return NULL;
-	// }
-	// 
-	// req = OBJECT_TO_JSVAL(request);
-	// if (!JS_SetElement(cx, requests_cache_array, length, &req))
-	// {
-	// 	JS_ReportError(cx, "Can`t set __requests_cache %u-th element", length);
-	// 	return NULL;
-	// }
 	
 	cln = ngx_http_cleanup_add(r, 0);
 	cln->data = r;
@@ -117,6 +105,9 @@ cleanup_handler(void *data)
 	// LOG("cleanup");
 	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
 		JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
+	
+	// let the Headers module to deside what to clean up
+	ngx_http_js__nginx_headers__cleanup(cx, r, ctx);
 	
 	// second param has to be &ctx->js_request
 	// because JS_AddRoot was used with it's address
@@ -202,9 +193,9 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 
 
 static JSBool
-method_printOnlyString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	LOG2("Nginx.Request#printOnlyString");
+	LOG2("Nginx.Request#sendString");
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
@@ -215,7 +206,7 @@ method_printOnlyString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, j
 	GET_PRIVATE();
 	
 	E(((argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1]))),
-		"Nginx.Request#printOnlyString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
+		"Nginx.Request#sendString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
@@ -288,7 +279,7 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	cx = ctx->js_cx;
 	assert(cx);
-	subrequest = ngx_http_js__wrap_nginx_request(cx, sr);
+	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
 	assert(subrequest);
 	func = data;
 	assert(func);
@@ -390,7 +381,7 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	if (argc == 2)
 	{
 		assert(sr);
-		ngx_http_js__wrap_nginx_request(cx, sr);
+		ngx_http_js__nginx_request__wrap(cx, sr);
 		ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 		assert(ctx);
 		// this helps to prevent wrong JS garbage collection
@@ -400,7 +391,7 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	
 	// LOG("sr in request() = %p", sr);
 	
-	// request = ngx_http_js__wrap_nginx_request(cx, sr);
+	// request = ngx_http_js__nginx_request__wrap(cx, sr);
 	// if (request == NULL)
 	// {
 	// 	ngx_http_finalize_request(sr, NGX_ERROR);
@@ -419,13 +410,13 @@ request_constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsva
 }
 
 
-enum request_propid { REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR };
+enum request_propid { REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR, REQUEST_HEADERS, REQUEST_ARGS, REQUEST_HEADER_ONLY };
 
 static JSBool
 request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
-	ngx_http_request_t *r;
-	
+	ngx_http_request_t   *r;
+	JSObject             *headers;
 	// LOG("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	// JS_ReportError(cx, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	
@@ -447,18 +438,35 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->connection->addr_text.data, r->connection->addr_text.len));
 			break;
 			
+			case REQUEST_ARGS:
+			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->args.data, r->args.len));
+			break;
+			
+			case REQUEST_HEADER_ONLY:
+			*vp = INT_TO_JSVAL(r->header_only);
+			break;
+			
+			case REQUEST_HEADERS:
+			E(headers = ngx_http_js__nginx_headers__wrap(cx, r), "Can`t ngx_http_js__nginx_headers__wrap()");
+			*vp = OBJECT_TO_JSVAL(headers);
+			break;
 		}
 	}
 	return JS_TRUE;
 }
 
-JSPropertySpec ngx_http_js__nginx_request_props[] =
+JSPropertySpec ngx_http_js__nginx_request__props[] =
 {
-	{"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
+	{"uri",             REQUEST_URI,              JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"method",          REQUEST_METHOD,           JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"headers",         REQUEST_HEADERS,          JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"args",            REQUEST_ARGS,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"headerOnly",      REQUEST_HEADER_ONLY,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	
+	// TODO:
 	// {"discardRequestBody",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
-	{"method",   REQUEST_METHOD,       JSPROP_READONLY,   NULL, NULL},
 	// {"headerOnly",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
-	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY,  NULL, NULL},
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"requestBodyFile",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
@@ -468,17 +476,17 @@ JSPropertySpec ngx_http_js__nginx_request_props[] =
 };
 
 
-JSFunctionSpec ngx_http_js__nginx_request_funcs[] = {
+JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
     {"printString",       method_printString,          1, 0, 0},
-    {"printOnlyString",   method_printOnlyString,      1, 0, 0},
+    {"sendString",        method_sendString,           1, 0, 0},
     {"request",           method_request,              2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 
-JSClass ngx_http_js__nginx_request_class =
+JSClass ngx_http_js__nginx_request__class =
 {
 	"Request",
 	JSCLASS_HAS_PRIVATE,
@@ -496,15 +504,12 @@ ngx_http_js__nginx_request__init(JSContext *cx)
 	
 	global = JS_GetGlobalObject(cx);
 	
-	// E(requests_cache_array = JS_NewArrayObject(cx, 0, NULL), "Can`t create array for global.__requests_cache");
-	
-	
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
-	ngx_http_js__nginx_request_prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request_class,  request_constructor, 0,
-		ngx_http_js__nginx_request_props, ngx_http_js__nginx_request_funcs,  NULL, NULL);
-	E(ngx_http_js__nginx_request_prototype, "Can`t JS_InitClass(Nginx.Request)");
+	ngx_http_js__nginx_request__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_request__class,  request_constructor, 0,
+		ngx_http_js__nginx_request__props, ngx_http_js__nginx_request__funcs,  NULL, NULL);
+	E(ngx_http_js__nginx_request__prototype, "Can`t JS_InitClass(Nginx.Request)");
 	
 	return JS_TRUE;
 }

@@ -101,7 +101,7 @@ ngx_http_js_handler(ngx_http_request_t *r)
 	// 	ngx_http_set_ctx(r, ctx, ngx_http_js_module);
 	// }
 	
-	// ngx_http_get_module_ctx will be made by ngx_http_js__wrap_nginx_request()
+	// ngx_http_get_module_ctx will be made by ngx_http_js__nginx_request__wrap()
 	
 	// jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
 	

@@ -6,6 +6,7 @@ NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/strings_util.c"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/global.c"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Nginx.c"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request.c"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Headers.c"
 
 echo "checking for JavaScript"
 NGX_JS="js"
@@ -22,14 +23,14 @@ if test -n "$NGX_JS_VER"; then
         exit 1;
     fi
     
-    # this is to help a compiller find our ngx_http_js_module.h
+    # this -I helps a compiller to find our ngx_http_js_module.h
     CFLAGS="-I $ngx_addon_dir $CFLAGS"
     
     # for proper linking with libjs
     CORE_LIBS="$CORE_LIBS -ljs"
 else
     echo
-    echo "$0: error: JavaScript 1.7.0 or higher is required: none was founded"
+    echo "$0: error: JavaScript 1.7.0 or higher is required: none was found"
     echo
     
     exit 1;
