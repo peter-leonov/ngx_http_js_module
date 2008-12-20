@@ -12,21 +12,22 @@
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
 #include "Request.h"
+// #include "HeadersIn.h"
 
 #include "../macroses.h"
 
 //#define unless(a) if(!(a))
-#define JS_HEADER_ROOT_NAME               "Nginx.Headers instance"
+#define JS_HEADER_IN_ROOT_NAME      "Nginx.HeadersIn instance"
 
 
-JSObject *ngx_http_js__nginx_headers__prototype;
-JSClass ngx_http_js__nginx_headers__class;
+JSObject *ngx_http_js__nginx_headers_in__prototype;
+JSClass ngx_http_js__nginx_headers_in__class;
 
 
 JSObject *
-ngx_http_js__nginx_headers__wrap(JSContext *cx, ngx_http_request_t *r)
+ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
 {
-	LOG2("ngx_http_js__nginx_headers__wrap()");
+	LOG2("ngx_http_js__nginx_headers_in__wrap()");
 	JSObject                  *headers;
 	ngx_http_js_ctx_t         *ctx;
 	
@@ -36,16 +37,16 @@ ngx_http_js__nginx_headers__wrap(JSContext *cx, ngx_http_request_t *r)
 	if (ctx->js_headers)
 		return ctx->js_headers;
 	
-	headers = JS_NewObject(cx, &ngx_http_js__nginx_headers__class, ngx_http_js__nginx_headers__prototype, NULL);
+	headers = JS_NewObject(cx, &ngx_http_js__nginx_headers_in__class, ngx_http_js__nginx_headers_in__prototype, NULL);
 	if (!headers)
 	{
 		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
 	
-	if (!JS_AddNamedRoot(cx, &ctx->js_headers, JS_HEADER_ROOT_NAME))
+	if (!JS_AddNamedRoot(cx, &ctx->js_headers, JS_HEADER_IN_ROOT_NAME))
 	{
-		JS_ReportError(cx, "Can`t add new root %s", JS_HEADER_ROOT_NAME);
+		JS_ReportError(cx, "Can`t add new root %s", JS_HEADER_IN_ROOT_NAME);
 		return NULL;
 	}
 	
@@ -58,9 +59,9 @@ ngx_http_js__nginx_headers__wrap(JSContext *cx, ngx_http_request_t *r)
 
 
 void
-ngx_http_js__nginx_headers__cleanup(JSContext *cx, ngx_http_request_t *r, ngx_http_js_ctx_t *ctx)
+ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx_http_js_ctx_t *ctx)
 {
-	LOG2("ngx_http_js__nginx_headers__wrap()");
+	LOG2("ngx_http_js__nginx_headers_in__wrap()");
 	
 	assert(ctx);
 	
@@ -68,7 +69,7 @@ ngx_http_js__nginx_headers__cleanup(JSContext *cx, ngx_http_request_t *r, ngx_ht
 		return;
 	
 	if (!JS_RemoveRoot(cx, &ctx->js_headers))
-		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HEADER_ROOT_NAME);
+		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HEADER_IN_ROOT_NAME);
 	
 	JS_SetPrivate(cx, ctx->js_headers, NULL);
 	ctx->js_headers = NULL;
@@ -97,7 +98,7 @@ constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 }
 
 
-enum propid { HEADER_LENGTH };
+// enum propid { HEADER_LENGTH };
 
 static JSBool
 getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
@@ -196,19 +197,19 @@ getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
-JSPropertySpec ngx_http_js__nginx_headers__props[] =
+JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
 {
 	// {"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
 
-JSFunctionSpec ngx_http_js__nginx_headers__funcs[] = {
+JSFunctionSpec ngx_http_js__nginx_headers_in__funcs[] = {
     // {"empty",       method_empty,          1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 
-JSClass ngx_http_js__nginx_headers__class =
+JSClass ngx_http_js__nginx_headers_in__class =
 {
 	"Headers",
 	JSCLASS_HAS_PRIVATE,
@@ -218,7 +219,7 @@ JSClass ngx_http_js__nginx_headers__class =
 };
 
 JSBool
-ngx_http_js__nginx_headers__init(JSContext *cx)
+ngx_http_js__nginx_headers_in__init(JSContext *cx)
 {
 	JSObject    *nginxobj;
 	JSObject    *global;
@@ -229,9 +230,9 @@ ngx_http_js__nginx_headers__init(JSContext *cx)
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
-	ngx_http_js__nginx_headers__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers__class,  constructor, 0,
-		ngx_http_js__nginx_headers__props, ngx_http_js__nginx_headers__funcs,  NULL, NULL);
-	E(ngx_http_js__nginx_headers__prototype, "Can`t JS_InitClass(Nginx.Headers)");
+	ngx_http_js__nginx_headers_in__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers_in__class,  constructor, 0,
+		ngx_http_js__nginx_headers_in__props, ngx_http_js__nginx_headers_in__funcs,  NULL, NULL);
+	E(ngx_http_js__nginx_headers_in__prototype, "Can`t JS_InitClass(Nginx.Headers)");
 	
 	return JS_TRUE;
 }

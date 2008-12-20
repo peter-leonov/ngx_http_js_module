@@ -10,7 +10,8 @@
 #include "classes/global.h"
 #include "classes/Nginx.h"
 #include "classes/Request.h"
-#include "classes/Headers.h"
+#include "classes/HeadersIn.h"
+#include "classes/HeadersOut.h"
 
 #include "macroses.h"
 
@@ -183,9 +184,14 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	}
 	
 	// Nginx.Headers
-	if (!ngx_http_js__nginx_headers__init(cx))
+	if (!ngx_http_js__nginx_headers_in__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize Nginx.Headers class");
+		JS_ReportError(cx, "Can`t initialize Nginx.HeadersIn class");
+		return NGX_CONF_ERROR;
+	}
+	if (!ngx_http_js__nginx_headers_out__init(cx))
+	{
+		JS_ReportError(cx, "Can`t initialize Nginx.HeadersOut class");
 		return NGX_CONF_ERROR;
 	}
 	
