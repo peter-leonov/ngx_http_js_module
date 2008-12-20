@@ -11,7 +11,8 @@
 
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
-#include "Headers.h"
+#include "HeadersIn.h"
+#include "HeadersOut.h"
 
 #include "../macroses.h"
 
@@ -106,8 +107,9 @@ cleanup_handler(void *data)
 	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
 		JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
 	
-	// let the Headers module to deside what to clean up
-	ngx_http_js__nginx_headers__cleanup(cx, r, ctx);
+	// let the Headers modules to deside what to clean up
+	ngx_http_js__nginx_headers_in__cleanup(cx, r, ctx);
+	ngx_http_js__nginx_headers_out__cleanup(cx, r, ctx);
 	
 	// second param has to be &ctx->js_request
 	// because JS_AddRoot was used with it's address
@@ -410,7 +412,12 @@ request_constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsva
 }
 
 
-enum request_propid { REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR, REQUEST_HEADERS, REQUEST_ARGS, REQUEST_HEADER_ONLY };
+enum request_propid
+{
+	REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
+	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
+	REQUEST_HEADER_ONLY
+};
 
 static JSBool
 request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
@@ -446,8 +453,13 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			*vp = INT_TO_JSVAL(r->header_only);
 			break;
 			
-			case REQUEST_HEADERS:
-			E(headers = ngx_http_js__nginx_headers__wrap(cx, r), "Can`t ngx_http_js__nginx_headers__wrap()");
+			case REQUEST_HEADERS_IN:
+			E(headers = ngx_http_js__nginx_headers_in__wrap(cx, r), "Can`t ngx_http_js__nginx_headers_in__wrap()");
+			*vp = OBJECT_TO_JSVAL(headers);
+			break;
+			
+			case REQUEST_HEADERS_OUT:
+			E(headers = ngx_http_js__nginx_headers_out__wrap(cx, r), "Can`t ngx_http_js__nginx_headers_out__wrap()");
 			*vp = OBJECT_TO_JSVAL(headers);
 			break;
 		}
@@ -460,7 +472,8 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"uri",             REQUEST_URI,              JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"method",          REQUEST_METHOD,           JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"headers",         REQUEST_HEADERS,          JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"headersIn",       REQUEST_HEADERS_IN,       JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"headersOut",      REQUEST_HEADERS_OUT,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"args",            REQUEST_ARGS,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"headerOnly",      REQUEST_HEADER_ONLY,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	
