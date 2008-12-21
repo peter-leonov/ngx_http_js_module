@@ -13,6 +13,10 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 	ngx_buf_t           *b;
 	const char          *p;
 	
+	assert(cx);
+	assert(str);
+	assert(pool);
+	
 	if (len == 0)
 		len = JS_GetStringLength(str);
 	
@@ -34,6 +38,11 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, siz
 {
 	const char          *p;
 	
+	assert(cx);
+	assert(str);
+	assert(pool);
+	assert(s);
+	
 	s->len = 0;
 	s->data = NULL;
 	
@@ -48,7 +57,7 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, siz
 		return JS_FALSE;
 	}
 	
-	s->data = ngx_palloc(pool, len);
+	s->data = ngx_palloc(pool, len+1);
 	if (s->data == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
@@ -56,76 +65,52 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, siz
 	}
 	
 	ngx_memcpy(s->data, p, len);
+	s->data[len] = 0;
 	s->len = len;
 	
 	return JS_TRUE;
 }
 
-// JSBool
-// hash_find_string(ngx_hash_t *hashp, char *name, u_int len, ngx_pool_t *pool)
-// {
-// 	ngx_uint_t                  i, hash;
-// 	u_char                     *lowcase_key;//, *cookie
-// 		
-// 	assert(hashp);
-// 	assert(name);
-// 	assert(pool);
-// 	
-// 	lowcase_key = ngx_palloc(pool, len);
-// 	if (lowcase_key == NULL)
-// 		return JS_FALSE;
-// 	
-// 	hash = 0;
-// 	for (i = 0; i < len; i++)
-// 	{
-// 		lowcase_key[i] = ngx_tolower(name[i]);
-// 		hash = ngx_hash(hash, lowcase_key[i]);
-// 	}
-// 	
-// 	
-// 	cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
-// 	
-// 	hh = ngx_hash_find(hashp, hash, lowcase_key, len);
-// 	
-// 	if (hh)
-// 	{
-// 		if (hh->offset)
-// 		{
-// 			ph = (ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset);
-// 			
-// 			if (*ph)
-// 				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) (*ph)->value.data, (*ph)->value.len));
-// 			
-// 			return JS_TRUE;
-// 		}
-// 	}
-// }
-// 
-// JSBool
-// list_find_string(ngx_hash_t *hashp, char *name, u_int len, ngx_pool_t *pool)
-// {
-// 	// look in all headers
-// 	
-// 	part = &r->headers_in.headers.part;
-// 	h = part->elts;
-// 	
-// 	for (i = 0; /* void */ ; i++)
-// 	{
-// 		if (i >= part->nelts)
-// 		{
-// 			if (part->next == NULL)
-// 				break;
-// 			
-// 			part = part->next;
-// 			h = part->elts;
-// 			i = 0;
-// 		}
-// 		
-// 		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
-// 			continue;
-// 		
-// 		*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) h[i].value.data, h[i].value.len));
-// 		
-// 		return JS_TRUE;
-// 	}
-// }
+
+JSBool
+js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, char **out_s, size_t *out_len)
+{
+	const char          *p;
+	size_t               len;
+	char                *pool_p;
+	
+	assert(cx);
+	assert(str);
+	assert(pool);
+	assert(out_s);
+	assert(out_len);
+	
+	*out_s = NULL;
+	*out_len = 0;
+	
+	len = JS_GetStringLength(str);
+	if (len == 0)
+			return JS_TRUE;
+	
+	p = JS_GetStringBytes(str);
+	if (p == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	pool_p = ngx_palloc(pool, len+1);
+	if (pool_p == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	ngx_memcpy(pool_p, p, len);
+	pool_p[len] = 0;
+	
+	*out_s = pool_p;
+	*out_len = len;
+	
+	return JS_TRUE;
+}
