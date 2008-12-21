@@ -23,6 +23,9 @@
 JSObject *ngx_http_js__nginx_headers_out__prototype;
 JSClass ngx_http_js__nginx_headers_out__class;
 
+static ngx_table_elt_t *
+search_headers_out(ngx_http_request_t *r, char *name, u_int len);
+
 
 JSObject *
 ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
@@ -34,8 +37,8 @@ ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
 	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 		ngx_http_js__nginx_request__wrap(cx, r);
 	
-	if (ctx->js_headers)
-		return ctx->js_headers;
+	if (ctx->js_headers_out)
+		return ctx->js_headers_out;
 	
 	headers = JS_NewObject(cx, &ngx_http_js__nginx_headers_out__class, ngx_http_js__nginx_headers_out__prototype, NULL);
 	if (!headers)
@@ -44,7 +47,7 @@ ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
-	if (!JS_AddNamedRoot(cx, &ctx->js_headers, JS_HEADER_IN_ROOT_NAME))
+	if (!JS_AddNamedRoot(cx, &ctx->js_headers_out, JS_HEADER_IN_ROOT_NAME))
 	{
 		JS_ReportError(cx, "Can`t add new root %s", JS_HEADER_IN_ROOT_NAME);
 		return NULL;
@@ -52,7 +55,7 @@ ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
 	
 	JS_SetPrivate(cx, headers, r);
 	
-	ctx->js_headers = headers;
+	ctx->js_headers_out = headers;
 	
 	return headers;
 }
@@ -65,14 +68,14 @@ ngx_http_js__nginx_headers_out__cleanup(JSContext *cx, ngx_http_request_t *r, ng
 	
 	assert(ctx);
 	
-	if (!ctx->js_headers)
+	if (!ctx->js_headers_out)
 		return;
 	
-	if (!JS_RemoveRoot(cx, &ctx->js_headers))
+	if (!JS_RemoveRoot(cx, &ctx->js_headers_out))
 		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HEADER_IN_ROOT_NAME);
 	
-	JS_SetPrivate(cx, ctx->js_headers, NULL);
-	ctx->js_headers = NULL;
+	JS_SetPrivate(cx, ctx->js_headers_out, NULL);
+	ctx->js_headers_out = NULL;
 }
 
 
@@ -100,134 +103,88 @@ constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 
 // enum propid { HEADER_LENGTH };
 
+
 static JSBool
 getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	char                       *name;
-	ngx_http_core_main_conf_t  *cmcf;
-	ngx_list_part_t            *part;
-	ngx_http_header_t          *hh;
-	ngx_table_elt_t            **ph, *h;
-	u_char                     *lowcase_key;//, *cookie
-	ngx_uint_t                  i, hash; // n, 
-	u_int                       len;
+	ngx_table_elt_t            *header;
 	
 	GET_PRIVATE();
 	
-	if (JSVAL_IS_INT(id))
-	{
-		switch (JSVAL_TO_INT(id))
-		{
-			// case REQUEST_URI:
-			// *vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->uri.data, r->uri.len));
-			// break;
-			
-			
-		}
-	}
-	else if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
+	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
 	{
 		// if (!strcmp(member_name, "constructor"))
-		len = strlen(name);
-		LOG("getProperty: %s, len: %u", name, len);
+		LOG("getProperty: %s", name);
 		
+		header = search_headers_out(r, name, 0);
 		
-		// look in hashed headers
-		
-		lowcase_key = ngx_palloc(r->pool, len);
-		if (lowcase_key == NULL)
-		{
-			JS_ReportOutOfMemory(cx);
-			return JS_FALSE;
-		}
-		
-		hash = 0;
-		for (i = 0; i < len; i++)
-		{
-			lowcase_key[i] = ngx_tolower(name[i]);
-			hash = ngx_hash(hash, lowcase_key[i]);
-		}
-		
-		
-		cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
-		
-		hh = ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
-		
-		if (hh)
-		{
-			if (hh->offset)
-			{
-				ph = (ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset);
-				
-				if (*ph)
-					*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) (*ph)->value.data, (*ph)->value.len));
-				
-				return JS_TRUE;
-			}
-		}
-		
-		
-		// look in all headers
-		
-		part = &r->headers_in.headers.part;
-		h = part->elts;
-		
-		for (i = 0; /* void */ ; i++)
-		{
-			if (i >= part->nelts)
-			{
-				if (part->next == NULL)
-					break;
-				
-				part = part->next;
-				h = part->elts;
-				i = 0;
-			}
-			
-			if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
-				continue;
-			
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) h[i].value.data, h[i].value.len));
-			
-			return JS_TRUE;
-		}
+		if (header)
+			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
+		else
+			LOG("getProperty: %s was not found", name);
 	}
+	
+	// *vp = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, "not set"));
 	
 	return JS_TRUE;
 }
+
 
 static JSBool
 setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
-	JSString                   *value;
+	char                       *key;
+	size_t                      key_len;
+	JSString                   *key_jsstr, *value_jsstr;
 	
 	GET_PRIVATE();
 	
-	E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
-	
-	
-	LOG("setProperty: %s", JS_GetStringBytes(JSVAL_TO_STRING(id)));
-	
-	header = ngx_list_push(&r->headers_out.headers);
-	E(header, "Can`t ngx_list_push()");
-	
-	header->hash = 1;
-	
-	E(value = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
-	
-	E(js_str2ngx_str(cx, JSVAL_TO_STRING(id), r->pool, &header->key, 0), "Can`t js_str2ngx_str(key)");
-	E(js_str2ngx_str(cx, value,               r->pool, &header->value, 0), "Can`t js_str2ngx_str(value)");
-	
-	if (header->key.len == sizeof("Content-Length") - 1
-		&& ngx_strncasecmp(header->key.data, (u_char *)"Content-Length", sizeof("Content-Length") - 1) == 0)
+	// E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
+	if (JSVAL_IS_STRING(id))
 	{
-		E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
-		r->headers_out.content_length_n = (off_t) JSVAL_TO_INT(*vp);
-		r->headers_out.content_length = header;
+		key_jsstr = JSVAL_TO_STRING(id);
+		E(js_str2c_str(cx, key_jsstr, r->pool, &key, &key_len), "Can`t js_str2c_str(key_jsstr)");
+		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
+		
+		LOG("setProperty: %s (%u)", key, (int)key_len);
+		
+		header = search_headers_out(r, key, key_len);
+		
+		if (header)
+		{
+			header->key.data = (u_char*)key;
+			header->key.len = key_len;
+			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
+			LOG("by hash");
+			return JS_TRUE;
+		}
+		
+		
+		header = ngx_list_push(&r->headers_out.headers);
+		E(header, "Can`t ngx_list_push()");
+		{
+			header->hash = 1;
+		
+			header->key.data = (u_char*)key;
+			header->key.len = key_len;
+			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
+		
+			if (header->key.len == sizeof("Content-Length") - 1
+				&& ngx_strncasecmp(header->key.data, (u_char *)"Content-Length", sizeof("Content-Length") - 1) == 0)
+			{
+				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
+				r->headers_out.content_length_n = (off_t) JSVAL_TO_INT(*vp);
+				r->headers_out.content_length = header;
+				LOG("by list");
+				return JS_TRUE;
+			}
+		}
 	}
+	
 	
 	return JS_TRUE;
 }
@@ -276,6 +233,51 @@ ngx_http_js__nginx_headers_out__init(JSContext *cx)
 	E(ngx_http_js__nginx_headers_out__prototype, "Can`t JS_InitClass(Nginx.Headers)");
 	
 	return JS_TRUE;
+}
+
+
+static ngx_table_elt_t *
+search_headers_out(ngx_http_request_t *r, char *name, u_int len)
+{
+	ngx_list_part_t            *part;
+	ngx_table_elt_t            *h;
+	ngx_uint_t                  i;
+	
+	assert(r);
+	assert(name);
+	
+	if (len == 0)
+	{
+		len = strlen(name);
+		if (len == 0)
+			return NULL;
+	}
+		
+	// look in all headers
+	
+	part = &r->headers_out.headers.part;
+	h = part->elts;
+	
+	for (i = 0; /* void */ ; i++)
+	{
+		if (i >= part->nelts)
+		{
+			if (part->next == NULL)
+				break;
+			
+			part = part->next;
+			h = part->elts;
+			i = 0;
+		}
+		
+		// LOG("%s", h[i].key.data);
+		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
+			continue;
+		
+		return &h[i];
+	}
+	
+	return NULL;
 }
 
 

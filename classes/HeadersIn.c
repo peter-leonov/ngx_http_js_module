@@ -23,6 +23,8 @@
 JSObject *ngx_http_js__nginx_headers_in__prototype;
 JSClass ngx_http_js__nginx_headers_in__class;
 
+static ngx_table_elt_t *
+search_headers_in(ngx_http_request_t *r, char *name, u_int len);
 
 JSObject *
 ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
@@ -34,8 +36,8 @@ ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
 	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 		ngx_http_js__nginx_request__wrap(cx, r);
 	
-	if (ctx->js_headers)
-		return ctx->js_headers;
+	if (ctx->js_headers_in)
+		return ctx->js_headers_in;
 	
 	headers = JS_NewObject(cx, &ngx_http_js__nginx_headers_in__class, ngx_http_js__nginx_headers_in__prototype, NULL);
 	if (!headers)
@@ -44,7 +46,7 @@ ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
-	if (!JS_AddNamedRoot(cx, &ctx->js_headers, JS_HEADER_IN_ROOT_NAME))
+	if (!JS_AddNamedRoot(cx, &ctx->js_headers_in, JS_HEADER_IN_ROOT_NAME))
 	{
 		JS_ReportError(cx, "Can`t add new root %s", JS_HEADER_IN_ROOT_NAME);
 		return NULL;
@@ -52,7 +54,7 @@ ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
 	
 	JS_SetPrivate(cx, headers, r);
 	
-	ctx->js_headers = headers;
+	ctx->js_headers_in = headers;
 	
 	return headers;
 }
@@ -65,14 +67,14 @@ ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx
 	
 	assert(ctx);
 	
-	if (!ctx->js_headers)
+	if (!ctx->js_headers_in)
 		return;
 	
-	if (!JS_RemoveRoot(cx, &ctx->js_headers))
+	if (!JS_RemoveRoot(cx, &ctx->js_headers_in))
 		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HEADER_IN_ROOT_NAME);
 	
-	JS_SetPrivate(cx, ctx->js_headers, NULL);
-	ctx->js_headers = NULL;
+	JS_SetPrivate(cx, ctx->js_headers_in, NULL);
+	ctx->js_headers_in = NULL;
 }
 
 
@@ -99,6 +101,140 @@ constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 
 
 // enum propid { HEADER_LENGTH };
+
+
+static JSBool
+getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	char                       *name;
+	ngx_table_elt_t            *header;
+	
+	GET_PRIVATE();
+	
+	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
+	{
+		// if (!strcmp(member_name, "constructor"))
+		LOG("getProperty: %s", name);
+		
+		header = search_headers_in(r, name, 0);
+		
+		if (header)
+			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
+		else
+			LOG("getProperty: %s was not found", name);
+	}
+	
+	// *vp = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, "not set"));
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
+setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_table_elt_t            *header;
+	char                       *key;
+	size_t                      key_len;
+	JSString                   *key_jsstr, *value_jsstr;
+	
+	GET_PRIVATE();
+	
+	// E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
+	if (JSVAL_IS_STRING(id))
+	{
+		key_jsstr = JSVAL_TO_STRING(id);
+		E(js_str2c_str(cx, key_jsstr, r->pool, &key, &key_len), "Can`t js_str2c_str(key_jsstr)");
+		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
+		
+		LOG("setProperty: %s (%u)", key, (int)key_len);
+		
+		header = search_headers_in(r, key, key_len);
+		
+		if (header)
+		{
+			header->key.data = (u_char*)key;
+			header->key.len = key_len;
+			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
+			LOG("by hash");
+			return JS_TRUE;
+		}
+		
+		
+		header = ngx_list_push(&r->headers_in.headers);
+		E(header, "Can`t ngx_list_push()");
+		{
+			header->hash = 1;
+		
+			header->key.data = (u_char*)key;
+			header->key.len = key_len;
+			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
+		
+			if (header->key.len == sizeof("Content-Length") - 1
+				&& ngx_strncasecmp(header->key.data, (u_char *)"Content-Length", sizeof("Content-Length") - 1) == 0)
+			{
+				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
+				r->headers_in.content_length_n = (off_t) JSVAL_TO_INT(*vp);
+				r->headers_in.content_length = header;
+				LOG("by list");
+				return JS_TRUE;
+			}
+		}
+	}
+	
+	
+	return JS_TRUE;
+}
+
+static JSBool
+delProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+{
+	return JS_TRUE;
+}
+
+
+JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
+{
+	// {"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
+	{0, 0, 0, NULL, NULL}
+};
+
+
+JSFunctionSpec ngx_http_js__nginx_headers_in__funcs[] = {
+    // {"empty",       method_empty,          1, 0, 0},
+    {0, NULL, 0, 0, 0}
+};
+
+JSClass ngx_http_js__nginx_headers_in__class =
+{
+	"Headers",
+	JSCLASS_HAS_PRIVATE,
+	JS_PropertyStub, delProperty, getProperty, setProperty,
+	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+	JSCLASS_NO_OPTIONAL_MEMBERS
+};
+
+JSBool
+ngx_http_js__nginx_headers_in__init(JSContext *cx)
+{
+	JSObject    *nginxobj;
+	JSObject    *global;
+	jsval        vp;
+	
+	global = JS_GetGlobalObject(cx);
+	
+	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
+	nginxobj = JSVAL_TO_OBJECT(vp);
+	
+	ngx_http_js__nginx_headers_in__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers_in__class,  constructor, 0,
+		ngx_http_js__nginx_headers_in__props, ngx_http_js__nginx_headers_in__funcs,  NULL, NULL);
+	E(ngx_http_js__nginx_headers_in__prototype, "Can`t JS_InitClass(Nginx.Headers)");
+	
+	return JS_TRUE;
+}
+
 
 static ngx_table_elt_t *
 search_headers_in(ngx_http_request_t *r, char *name, u_int len)
@@ -176,133 +312,6 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	return NULL;
 }
 
-
-static JSBool
-getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
-{
-	ngx_http_request_t         *r;
-	char                       *name;
-	ngx_table_elt_t            *header;
-	
-	GET_PRIVATE();
-	
-	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
-	{
-		// if (!strcmp(member_name, "constructor"))
-		LOG("getProperty: %s", name);
-		
-		header = search_headers_in(r, name, 0);
-		
-		if (header)
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
-		else
-			LOG("getProperty: %s was not found", name);
-	}
-	
-	// *vp = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, "not set"));
-	
-	return JS_TRUE;
-}
-
-
-static JSBool
-setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
-{
-	ngx_http_request_t         *r;
-	ngx_table_elt_t            *header;
-	char                       *key;
-	size_t                      key_len;
-	JSString                   *key_jsstr, *value_jsstr;
-	
-	GET_PRIVATE();
-	
-	// E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
-	if (JSVAL_IS_STRING(id))
-	{
-		key_jsstr = JSVAL_TO_STRING(id);
-		E(js_str2c_str(cx, key_jsstr, r->pool, &key, &key_len), "Can`t js_str2c_str(key_jsstr)");
-		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
-		
-		LOG("setProperty: %s (%u)", key, (int)key_len);
-		
-		header = search_headers_in(r, key, key_len);
-		
-		if (header)
-		{
-			E(js_str2ngx_str(cx, key_jsstr,   r->pool, &header->key, 0), "Can`t js_str2ngx_str(key_jsstr)");
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
-			
-			return JS_TRUE;
-		}
-		
-		
-		header = ngx_list_push(&r->headers_in.headers);
-		E(header, "Can`t ngx_list_push()");
-		
-		header->hash = 1;
-		
-		E(js_str2ngx_str(cx, key_jsstr,   r->pool, &header->key, 0), "Can`t js_str2ngx_str(key_jsstr)");
-		E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
-		
-		if (header->key.len == sizeof("Content-Length") - 1
-			&& ngx_strncasecmp(header->key.data, (u_char *)"Content-Length", sizeof("Content-Length") - 1) == 0)
-		{
-			E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
-			r->headers_in.content_length_n = (off_t) JSVAL_TO_INT(*vp);
-			r->headers_in.content_length = header;
-		}
-	}
-	
-	
-	return JS_TRUE;
-}
-
-static JSBool
-delProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
-{
-	return JS_TRUE;
-}
-
-
-JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
-{
-	// {"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
-	{0, 0, 0, NULL, NULL}
-};
-
-
-JSFunctionSpec ngx_http_js__nginx_headers_in__funcs[] = {
-    // {"empty",       method_empty,          1, 0, 0},
-    {0, NULL, 0, 0, 0}
-};
-
-JSClass ngx_http_js__nginx_headers_in__class =
-{
-	"Headers",
-	JSCLASS_HAS_PRIVATE,
-	JS_PropertyStub, delProperty, getProperty, setProperty,
-	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-	JSCLASS_NO_OPTIONAL_MEMBERS
-};
-
-JSBool
-ngx_http_js__nginx_headers_in__init(JSContext *cx)
-{
-	JSObject    *nginxobj;
-	JSObject    *global;
-	jsval        vp;
-	
-	global = JS_GetGlobalObject(cx);
-	
-	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
-	nginxobj = JSVAL_TO_OBJECT(vp);
-	
-	ngx_http_js__nginx_headers_in__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers_in__class,  constructor, 0,
-		ngx_http_js__nginx_headers_in__props, ngx_http_js__nginx_headers_in__funcs,  NULL, NULL);
-	E(ngx_http_js__nginx_headers_in__prototype, "Can`t JS_InitClass(Nginx.Headers)");
-	
-	return JS_TRUE;
-}
 
 
 // check this from time to time
