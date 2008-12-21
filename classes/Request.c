@@ -479,7 +479,6 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	
 	// TODO:
 	// {"discardRequestBody",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"headerOnly",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"requestBodyFile",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
