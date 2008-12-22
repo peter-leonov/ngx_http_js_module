@@ -20,6 +20,8 @@ reportError(JSContext *cx, const char *message, JSErrorReport *report)
 {
 	ngx_http_js_context_private_t  *private;
 	
+	TRACE();
+	
 	private = JS_GetContextPrivate(cx);
 	
 	if (!private)
@@ -43,7 +45,8 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 	JSString       *fnstring;
 	// JSObject       *require;
 	
-	LOG2("ngx_http_js_load(%s)\n", filename);
+	TRACE();
+	// LOG("ngx_http_js_load(%s)\n", filename);
 	
 	if (!JS_GetProperty(cx, global, "load", &fval))
 	{
@@ -74,8 +77,6 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 static ngx_int_t
 ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
 {
-	LOG2("ngx_http_js_run_requires(...)");
-	
 	// ngx_str_t     **script;
 	char          **script;
 	ngx_uint_t      i;
@@ -83,6 +84,8 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 	// ngx_str_t      *value;
 	char           *value;
 	// JSObject       *require;
+	
+	TRACE();
 	
 	if (!ngx_http_js_load(cx, global, NGX_HTTP_JS_CONF_PATH))
 		return NGX_ERROR;
@@ -120,13 +123,13 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 char *
 ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
 {
-	LOG2("ngx_http_js__glue__init_interpreter(...)");
-	
 	static JSRuntime *rt;
 	static JSContext *static_cx = NULL;
 	JSObject  *global;
 	static ngx_http_js_context_private_t   private;
 	JSContext        *cx;
+	
+	TRACE();
 	
 	if (jsmcf->js_cx != NULL)
 		return NGX_CONF_OK;
@@ -212,14 +215,14 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
 {
-	LOG2("ngx_http_js__glue__set_callback(...)");
-	
 	ngx_str_t                  *value;
 	ngx_http_js_main_conf_t    *jsmcf;
 	JSContext                  *cx;
 	JSObject                   *global;
 	jsval                       sub;
 	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
+	
+	TRACE();
 	
 	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
 	
@@ -257,8 +260,6 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 ngx_int_t
 ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
-	LOG2("ngx_http_js__glue__call_handler(...)");
-	
 	ngx_int_t                    rc;
 	ngx_connection_t            *c;
 	JSObject                    *global, *request, *sub;
@@ -270,8 +271,9 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	ngx_http_js_ctx_t           *ctx;
 	JSContext                   *cx;
 	
-	assert(r);
+	TRACE();
 	
+	assert(r);
 	if (r->zero_in_uri)
 		return NGX_HTTP_NOT_FOUND;
 	

@@ -30,13 +30,15 @@ cleanup_handler(void *data);
 JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
-	LOG2("ngx_http_js__nginx_request__wrap(%p, %p)", cx, r);
-	
 	JSObject                  *request;
 	ngx_http_js_ctx_t         *ctx;
 	ngx_http_cleanup_t        *cln;
 	// jsuint                     length;
 	// jsval                      req;
+	
+	TRACE();
+	assert(cx);
+	assert(r);
 	
 	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 	{
@@ -95,13 +97,16 @@ cleanup_handler(void *data)
 	JSObject                  *request;
 	jsval                      rval;
 	
-	r = data;
+	TRACE();
+	assert(data);
 	
+	r = data;
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	assert(ctx);
 	cx = ctx->js_cx;
 	request = ctx->js_request;
-	assert(cx && request);
+	assert(cx);
+	assert(request);
 	
 	// LOG("cleanup");
 	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
@@ -137,9 +142,9 @@ static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
-	GET_PRIVATE();
 	
-	LOG2("Nginx.Request#sendHttpHeader");
+	TRACE();
+	GET_PRIVATE();
 	
 	if (r->headers_out.status == 0)
 		r->headers_out.status = NGX_HTTP_OK;
@@ -165,7 +170,6 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 static JSBool
 method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	LOG2("Nginx.Request#printString");
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
@@ -173,6 +177,7 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	ngx_chain_t          out;
 	ngx_int_t            rc;
 	
+	TRACE();
 	GET_PRIVATE();
 	
 	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
@@ -197,7 +202,6 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 static JSBool
 method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	LOG2("Nginx.Request#sendString");
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
@@ -205,6 +209,7 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	ngx_chain_t          out;
 	ngx_int_t            rc;
 	
+	TRACE();
 	GET_PRIVATE();
 	
 	E(((argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1]))),
@@ -247,10 +252,10 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 static JSBool
 method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	LOG2("Nginx.Request#sendSpecial");
 	ngx_http_request_t  *r;
 	ngx_int_t            rc;
 	
+	TRACE();
 	GET_PRIVATE();
 	
 	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
@@ -263,14 +268,15 @@ method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 static ngx_int_t
 method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
-	LOG2("method_request_handler(%p, %p, %d)", sr, data, (int)rc);
-	
 	ngx_http_js_ctx_t                *ctx, *mctx;
 	JSObject                         *request, *subrequest, *func;
 	// JSString                         *body;
 	JSContext                        *cx;
 	jsval                             rval, args[2];
 	
+	TRACE();
+	
+	assert(sr);
 	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
 		return rc;
 	
@@ -320,8 +326,6 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 static JSBool
 method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	LOG2("method_request(...)");
-	
 	ngx_int_t                    rc;
 	ngx_http_js_ctx_t           *ctx;
 	ngx_http_request_t          *r, *sr;
@@ -332,7 +336,7 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	JSString                    *str;
 	JSObject                    *callback;
 	
-	
+	TRACE();
 	GET_PRIVATE();
 	
 	// LOG("argc = %u", argc);

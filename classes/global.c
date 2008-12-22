@@ -2,20 +2,18 @@
 // global class
 
 #include <ngx_config.h>
-
 #include <js/jsapi.h>
-
-#include "environment.c"
 
 #include "../macroses.h"
 
+#include "environment.c"
 
 static JSBool
-global_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	uintN i;
 	JSString *str;
-	const char *filename, *filevar;
+	const char *filename, *filevar_name;
 	JSScript *script;
 	JSBool ok;
 	jsval result, name, old;
@@ -23,8 +21,10 @@ global_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 	JSObject *global;
 	// FILE *fileh;
 	
+	TRACE();
+	
 	global = JS_GetGlobalObject(cx);
-	filevar = "__FILE__";
+	filevar_name = "__FILE__";
 	
 	for (i = 0; i < argc; i++)
 	{
@@ -44,10 +44,10 @@ global_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 			ok = JS_FALSE;
 		else
 		{
-			JS_GetProperty(cx, global, filevar, &old);
-			JS_SetProperty(cx, global, filevar, &name);
+			JS_GetProperty(cx, global, filevar_name, &old);
+			JS_SetProperty(cx, global, filevar_name, &name);
 			ok = JS_ExecuteScript(cx, this, script, &result);
-			JS_SetProperty(cx, global, filevar, &old);
+			JS_SetProperty(cx, global, filevar_name, &old);
 		}
 		JS_SetOptions(cx, oldopts);
 		if (!ok)
@@ -75,48 +75,20 @@ ngx_http_js__global__init(JSContext *cx)
 	JSObject *global;
 	JSObject *envobj;
 	
-	if (JS_GetGlobalObject(cx))
-	{
-		JS_ReportError(cx, "global object already defined");
-		return JS_FALSE;
-	}
+	TRACE();
 	
-	global = JS_NewObject(cx, &global_class, NULL, NULL);
-	if (global == NULL)
-		return JS_FALSE;
+	E(!JS_GetGlobalObject(cx), "global object already defined");
+	
+	E(global = JS_NewObject(cx, &global_class, NULL, NULL), "Can`t create new global object");
 	
 	JS_SetGlobalObject(cx, global);
-	
-	if (!JS_InitStandardClasses(cx, global))
-	{
-		JS_ReportError(cx, "Can`t JS_InitStandardClasses()");
-		return JS_FALSE;
-	}
-	
-	if (!JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0))
-	{
-		JS_ReportError(cx, "Can`t define property global.self");
-		return JS_FALSE;
-	}
-	
-	if (!JS_DefineProperty(cx, global, "global", OBJECT_TO_JSVAL(global), NULL, NULL, 0))
-	{
-		JS_ReportError(cx, "Can`t define property global.global");
-		return JS_FALSE;
-	}
-	
-	if (!JS_DefineFunction(cx, global, "load", global_load, 0, 0))
-	{
-		JS_ReportError(cx, "Can`t define function global.load");
-		return JS_FALSE;
-	}
+	E(JS_InitStandardClasses(cx, global), "Can`t JS_InitStandardClasses()");
+	E(JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0), "Can`t define property global.self");
+	E(JS_DefineProperty(cx, global, "global", OBJECT_TO_JSVAL(global), NULL, NULL, 0), "Can`t define property global.global");
+	E(JS_DefineFunction(cx, global, "load", method_load, 0, 0), "Can`t define function global.load");
 	
 	envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
-	if (!envobj || !JS_SetPrivate(cx, envobj, environ))
-	{
-		JS_ReportError(cx, "Can`t define object global.environment");
-		return JS_FALSE;
-	}
+	E(envobj && JS_SetPrivate(cx, envobj, environ), "Can`t define object global.environment");
 	
 	return JS_TRUE;
 }

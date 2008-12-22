@@ -18,6 +18,8 @@ method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	JSString                       *jsstr;
 	ngx_uint_t                      level;
 	
+	TRACE();
+	
 	private = JS_GetContextPrivate(cx);
 	if (!private)
 		return JS_FALSE;
@@ -39,6 +41,8 @@ method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 static JSBool
 js_nginx_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 {
+	TRACE();
+	
 	// LOG("Nginx property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
 	{
@@ -192,6 +196,8 @@ ngx_http_js__nginx__init(JSContext *cx)
 {
 	JSObject *nginxobj;
 	JSObject *global;
+	
+	TRACE();
 	
 	global = JS_GetGlobalObject(cx);
 	nginxobj = JS_DefineObject(cx, global, "Nginx", &nginx_class, NULL, JSPROP_ENUMERATE);
