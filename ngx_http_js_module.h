@@ -12,9 +12,10 @@ typedef struct {
     // void                 *next; // JSObject
     void                     *js_cx; // JSContext
     void                     *js_request; // JSObject
-    void                     *js_callback; // JSObject
+    void                     *js_request_callback; // JSObject
     void                     *js_headers_in; // JSObject
     void                     *js_headers_out; // JSObject
+    void                     *js_has_body_callback; // JSObject
 
 
     // ngx_uint_t                done;       /* unsigned  done:1; */
