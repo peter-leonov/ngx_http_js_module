@@ -17,7 +17,8 @@
 #include "../macroses.h"
 
 #define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
-#define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request callback function"
+#define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request subreuest callback function"
+#define JS_HAS_BODY_CALLBACK_ROOT_NAME     "Nginx.Request hasBody callback function"
 
 
 JSObject *ngx_http_js__nginx_request__prototype;
@@ -121,9 +122,13 @@ cleanup_handler(void *data)
 	if (!JS_RemoveRoot(cx, &ctx->js_request))
 		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 	
-	if (ctx->js_callback)
-		if (!JS_RemoveRoot(cx, &ctx->js_callback))
+	if (ctx->js_request_callback)
+		if (!JS_RemoveRoot(cx, &ctx->js_request_callback))
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+	
+	if (ctx->js_has_body_callback)
+		if (!JS_RemoveRoot(cx, &ctx->js_has_body_callback))
+			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HAS_BODY_CALLBACK_ROOT_NAME);
 	
 	// finaly mark the object as inactive
 	// after that the GET_PRIVATE macros will throw an exception when is called 
@@ -253,75 +258,105 @@ static JSBool
 method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
-	ngx_int_t            rc;
 	
 	TRACE();
 	GET_PRIVATE();
 	
 	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
 	
-	rc = ngx_http_send_special(r, (ngx_uint_t)JSVAL_TO_INT(argv[0]));
-	*rval = INT_TO_JSVAL(rc);
+	*rval = INT_TO_JSVAL(ngx_http_send_special(r, (ngx_uint_t)JSVAL_TO_INT(argv[0])));
 	return JS_TRUE;
 }
 
-static ngx_int_t
-method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
+void
+method_hasBody_handler(ngx_http_request_t *r);
+
+static JSBool
+method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	ngx_http_js_ctx_t                *ctx, *mctx;
-	JSObject                         *request, *subrequest, *func;
-	// JSString                         *body;
+	ngx_http_request_t  *r;
+	ngx_http_js_ctx_t   *ctx;
+	
+	TRACE();
+	GET_PRIVATE();
+	
+	E(argc == 1 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]), "Request#hasBody takes 1 argument: callback:Function");
+	
+	
+	if (r->headers_in.content_length_n <= 0)
+	{
+		*rval = JSVAL_FALSE;
+		return JS_TRUE;
+	}
+	
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	assert(ctx);
+	
+	ctx->js_has_body_callback = JSVAL_TO_OBJECT(argv[0]);
+	E(JS_AddNamedRoot(cx, &ctx->js_has_body_callback, JS_HAS_BODY_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+	
+	r->request_body_in_single_buf = 1;
+	r->request_body_in_persistent_file = 1;
+	r->request_body_in_clean_file = 1;
+	
+	if (r->request_body_in_file_only)
+		r->request_body_file_log_level = 0;
+	
+	*rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_hasBody_handler));
+	return JS_TRUE;
+}
+
+void
+method_hasBody_handler(ngx_http_request_t *r)
+{
+	ngx_http_js_ctx_t                *ctx;
+	JSObject                         *request, *callback;
 	JSContext                        *cx;
-	jsval                             rval, args[2];
+	jsval                             rval;
 	
 	TRACE();
 	
-	assert(sr);
-	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
-		return rc;
+	assert(r);
+	// if (r->connection->error)
+	// 	return;
 	
-	// LOG("sr in callback = %p", sr);
-	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	if (!ctx)
-		return NGX_ERROR;
+		return;
 	
 	cx = ctx->js_cx;
 	assert(cx);
-	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
-	assert(subrequest);
-	func = data;
-	assert(func);
-	
-	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
-	assert(mctx);
-	request = mctx->js_request;
+	request = ngx_http_js__nginx_request__wrap(cx, r);
 	assert(request);
+	callback = ctx->js_has_body_callback;
+	assert(callback);
 	
-	// LOG("data = %p", data);
-	// LOG("cx = %p", cx);
-	// LOG("request = %p", request);
-	
-	// LOG("sr->upstream = %p", sr->upstream);
-	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
-	
-	if (sr->upstream)
-		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
-	else
-		args[1] = JSVAL_VOID;
-	
-	
-	if (!JS_ObjectIsFunction(cx, func))
+	if (!JS_ObjectIsFunction(cx, callback))
 	{
-		JS_ReportError(cx, "subrequest callback is not a function");
-		return NGX_ERROR;
+		JS_ReportError(cx, "hasBody callback is not a function");
+		return;
 	}
 	
-	args[0] = OBJECT_TO_JSVAL(subrequest);
-	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(func), 2, args, &rval);
-	
-	return NGX_OK;
+	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(callback), 0, NULL, &rval);
 }
 
+
+static JSBool
+method_discardBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	// ngx_int_t            rc;
+	
+	TRACE();
+	GET_PRIVATE();
+	
+	*rval = INT_TO_JSVAL(ngx_http_discard_request_body(r));
+	return JS_TRUE;
+}
+
+
+static ngx_int_t
+method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
 
 static JSBool
 method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
@@ -391,8 +426,8 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 		ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 		assert(ctx);
 		// this helps to prevent wrong JS garbage collection
-		ctx->js_callback = psr->data;
-		E(JS_AddNamedRoot(cx, &ctx->js_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+		ctx->js_request_callback = psr->data;
+		E(JS_AddNamedRoot(cx, &ctx->js_request_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
 	}
 	
 	// LOG("sr in request() = %p", sr);
@@ -408,6 +443,63 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	return JS_TRUE;
 }
 
+static ngx_int_t
+method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
+{
+	ngx_http_js_ctx_t                *ctx, *mctx;
+	JSObject                         *request, *subrequest, *callback;
+	// JSString                         *body;
+	JSContext                        *cx;
+	jsval                             rval, args[2];
+	
+	TRACE();
+	
+	assert(sr);
+	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
+		return rc;
+	
+	// LOG("sr in callback = %p", sr);
+	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+	if (!ctx)
+		return NGX_ERROR;
+	
+	cx = ctx->js_cx;
+	assert(cx);
+	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
+	assert(subrequest);
+	callback = data;
+	assert(callback);
+	
+	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
+	assert(mctx);
+	request = mctx->js_request;
+	assert(request);
+	
+	// LOG("data = %p", data);
+	// LOG("cx = %p", cx);
+	// LOG("request = %p", request);
+	
+	// LOG("sr->upstream = %p", sr->upstream);
+	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
+	
+	if (sr->upstream)
+		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
+	else
+		args[1] = JSVAL_VOID;
+	
+	
+	if (!JS_ObjectIsFunction(cx, callback))
+	{
+		JS_ReportError(cx, "subrequest callback is not a function");
+		return NGX_ERROR;
+	}
+	
+	args[0] = OBJECT_TO_JSVAL(subrequest);
+	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(callback), 2, args, &rval);
+	
+	return NGX_OK;
+}
+
 
 static JSBool
 request_constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
@@ -420,7 +512,7 @@ enum request_propid
 {
 	REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
 	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
-	REQUEST_HEADER_ONLY
+	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_BODY
 };
 
 static JSBool
@@ -454,7 +546,7 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			break;
 			
 			case REQUEST_HEADER_ONLY:
-			*vp = INT_TO_JSVAL(r->header_only);
+			*vp = r->header_only ? JSVAL_TRUE : JSVAL_FALSE;
 			break;
 			
 			case REQUEST_HEADERS_IN:
@@ -465,6 +557,21 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			case REQUEST_HEADERS_OUT:
 			E(headers = ngx_http_js__nginx_headers_out__wrap(cx, r), "Can`t ngx_http_js__nginx_headers_out__wrap()");
 			*vp = OBJECT_TO_JSVAL(headers);
+			break;
+			
+			case REQUEST_BODY_FILENAME:
+			if (r->request_body != NULL && r->request_body->temp_file != NULL)
+				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->temp_file->file.name.data,
+					r->request_body->temp_file->file.name.len));
+			break;
+			
+			case REQUEST_BODY:
+		    if (r->request_body != NULL && !r->request_body->temp_file && r->request_body->bufs != NULL)
+			{
+				size_t len = r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos;
+				// if (len >= 0)
+					*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
+			}
 			break;
 		}
 	}
@@ -480,14 +587,13 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"headersOut",      REQUEST_HEADERS_OUT,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"args",            REQUEST_ARGS,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"headerOnly",      REQUEST_HEADER_ONLY,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	
 	// TODO:
-	// {"discardRequestBody",       MY_COLOR,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"requestBodyFile",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"allowRanges",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"headerOnly",      MY_RDONLY,      JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
@@ -499,6 +605,8 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"request",           method_request,              2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
+    {"discardBody",       method_discardBody,          0, 0, 0},
+    {"hasBody",           method_hasBody,              1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 
