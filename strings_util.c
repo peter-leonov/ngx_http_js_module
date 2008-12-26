@@ -6,6 +6,8 @@
 
 #include <js/jsapi.h>
 
+// TODO: think about the difference: JS_GetStringLength(str) is in 16-bit chars and strlen(JS_GetStringBytes(str)) is in bytes
+//       so if str contains a null character thees lengths wont be equal at all!
 
 ngx_buf_t *
 js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
@@ -83,10 +85,10 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, char **out_s, size_
 	assert(str);
 	assert(pool);
 	assert(out_s);
-	assert(out_len);
 	
 	*out_s = NULL;
-	*out_len = 0;
+	if (out_len)
+		*out_len = 0;
 	
 	len = JS_GetStringLength(str);
 	if (len == 0)
@@ -110,7 +112,8 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, char **out_s, size_
 	pool_p[len] = 0;
 	
 	*out_s = pool_p;
-	*out_len = len;
+	if (out_len)
+		*out_len = len;
 	
 	return JS_TRUE;
 }
