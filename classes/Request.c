@@ -355,6 +355,87 @@ method_discardBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 }
 
 
+static JSBool
+method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	char                      *filename;
+	int                        offset;
+	size_t                     bytes;
+	ngx_str_t                  path;
+	ngx_buf_t                 *b;
+	ngx_open_file_info_t       of;
+	ngx_http_core_loc_conf_t  *clcf;
+	ngx_chain_t                out;
+	// ngx_int_t            rc;
+	
+	TRACE();
+	GET_PRIVATE();
+	
+	
+	E(argc >= 1 && JSVAL_IS_STRING(argv[0]),
+		"Nginx.Request#sendfile takes 1 mandatory argument: filename:String, and 2 optional offset:Number and bytes:Number");
+	
+	
+	E(js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &filename, NULL), "Can`t js_str2c_str()");
+	assert(filename);
+	
+	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
+	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
+	
+	b = ngx_calloc_buf(r->pool);
+	E(b != NULL, "Can`t ngx_calloc_buf()");
+	
+	b->file = ngx_pcalloc(r->pool, sizeof(ngx_file_t));
+	E(b->file != NULL, "Can`t ngx_pcalloc()");
+	
+	clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+	assert(clcf);
+	
+	
+	of.test_dir = 0;
+	of.valid = clcf->open_file_cache_valid;
+	of.min_uses = clcf->open_file_cache_min_uses;
+	of.errors = clcf->open_file_cache_errors;
+	of.events = clcf->open_file_cache_events;
+	
+	path.len = ngx_strlen(filename);
+	
+	path.data = ngx_pcalloc(r->pool, path.len + 1);
+	E(path.data != NULL, "Can`t ngx_pcalloc()");
+	
+	(void) ngx_cpystrn(path.data, (u_char*)filename, path.len + 1);
+	
+	if (ngx_open_cached_file(clcf->open_file_cache, &path, &of, r->pool) != NGX_OK)
+	{
+		if (of.err != 0)
+			ngx_log_error(NGX_LOG_CRIT, r->connection->log, ngx_errno, ngx_open_file_n " \"%s\" failed", filename);
+		return JS_TRUE;
+	}
+	
+	if (offset == -1)
+		offset = 0;
+	
+	if (bytes == 0)
+		bytes = of.size - offset;
+	
+	b->in_file = 1;
+	
+	b->file_pos = offset;
+	b->file_last = offset + bytes;
+	
+	b->file->fd = of.fd;
+	b->file->log = r->connection->log;
+	
+	
+	out.buf = b;
+	out.next = NULL;
+	
+	*rval = INT_TO_JSVAL(ngx_http_output_filter(r, &out));
+	return JS_TRUE;
+}
+
+
 static ngx_int_t
 method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
 
@@ -510,7 +591,7 @@ request_constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsva
 
 enum request_propid
 {
-	REQUEST_URI, REQUEST_METHOD, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
+	REQUEST_URI, REQUEST_METHOD, REQUEST_FILENAME, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
 	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
 	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_BODY
 };
@@ -535,6 +616,24 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			
 			case REQUEST_METHOD:
 			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->method_name.data, r->method_name.len));
+			break;
+			
+			case REQUEST_FILENAME:
+			{
+				size_t root;
+				ngx_http_js_ctx_t  *ctx;
+				
+				ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+				assert(ctx);
+				if (!ctx->filename.data)
+				{
+					if (ngx_http_map_uri_to_path(r, &ctx->filename, &root, 0) == NULL)
+						break;
+					ctx->filename.len--;
+				}
+				
+				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) ctx->filename.data, ctx->filename.len));
+			}
 			break;
 			
 			case REQUEST_REMOTE_ADDR:
@@ -582,6 +681,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 {
 	{"uri",             REQUEST_URI,              JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"method",          REQUEST_METHOD,           JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"filename",        REQUEST_FILENAME,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"headersIn",       REQUEST_HEADERS_IN,       JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"headersOut",      REQUEST_HEADERS_OUT,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
@@ -607,6 +707,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
     {"discardBody",       method_discardBody,          0, 0, 0},
     {"hasBody",           method_hasBody,              1, 0, 0},
+    {"sendfile",          method_sendfile,             1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 
