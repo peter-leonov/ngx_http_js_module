@@ -1,13 +1,33 @@
 ngx_addon_name=ngx_http_js_module
 HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
+HTTP_AUX_FILTER_MODULES="$HTTP_AUX_FILTER_MODULES $ngx_addon_name"
+
+NGX_ADDON_DEPS="$ngx_addon_dir/macroses.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_js_module.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/ngx_http_js_module.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/nginx_js_glue.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/nginx_js_glue.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/strings_util.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/strings_util.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/global.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/global.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Nginx.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Nginx.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/HeadersIn.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/HeadersIn.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/HeadersOut.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/HeadersOut.h"
+
 
 echo "checking for JavaScript"
 NGX_JS="js"

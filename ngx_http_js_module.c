@@ -134,6 +134,18 @@ ngx_http_js_create_loc_conf(ngx_conf_t *cf)
 	return jslcf;
 }
 
+static ngx_int_t
+ngx_http_js_filter_init(ngx_conf_t *cf)
+{
+	TRACE();
+    // ngx_http_next_header_filter = ngx_http_top_header_filter;
+    // ngx_http_top_header_filter = ngx_http_addition_header_filter;
+    // 
+    // ngx_http_next_body_filter = ngx_http_top_body_filter;
+    // ngx_http_top_body_filter = ngx_http_addition_body_filter;
+
+    return NGX_OK;
+}
 
 
 
@@ -172,7 +184,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 static ngx_http_module_t  ngx_http_js_module_ctx =
 {
 	NULL,                                  /* preconfiguration */
-	NULL,                                  /* postconfiguration */
+	ngx_http_js_filter_init,               /* postconfiguration */
 	
 	ngx_http_js_create_main_conf,          /* create main configuration */
 	ngx_http_js_init_main_conf,            /* init main configuration */
