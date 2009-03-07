@@ -16,6 +16,10 @@ static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r);
 
 
+static ngx_http_output_header_filter_pt  ngx_http_next_header_filter;
+static ngx_http_output_body_filter_pt    ngx_http_next_body_filter;
+
+
 // callbacks
 
 static char *
@@ -53,12 +57,12 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	jslcf = conf;
 	value = cf->args->elts;
 	// LOG("js %s\n", value[1].data);
-	if (jslcf->handler.data)
+	if (jslcf->handler_name.data)
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);
 		return NGX_CONF_ERROR;
 	}
-	jslcf->handler = value[1];
+	jslcf->handler_name = value[1];
 	
 	
 	// JS side of question
@@ -68,6 +72,33 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
 	clcf->handler = ngx_http_js_handler;
+	
+	return NGX_CONF_OK;
+}
+
+
+static char *
+ngx_http_js_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	ngx_http_js_loc_conf_t     *jslcf;
+	ngx_str_t                  *value;
+	
+	TRACE();
+	
+	jslcf = conf;
+	value = cf->args->elts;
+	// LOG("js %s\n", value[1].data);
+	if (jslcf->filter_name.data)
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js filter \"%V\"", &value[1]);
+		return NGX_CONF_ERROR;
+	}
+	jslcf->filter_name = value[1];
+	
+	
+	// JS side of question
+	if (ngx_http_js__glue__set_filter(cf, cmd, jslcf) != NGX_CONF_OK)
+		return NGX_CONF_ERROR;
 	
 	return NGX_CONF_OK;
 }
@@ -120,32 +151,181 @@ ngx_http_js_init_main_conf(ngx_conf_t *cf, void *conf)
 static void *
 ngx_http_js_create_loc_conf(ngx_conf_t *cf)
 {
+	TRACE();
+	
 	ngx_http_js_loc_conf_t *jslcf;
 	
-	TRACE();
 	
 	jslcf = ngx_pcalloc(cf->pool, sizeof(ngx_http_js_loc_conf_t));
 	if (jslcf == NULL)
 		return NGX_CONF_ERROR;
 	
 	// set by ngx_pcalloc():
-	//  jslcf->handler = { 0, NULL };
+	//  jslcf->handler_function = NULL;
 
 	return jslcf;
+}
+
+
+static char *
+ngx_http_js_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
+{
+	ngx_http_js_loc_conf_t *prev = parent;
+	ngx_http_js_loc_conf_t *conf = child;
+	
+	if (conf->filter_function == NULL)
+		conf->filter_function = prev->filter_function;
+	
+	if (conf->filter_types == NULL)
+	{
+		if (prev->filter_types == NULL)
+		{
+			conf->filter_types = ngx_array_create(cf->pool, 1, sizeof(ngx_str_t));
+			if (conf->filter_types == NULL)
+				return NGX_CONF_ERROR;
+		}
+		else
+			conf->filter_types = prev->filter_types;
+	}
+	
+	return NGX_CONF_OK;
+}
+
+
+static ngx_int_t
+ngx_http_js_header_filter(ngx_http_request_t *r)
+{
+	TRACE();
+	
+	ngx_uint_t                i;
+	ngx_str_t                *type;
+	ngx_http_js_loc_conf_t   *jslcf;
+	ngx_http_js_ctx_t        *ctx;
+	
+	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
+	
+	if
+	(
+		!jslcf->filter_function
+		|| r->headers_out.content_type.len == 0
+		|| r->headers_out.content_length_n == 0
+	)
+		return ngx_http_next_header_filter(r);
+	
+	
+	type = jslcf->filter_types->elts;
+	for (i = 0; i < jslcf->filter_types->nelts; i++)
+	{
+		if
+		(
+			r->headers_out.content_type.len >= type[i].len
+			&& ngx_strncasecmp(r->headers_out.content_type.data, type[i].data, type[i].len) == 0
+		)
+			goto found;
+	}
+	
+	return ngx_http_next_header_filter(r);
+	
+	
+	found:
+	
+	// LOG("found");
+	
+	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	{
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+			return NGX_ERROR;
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	ctx->filter_enabled = 1;
+	
+	r->filter_need_in_memory = 1;
+	
+	if (r == r->main)
+	{
+		ngx_http_clear_content_length(r);
+		ngx_http_clear_last_modified(r);
+	}
+	
+	return ngx_http_next_header_filter(r);
+}
+
+static ngx_int_t
+ngx_http_js_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
+{
+	TRACE();
+	
+	ngx_http_js_ctx_t        *ctx;
+	
+	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)) && ctx->filter_enabled)
+	{
+		if (ngx_http_js__glue__call_filter(r) == NGX_ERROR)
+			return NGX_ERROR;
+	}
+	
+	
+	return ngx_http_next_body_filter(r, in);
 }
 
 static ngx_int_t
 ngx_http_js_filter_init(ngx_conf_t *cf)
 {
 	TRACE();
-    // ngx_http_next_header_filter = ngx_http_top_header_filter;
-    // ngx_http_top_header_filter = ngx_http_addition_header_filter;
-    // 
-    // ngx_http_next_body_filter = ngx_http_top_body_filter;
-    // ngx_http_top_body_filter = ngx_http_addition_body_filter;
+    ngx_http_next_header_filter = ngx_http_top_header_filter;
+	ngx_http_top_header_filter = ngx_http_js_header_filter;
+    
+    ngx_http_next_body_filter = ngx_http_top_body_filter;
+    ngx_http_top_body_filter = ngx_http_js_body_filter;
 
     return NGX_OK;
 }
+
+
+static char *
+ngx_http_js_filter_types(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	ngx_http_js_loc_conf_t *jslcf = conf;
+	
+	ngx_str_t   *value, *type;
+	ngx_uint_t   i;
+	
+	if (cf->args->nelts == 0)
+	{
+		jslcf->filter_types = NULL;
+		return NGX_CONF_OK;
+	}
+	
+	if (jslcf->filter_types == NULL)
+	{
+		jslcf->filter_types = ngx_array_create(cf->pool, 4, sizeof(ngx_str_t));
+		if (jslcf->filter_types == NULL)
+			return NGX_CONF_ERROR;
+	}
+	
+	value = cf->args->elts;
+	
+	for (i = 1; i < cf->args->nelts; i++)
+	{
+		type = ngx_array_push(jslcf->filter_types);
+		if (type == NULL)
+			return NGX_CONF_ERROR;
+		
+		type->len = value[i].len;
+		
+		type->data = ngx_palloc(cf->pool, type->len + 1);
+		if (type->data == NULL)
+			return NGX_CONF_ERROR;
+		
+		ngx_cpystrn(type->data, value[i].data, type->len + 1);
+    }
+
+    return NGX_CONF_OK;
+}
+
 
 
 
@@ -164,6 +344,24 @@ static ngx_command_t  ngx_http_js_commands[] =
 		ngx_string("js"),
 		NGX_HTTP_LOC_CONF|NGX_HTTP_LMT_CONF|NGX_CONF_TAKE1,
 		ngx_http_js,
+		NGX_HTTP_LOC_CONF_OFFSET,
+		0,
+		NULL
+	},
+	
+	{
+		ngx_string("js_filter"),
+		NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+		ngx_http_js_filter,
+		NGX_HTTP_LOC_CONF_OFFSET,
+		0,
+		NULL
+	},
+	
+	{
+		ngx_string("js_filter_types"),
+		NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_1MORE,
+		ngx_http_js_filter_types,
 		NGX_HTTP_LOC_CONF_OFFSET,
 		0,
 		NULL
@@ -193,7 +391,7 @@ static ngx_http_module_t  ngx_http_js_module_ctx =
 	NULL,                                  /* merge server configuration */
 	
 	ngx_http_js_create_loc_conf,           /* create location configuration */
-	NULL                                   /* merge location configuration */
+	ngx_http_js_merge_loc_conf             /* merge location configuration */
 };
 
 

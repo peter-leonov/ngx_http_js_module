@@ -5,32 +5,31 @@
 typedef ngx_http_request_t   *nginx;
 
 typedef struct {
-    ngx_str_t                 filename;
-    ngx_str_t                 redirect_uri;
-    ngx_str_t                 redirect_args;
-
-    // void                 *next; // JSObject
-    void                     *js_cx; // JSContext
-    void                     *js_request; // JSObject
-    void                     *js_request_callback; // JSObject
-    void                     *js_headers_in; // JSObject
-    void                     *js_headers_out; // JSObject
-    void                     *js_has_body_callback; // JSObject
-
-
-    // ngx_uint_t                done;       /* unsigned  done:1; */
-
-
-#if (NGX_HTTP_SSI)
-    ngx_http_ssi_ctx_t        *ssi;
-#endif
+	ngx_str_t                 filename;
+	ngx_str_t                 redirect_uri;
+	ngx_str_t                 redirect_args;
+	
+	// void                 *next; // JSObject
+	void                     *js_cx; // JSContext
+	void                     *js_request; // JSObject
+	void                     *js_request_callback; // JSObject
+	void                     *js_headers_in; // JSObject
+	void                     *js_headers_out; // JSObject
+	void                     *js_has_body_callback; // JSObject
+	
+	int                       filter_enabled;
+	
+	// ngx_uint_t                done;       /* unsigned  done:1; */
 } ngx_http_js_ctx_t;
 
 
 
 typedef struct {
-    void                      *sub; // JSObject
-    ngx_str_t                  handler;
+    void                      *handler_function; // JSObject
+    ngx_str_t                  handler_name;
+	void                      *filter_function; // JSObject;
+    ngx_str_t                  filter_name;
+    ngx_array_t               *filter_types;
 } ngx_http_js_loc_conf_t;
 
 

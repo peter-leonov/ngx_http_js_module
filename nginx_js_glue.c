@@ -219,7 +219,7 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	ngx_http_js_main_conf_t    *jsmcf;
 	JSContext                  *cx;
 	JSObject                   *global;
-	jsval                       sub;
+	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
 	TRACE();
@@ -235,17 +235,61 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	
 	
 	value = cf->args->elts;
-	if (!JS_EvaluateScript(cx, global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &sub))
+	if (!JS_EvaluateScript(cx, global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(sub) || !JS_ValueToFunction(cx, sub))
+	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(cx, function))
 	{
 		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
 		return NGX_CONF_ERROR;
 	}
 	
-	jslcf->sub = JSVAL_TO_OBJECT(sub);
-	if (!JS_AddNamedRoot(cx, &jslcf->sub, JS_CALLBACK_ROOT_NAME))
+	jslcf->handler_function = JSVAL_TO_OBJECT(function);
+	if (!JS_AddNamedRoot(cx, &jslcf->handler_function, JS_CALLBACK_ROOT_NAME))
+	{
+		JS_ReportError(cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
+		return NGX_CONF_ERROR;
+	}
+	
+	
+	return NGX_CONF_OK;
+}
+
+
+char *
+ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
+{
+	ngx_str_t                  *value;
+	ngx_http_js_main_conf_t    *jsmcf;
+	JSContext                  *cx;
+	JSObject                   *global;
+	jsval                       function;
+	static char                *JS_CALLBACK_ROOT_NAME = "js filter instance";
+	
+	TRACE();
+	
+	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
+	
+	if (jsmcf->js_cx == NULL)
+		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
+			return NGX_CONF_ERROR;
+	
+	cx = jsmcf->js_cx;
+	global = jsmcf->js_global;
+	
+	
+	value = cf->args->elts;
+	if (!JS_EvaluateScript(cx, global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
+		return NGX_CONF_ERROR;
+	
+	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(cx, function))
+	{
+		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
+		return NGX_CONF_ERROR;
+	}
+	
+	jslcf->filter_function = JSVAL_TO_OBJECT(function);
+	if (!JS_AddNamedRoot(cx, &jslcf->filter_function, JS_CALLBACK_ROOT_NAME))
 	{
 		JS_ReportError(cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
 		return NGX_CONF_ERROR;
@@ -262,10 +306,9 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
 	ngx_int_t                    rc;
 	ngx_connection_t            *c;
-	JSObject                    *global, *request, *sub;
+	JSObject                    *global, *request, *function;
 	jsval                        req;
 	jsval                        rval;
-	// ngx_http_js_ctx_t           *ctx;
 	ngx_http_js_loc_conf_t      *jslcf;
 	ngx_http_js_main_conf_t     *jsmcf;
 	ngx_http_js_ctx_t           *ctx;
@@ -286,8 +329,8 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	assert(cx && global);
 	
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
-	sub = jslcf->sub;
-	assert(sub);
+	function = jslcf->handler_function;
+	assert(function);
 	
 	rc = NGX_HTTP_OK;
 	
@@ -302,7 +345,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	c = r->connection;
 	
 	req = OBJECT_TO_JSVAL(request);
-	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(sub), 1, &req, &rval))
+	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
 		{
@@ -338,6 +381,64 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	// 	// LOG("ngx_http_send_special");
 	// 	// ctx->done = 1;
 	// }
+	
+	return rc;
+}
+
+
+ngx_int_t
+ngx_http_js__glue__call_filter(ngx_http_request_t *r)
+{
+	ngx_int_t                    rc;
+	JSObject                    *global, *request, *function;
+	jsval                        req;
+	jsval                        rval;
+	ngx_http_js_loc_conf_t      *jslcf;
+	ngx_http_js_main_conf_t     *jsmcf;
+	ngx_http_js_ctx_t           *ctx;
+	JSContext                   *cx;
+	
+	TRACE();
+	
+	assert(r);
+	
+	
+	jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
+	assert(jsmcf);
+	
+	cx = jsmcf->js_cx;
+	global = jsmcf->js_global;
+	assert(cx && global);
+	
+	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
+	function = jslcf->filter_function;
+	assert(function);
+	
+	rc = NGX_HTTP_OK;
+	
+	request = ngx_http_js__nginx_request__wrap(cx, r);
+	if (request == NULL)
+		return NGX_ERROR;
+	
+	// ctx was allocated in ngx_http_js__nginx_request__wrap
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	assert(ctx);
+	
+	
+	req = OBJECT_TO_JSVAL(request);
+	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
+	{
+		if (!JSVAL_IS_INT(rval))
+		{
+			rc = NGX_ERROR;
+			JS_ReportError(cx, "Filter processor must return an Integer");
+		}
+		else
+			rc = (ngx_int_t)JSVAL_TO_INT(rval);
+	}
+	else
+		rc = NGX_ERROR;
+	
 	
 	return rc;
 }

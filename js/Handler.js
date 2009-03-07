@@ -17,6 +17,12 @@ self.Handler =
 		return Nginx.OK
 	},
 	
+	processFilter: function (r)
+	{
+		log("processFilter")
+		return Nginx.OK
+	},
+	
 	// processRequest: function (r)
 	// {
 	// 	log("processRequest")
