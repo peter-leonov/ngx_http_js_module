@@ -1,0 +1,12 @@
+#!/bin/sh
+
+cd $1
+NGX_OBJS=$2
+
+echo "NGX_OBJS=$NGX_OBJS"
+
+for f in tests/*
+do
+	./$f
+done
+
