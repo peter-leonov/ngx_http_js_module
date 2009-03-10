@@ -387,12 +387,12 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 
 
 ngx_int_t
-ngx_http_js__glue__call_filter(ngx_http_request_t *r)
+ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
 	ngx_int_t                    rc;
 	JSObject                    *global, *request, *function;
-	jsval                        req;
-	jsval                        rval;
+	// jsval                        req;
+	jsval                        rval, args[2];
 	ngx_http_js_loc_conf_t      *jslcf;
 	ngx_http_js_main_conf_t     *jsmcf;
 	ngx_http_js_ctx_t           *ctx;
@@ -425,8 +425,24 @@ ngx_http_js__glue__call_filter(ngx_http_request_t *r)
 	assert(ctx);
 	
 	
-	req = OBJECT_TO_JSVAL(request);
-	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
+	// for (in=in; in; in = in->next) {
+	// 	LOG("in = %p", in);
+	//     }
+	
+	// LOG("in = %p", in->buf);
+	
+	args[0] = OBJECT_TO_JSVAL(request);
+	if (r->upstream)
+		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) r->upstream->buffer.pos, r->upstream->buffer.last-r->upstream->buffer.pos));
+	else if (in && in->buf)
+		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) in->buf->pos, in->buf->last-in->buf->pos));
+	else
+		args[1] = JSVAL_VOID;
+	
+	
+	
+	// req = OBJECT_TO_JSVAL(request);
+	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(function), 2, args, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
 		{

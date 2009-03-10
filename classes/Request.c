@@ -205,6 +205,45 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 
 
 static JSBool
+method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	ngx_buf_t           *b;
+	size_t               len;
+	JSString            *str;
+	ngx_chain_t          out;
+	ngx_int_t            rc;
+	
+	TRACE();
+	GET_PRIVATE();
+	
+	E(ngx_http_js_next_body_filter != NULL, "ngx_http_js_next_body_filter is NULL at this moment");
+	
+	if (argc == 1 && JSVAL_IS_STRING(argv[0]))
+	{
+		str = JSVAL_TO_STRING(argv[0]);
+		len = JS_GetStringLength(str);
+		if (len == 0)
+			return JS_TRUE;
+		b = js_str2ngx_buf(cx, str, r->pool, len);
+		b->last_buf = 1;
+	
+		out.buf = b;
+		out.next = NULL;
+		rc = ngx_http_js_next_body_filter(r, &out);
+	}
+	else if (argc == 0 || (argc == 1 && JSVAL_IS_VOID(argv[0])))
+		rc = ngx_http_js_next_body_filter(r, NULL);
+	else
+		E(0, "Nginx.Request#nextBodyFilter takes 1 optional argument: str:(String|undefined)");
+	
+	*rval = INT_TO_JSVAL(rc);
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
@@ -708,6 +747,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"discardBody",       method_discardBody,          0, 0, 0},
     {"hasBody",           method_hasBody,              1, 0, 0},
     {"sendfile",          method_sendfile,             1, 0, 0},
+    {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 

@@ -49,6 +49,9 @@ typedef struct {
 } ngx_http_js_context_private_t;
 
 
+extern ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter;
+extern ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter;
+
 extern ngx_module_t  ngx_http_js_module;
 
 #endif

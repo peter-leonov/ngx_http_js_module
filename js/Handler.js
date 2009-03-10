@@ -17,12 +17,27 @@ self.Handler =
 		return Nginx.OK
 	},
 	
-	processFilter: function (r)
+	processFilter: function (r, body)
 	{
-		log("processFilter")
-		return Nginx.OK
+		log("processFilter: " + body)
+		
+		function callback (sr, body)
+		{
+			log(sr.uri + " is loaded: " + body.length + " bytes")
+			
+			r.nextBodyFilter(body)
+		}
+		return /nginx/.test(body) ? r.request("/lib", callback) : r.nextBodyFilter(body)
 	},
 	
+	// processFilter: function (r, body)
+	// {
+	// 	log("processFilter")
+	// 	var rc = r.nextBodyFilter(body.replace(/[<>]/g, ''))
+	// 	// log("rc = " + rc)
+	// 	return rc
+	// },
+	// 
 	// processRequest: function (r)
 	// {
 	// 	log("processRequest")

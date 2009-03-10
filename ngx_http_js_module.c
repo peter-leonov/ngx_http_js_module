@@ -16,9 +16,8 @@ static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r);
 
 
-static ngx_http_output_header_filter_pt  ngx_http_next_header_filter;
-static ngx_http_output_body_filter_pt    ngx_http_next_body_filter;
-
+ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter = NULL;
+ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter = NULL;
 
 // callbacks
 
@@ -195,12 +194,12 @@ ngx_http_js_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 static ngx_int_t
 ngx_http_js_header_filter(ngx_http_request_t *r)
 {
-	TRACE();
-	
 	ngx_uint_t                i;
 	ngx_str_t                *type;
 	ngx_http_js_loc_conf_t   *jslcf;
 	ngx_http_js_ctx_t        *ctx;
+	
+	TRACE();
 	
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
 	
@@ -210,7 +209,7 @@ ngx_http_js_header_filter(ngx_http_request_t *r)
 		|| r->headers_out.content_type.len == 0
 		|| r->headers_out.content_length_n == 0
 	)
-		return ngx_http_next_header_filter(r);
+		return ngx_http_js_next_header_filter(r);
 	
 	
 	type = jslcf->filter_types->elts;
@@ -224,7 +223,7 @@ ngx_http_js_header_filter(ngx_http_request_t *r)
 			goto found;
 	}
 	
-	return ngx_http_next_header_filter(r);
+	return ngx_http_js_next_header_filter(r);
 	
 	
 	found:
@@ -251,34 +250,31 @@ ngx_http_js_header_filter(ngx_http_request_t *r)
 		ngx_http_clear_last_modified(r);
 	}
 	
-	return ngx_http_next_header_filter(r);
+	return ngx_http_js_next_header_filter(r);
 }
 
 static ngx_int_t
 ngx_http_js_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
-	TRACE();
-	
 	ngx_http_js_ctx_t        *ctx;
 	
+	TRACE();
+	
 	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)) && ctx->filter_enabled)
-	{
-		if (ngx_http_js__glue__call_filter(r) == NGX_ERROR)
-			return NGX_ERROR;
-	}
+		return ngx_http_js__glue__call_filter(r, in);
 	
-	
-	return ngx_http_next_body_filter(r, in);
+	return ngx_http_js_next_body_filter(r, in);
 }
 
 static ngx_int_t
 ngx_http_js_filter_init(ngx_conf_t *cf)
 {
 	TRACE();
-    ngx_http_next_header_filter = ngx_http_top_header_filter;
+	
+    ngx_http_js_next_header_filter = ngx_http_top_header_filter;
 	ngx_http_top_header_filter = ngx_http_js_header_filter;
     
-    ngx_http_next_body_filter = ngx_http_top_body_filter;
+    ngx_http_js_next_body_filter = ngx_http_top_body_filter;
     ngx_http_top_body_filter = ngx_http_js_body_filter;
 
     return NGX_OK;
@@ -288,6 +284,8 @@ ngx_http_js_filter_init(ngx_conf_t *cf)
 static char *
 ngx_http_js_filter_types(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
+	TRACE();
+	
 	ngx_http_js_loc_conf_t *jslcf = conf;
 	
 	ngx_str_t   *value, *type;
