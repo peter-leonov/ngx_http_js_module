@@ -21,6 +21,7 @@
 
 JSObject *ngx_http_js__nginx_headers_in__prototype;
 JSClass ngx_http_js__nginx_headers_in__class;
+static JSClass* private_class = &ngx_http_js__nginx_headers_in__class;
 
 static ngx_table_elt_t *
 search_headers_in(ngx_http_request_t *r, char *name, u_int len);
@@ -84,7 +85,7 @@ method_empty(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval
 	TRACE();
 	ngx_http_request_t  *r;
 	
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.HeadersIn#empty takes 1 argument: str:String");
 	
@@ -112,7 +113,7 @@ getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 	ngx_table_elt_t            *header;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
 	{
@@ -143,7 +144,7 @@ setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 	JSString                   *key_jsstr, *value_jsstr;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	// E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
 	if (JSVAL_IS_STRING(id))

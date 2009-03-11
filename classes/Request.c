@@ -23,6 +23,7 @@
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
+static JSClass *private_class = &ngx_http_js__nginx_request__class;
 
 static void
 cleanup_handler(void *data);
@@ -149,7 +150,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 	ngx_http_request_t *r;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	if (r->headers_out.status == 0)
 		r->headers_out.status = NGX_HTTP_OK;
@@ -183,7 +184,7 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	ngx_int_t            rc;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
 	
@@ -215,7 +216,7 @@ method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 	ngx_int_t            rc;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	E(ngx_http_js_next_body_filter != NULL, "ngx_http_js_next_body_filter is NULL at this moment");
 	
@@ -254,7 +255,7 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	ngx_int_t            rc;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	E(((argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1]))),
 		"Nginx.Request#sendString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
@@ -299,7 +300,7 @@ method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	ngx_http_request_t  *r;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
 	
@@ -317,7 +318,7 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	ngx_http_js_ctx_t   *ctx;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	E(argc == 1 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]), "Request#hasBody takes 1 argument: callback:Function");
 	
@@ -387,7 +388,7 @@ method_discardBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	// ngx_int_t            rc;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	*rval = INT_TO_JSVAL(ngx_http_discard_request_body(r));
 	return JS_TRUE;
@@ -409,7 +410,7 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	// ngx_int_t            rc;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	
 	E(argc >= 1 && JSVAL_IS_STRING(argv[0]),
@@ -492,7 +493,7 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	JSObject                    *callback;
 	
 	TRACE();
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	// LOG("argc = %u", argc);
 	E((argc == 1 && JSVAL_IS_STRING(argv[0]))
@@ -643,7 +644,7 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 	// LOG("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	// JS_ReportError(cx, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
 	
-	GET_PRIVATE();
+	GET_PRIVATE(r);
 	
 	if (JSVAL_IS_INT(id))
 	{

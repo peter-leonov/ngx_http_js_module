@@ -13,10 +13,10 @@
 // #define TRACE() { fprintf(stderr, "%s()\n", __FUNCTION__); }
 #define TRACE()
 
-#define GET_PRIVATE(args...) \
+#define GET_PRIVATE(private) \
 assert(cx); \
 assert(this); \
-if ( (r = JS_GetPrivate(cx, this)) == NULL ) \
+if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) \
 { \
 	JS_ReportError(cx, "wrapper object has NULL private pointer in %s\n%s: %u", __FUNCTION__, __FILE__, __LINE__); \
 	return JS_FALSE; \
