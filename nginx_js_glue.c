@@ -12,6 +12,7 @@
 #include "classes/Request.h"
 #include "classes/HeadersIn.h"
 #include "classes/HeadersOut.h"
+#include "classes/Chain.h"
 
 #include "macroses.h"
 
@@ -195,6 +196,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	if (!ngx_http_js__nginx_headers_out__init(cx))
 	{
 		JS_ReportError(cx, "Can`t initialize Nginx.HeadersOut class");
+		return NGX_CONF_ERROR;
+	}
+	
+	// Nginx.Chain
+	if (!ngx_http_js__nginx_chain__init(cx))
+	{
+		JS_ReportError(cx, "Can`t initialize Nginx.Chain class");
 		return NGX_CONF_ERROR;
 	}
 	
@@ -390,7 +398,7 @@ ngx_int_t
 ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
 	ngx_int_t                    rc;
-	JSObject                    *global, *request, *function;
+	JSObject                    *global, *request, *chain, *function;
 	// jsval                        req;
 	jsval                        rval, args[2];
 	ngx_http_js_loc_conf_t      *jslcf;
@@ -425,17 +433,17 @@ ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 	assert(ctx);
 	
 	
-	// for (in=in; in; in = in->next) {
-	// 	LOG("in = %p", in);
-	//     }
-	
-	// LOG("in = %p", in->buf);
-	
 	args[0] = OBJECT_TO_JSVAL(request);
-	if (r->upstream)
-		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) r->upstream->buffer.pos, r->upstream->buffer.last-r->upstream->buffer.pos));
-	else if (in && in->buf)
-		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) in->buf->pos, in->buf->last-in->buf->pos));
+	// if (r->upstream)
+	// 	args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) r->upstream->buffer.pos, r->upstream->buffer.last-r->upstream->buffer.pos));
+	// else
+	if (in)
+	{
+		chain = ngx_http_js__nginx_chain__wrap(cx, in, request);
+		if (!chain)
+			return NGX_ERROR;
+		args[1] = OBJECT_TO_JSVAL(chain);
+	}
 	else
 		args[1] = JSVAL_VOID;
 	

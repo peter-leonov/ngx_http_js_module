@@ -13,6 +13,7 @@
 #include "../strings_util.h"
 #include "HeadersIn.h"
 #include "HeadersOut.h"
+#include "Chain.h"
 
 #include "../macroses.h"
 
@@ -212,7 +213,7 @@ method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 	ngx_buf_t           *b;
 	size_t               len;
 	JSString            *str;
-	ngx_chain_t          out;
+	ngx_chain_t          out, *ch;
 	ngx_int_t            rc;
 	
 	TRACE();
@@ -232,6 +233,16 @@ method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 		out.buf = b;
 		out.next = NULL;
 		rc = ngx_http_js_next_body_filter(r, &out);
+	}
+	else if (argc == 1 && JSVAL_IS_OBJECT(argv[0]))
+	{
+		if ( (ch = JS_GetInstancePrivate(cx, JSVAL_TO_OBJECT(argv[0]), &ngx_http_js__nginx_chain__class, NULL)) == NULL )
+		{
+			JS_ReportError(cx, "second parameter is object but not a chain or chain has NULL private pointer");
+			return JS_FALSE;
+		}
+		
+		rc = ngx_http_js_next_body_filter(r, ch);
 	}
 	else if (argc == 0 || (argc == 1 && JSVAL_IS_VOID(argv[0])))
 		rc = ngx_http_js_next_body_filter(r, NULL);

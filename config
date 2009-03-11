@@ -28,6 +28,9 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/HeadersIn.h"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/HeadersOut.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/HeadersOut.h"
 
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Chain.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Chain.h"
+
 
 echo "checking for JavaScript"
 NGX_JS="js"

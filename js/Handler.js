@@ -17,9 +17,9 @@ self.Handler =
 		return Nginx.OK
 	},
 	
-	processFilter: function (r, body)
+	processFilter: function (r, chain)
 	{
-		log("processFilter: " + body)
+		log("processFilter: " + chain)
 		
 		function callback (sr, body)
 		{
@@ -27,7 +27,7 @@ self.Handler =
 			
 			r.nextBodyFilter(body)
 		}
-		return /nginx/.test(body) ? r.request("/lib", callback) : r.nextBodyFilter(body)
+		return /nginx/.test(chain) ? r.request("/lib", callback) : r.nextBodyFilter(chain)
 	},
 	
 	// processFilter: function (r, body)
