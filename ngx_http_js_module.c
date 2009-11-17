@@ -337,7 +337,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 		0,
 		NULL
 	},
-
+	
 	{
 		ngx_string("js"),
 		NGX_HTTP_LOC_CONF|NGX_HTTP_LMT_CONF|NGX_CONF_TAKE1,

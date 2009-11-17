@@ -1,4 +1,3 @@
-
 #ifndef _NGX_HTTP_JS_MODULE_H_INCLUDED_
 #define _NGX_HTTP_JS_MODULE_H_INCLUDED_
 
@@ -25,19 +24,19 @@ typedef struct {
 
 
 typedef struct {
-    void                      *handler_function; // JSObject
-    ngx_str_t                  handler_name;
+	void                      *handler_function; // JSObject
+	ngx_str_t                  handler_name;
 	void                      *filter_function; // JSObject;
-    ngx_str_t                  filter_name;
-    ngx_array_t               *filter_types;
+	ngx_str_t                  filter_name;
+	ngx_array_t               *filter_types;
 } ngx_http_js_loc_conf_t;
 
 
 
 typedef struct{
-    void                      *js_cx; // JSContext
-    void                      *js_global; // JSObject
-    ngx_array_t                requires;
+	void                      *js_cx; // JSContext
+	void                      *js_global; // JSObject
+	ngx_array_t                requires;
 } ngx_http_js_main_conf_t;
 
 
