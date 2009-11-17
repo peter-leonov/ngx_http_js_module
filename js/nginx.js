@@ -54,12 +54,12 @@ self.require = function (fname)
 		for (var i = 0; i < lib.length; i++)
 		{
 			var path = lib[i] + "/" + fname
-			if (new File(path).exists)
+			try
 			{
-				load(lib.required[fname] = path)
-				// log(fname + " is loaded by path " + path)
-				return path
+				load(path)
+				return lib.required[fname] = path
 			}
+			catch (ex) {}
 		}
 		throw "Can`t find '" + fname + "' in [" + lib.join(", ") + "]"
 	}

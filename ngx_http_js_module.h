@@ -36,7 +36,7 @@ typedef struct {
 typedef struct{
 	void                      *js_cx; // JSContext
 	void                      *js_global; // JSObject
-	ngx_array_t                requires;
+	ngx_array_t                requires, loads;
 } ngx_http_js_main_conf_t;
 
 

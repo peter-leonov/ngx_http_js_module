@@ -22,6 +22,29 @@ ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter = NULL;
 // callbacks
 
 static char *
+ngx_http_js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	ngx_http_js_main_conf_t    *jsmcf;
+	u_char                    **p;
+	ngx_str_t                  *value;
+	
+	TRACE();
+	
+	value = cf->args->elts;
+	
+	jsmcf = conf;
+	p = ngx_array_push(&jsmcf->loads);
+	
+	if (p == NULL)
+		return NGX_CONF_ERROR;
+	
+	*p = value[1].data;
+	
+	return NGX_CONF_OK;
+}
+
+
+static char *
 ngx_http_js_require(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	ngx_http_js_main_conf_t    *jsmcf;
@@ -133,6 +156,9 @@ ngx_http_js_create_main_conf(ngx_conf_t *cf)
 		return NGX_CONF_ERROR;
 	
 	if (ngx_array_init(&jsmcf->requires, cf->pool, 1, sizeof(u_char *)) != NGX_OK)
+		return NULL;
+	
+	if (ngx_array_init(&jsmcf->loads, cf->pool, 1, sizeof(u_char *)) != NGX_OK)
 		return NULL;
 	
 	return jsmcf;
@@ -329,6 +355,15 @@ ngx_http_js_filter_types(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 static ngx_command_t  ngx_http_js_commands[] =
 {
+	{
+		ngx_string("js_load"),
+		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,
+		ngx_http_js_load,
+		NGX_HTTP_MAIN_CONF_OFFSET,
+		0,
+		NULL
+	},
+	
 	{
 		ngx_string("js_require"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,

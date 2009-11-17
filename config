@@ -54,8 +54,3 @@ else
     
     exit 1;
 fi
-
-# defining path for main js-file: nginx.js
-NGX_HTTP_JS_CONF_PATH="$NGX_PREFIX/js/nginx.js"
-have=NGX_HTTP_JS_CONF_PATH value="\"$NGX_HTTP_JS_CONF_PATH\""
-. auto/define

@@ -76,20 +76,40 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 }
 
 static ngx_int_t
+ngx_http_js_run_loads(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
+{
+	char          **script;
+	ngx_uint_t      i;
+	char           *value;
+	
+	TRACE();
+		
+	script = requires->elts;
+	for (i = 0; i < requires->nelts; i++)
+	{
+		value = script[i];
+		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, log, 0, "js_load: %s\n", value);
+		
+		if (!ngx_http_js_load(cx, global, (char*)value))
+			return NGX_ERROR;
+	}
+	
+	return NGX_OK;
+}
+
+
+static ngx_int_t
 ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
 {
-	// ngx_str_t     **script;
 	char          **script;
 	ngx_uint_t      i;
 	jsval           rval, strval, fval;
-	// ngx_str_t      *value;
 	char           *value;
-	// JSObject       *require;
 	
 	TRACE();
 	
-	if (!ngx_http_js_load(cx, global, NGX_HTTP_JS_CONF_PATH))
-		return NGX_ERROR;
+	if (requires->nelts == 0)
+		return NGX_OK;
 	
 	if (!JS_GetProperty(cx, global, "require", &fval))
 	{
@@ -106,7 +126,7 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 	for (i = 0; i < requires->nelts; i++)
 	{
 		value = script[i];
-		// LOG("load %s\n", value);
+		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, log, 0, "js_require: %s\n", value);
 		
 		strval = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, (char*)value));
 		if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
@@ -212,6 +232,9 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	
 	jsmcf->js_cx = static_cx = cx;
 	jsmcf->js_global = global;
+	
+	if (ngx_http_js_run_loads(static_cx, global, &jsmcf->loads, cf->log) != NGX_OK)
+		return NGX_CONF_ERROR;
 	
 	if (ngx_http_js_run_requires(static_cx, global, &jsmcf->requires, cf->log) != NGX_OK)
 		return NGX_CONF_ERROR;
