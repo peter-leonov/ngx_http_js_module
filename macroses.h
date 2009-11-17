@@ -28,9 +28,6 @@ if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) 
 // Enshure wrapper
 #define E(expr, mess, args...) if (!(expr)) { LOG(#expr); THROW(mess, ##args); return JS_FALSE; }
 
-#define DO_THROW(mess, args...) (throw_error = 1); \
-	if (throw_error) { THROW(mess, ##args); }
-
 
 
 #define NCASE_COMPARE(ngxstring, cstring) ((ngxstring).len == sizeof(cstring) - 1 \
@@ -38,9 +35,5 @@ if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) 
 
 #define CASE_COMPARE(ngxstring, cstring) ((ngxstring).len == sizeof(cstring) - 1 \
 	&& ngx_strcasecmp((ngxstring).data, (u_char *)(cstring), sizeof(cstring) - 1) == 0)
-
-static int throw_error = 0;
-// to avoid "not used" warning
-static void throw_error_stub() { throw_error = 0; }
 
 #endif

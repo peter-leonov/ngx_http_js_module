@@ -80,21 +80,6 @@ ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx
 
 
 static JSBool
-method_empty(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
-{
-	TRACE();
-	ngx_http_request_t  *r;
-	
-	GET_PRIVATE(r);
-	
-	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.HeadersIn#empty takes 1 argument: str:String");
-	
-	return JS_TRUE;
-}
-
-
-
-static JSBool
 constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	TRACE();
