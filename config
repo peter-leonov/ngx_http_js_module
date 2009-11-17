@@ -33,28 +33,23 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Chain.h"
 
 
 echo "checking for JavaScript"
-NGX_JS="js"
-NGX_JS_VER=`$NGX_JS -v 2>&1  |  grep '^JavaScript-C' 2>&1  |  sed -e 's/^JavaScript-C \(.*\)/\1/'`
-if test -n "$NGX_JS_VER"; then
-    echo " + JavaScript version: $NGX_JS_VER"
+NGX_JS_CONFIG="js-config"
+NGX_JS_VER=$($NGX_JS_CONFIG --version)
+if [[ $NGX_JS_VER == 1.8.* ]]; then
+    echo " + SpiderMonkey version: $NGX_JS_VER"
     
-    # trying to eval some code for version => 1.7
-    if [ "`echo 'let a; print("OK")' | $NGX_JS -version 170 2>&1`" != OK ]; then
-        echo
-        echo "$0: error: JavaScript 1.7.0 or higher is required"
-        echo
-        
-        exit 1;
+    NGX_JS_CONFIG_CFLAGS=$($NGX_JS_CONFIG --cflags)
+    CFLAGS="$NGX_JS_CONFIG_CFLAGS $CFLAGS"
+    
+    NGX_JS_CONFIG_LIBS=$($NGX_JS_CONFIG --libs)
+    CORE_LIBS="$CORE_LIBS $NGX_JS_CONFIG_LIBS"
+else
+    if [[ -z $NGX_JS_VER ]]; then
+    	$NGX_JS_VER="(none)"
     fi
     
-    # this -I helps a compiller to find our ngx_http_js_module.h
-    CFLAGS="-I $ngx_addon_dir $CFLAGS"
-    
-    # for proper linking with libjs
-    CORE_LIBS="$CORE_LIBS -ljs"
-else
     echo
-    echo "$0: error: JavaScript 1.7.0 or higher is required: none was found"
+    echo "$0: error: SpiderMonkey 1.8.0 or higher is required: $NGX_JS_VER was found"
     echo
     
     exit 1;
@@ -63,7 +58,4 @@ fi
 # defining path for main js-file: nginx.js
 NGX_HTTP_JS_CONF_PATH="$NGX_PREFIX/js/nginx.js"
 have=NGX_HTTP_JS_CONF_PATH value="\"$NGX_HTTP_JS_CONF_PATH\""
-. auto/define
-
-have=XP_UNIX value="\"1\""
 . auto/define

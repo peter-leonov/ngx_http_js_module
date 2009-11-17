@@ -3,7 +3,7 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
-// #include <js/jsapi.h>
+// #include <jsapi.h>
 
 #include "ngx_http_js_module.h"
 #include "nginx_js_glue.h"

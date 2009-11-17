@@ -2,7 +2,7 @@
 // global class
 
 #include <ngx_config.h>
-#include <js/jsapi.h>
+#include <jsapi.h>
 
 #include "../macroses.h"
 
