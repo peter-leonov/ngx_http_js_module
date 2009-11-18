@@ -10,6 +10,8 @@ export NGINX="$NGX_OBJS/nginx"
 
 # mkdir -p $TESTS_TMP
 
+export PERL5LIB="$TESTS_ROOT/lib:$PERL5LIB"
+
 cd "$TESTS_ROOT"
 for f in *
 do
