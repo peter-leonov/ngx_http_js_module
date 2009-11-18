@@ -3,8 +3,8 @@ ngx_addon_name=ngx_http_js_module
 cat << END                                                >> $NGX_MAKEFILE
 
 test-js:
-	echo "Testing $ngx_addon_name"
-	$ngx_addon_dir/test-js "$ngx_addon_dir" "\$(PWD)/objs"
+	@ echo "Testing $ngx_addon_name"
+	@ $ngx_addon_dir/tests/run "$ngx_addon_dir" "\$(PWD)/objs"
 
 END
 

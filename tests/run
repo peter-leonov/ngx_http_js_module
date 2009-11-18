@@ -1,0 +1,25 @@
+#!/bin/bash
+
+export MODULE_ROOT="$1"
+export TESTS_ROOT="$MODULE_ROOT/tests"
+# export TESTS_TMP="/tmp/nginx-js-tests"
+export NGX_OBJS="$2"
+export NGINX="$NGX_OBJS/nginx"
+
+# echo "TESTS_ROOT=$TESTS_ROOT"
+
+# mkdir -p $TESTS_TMP
+
+cd "$TESTS_ROOT"
+for f in *
+do
+	export TEST_DIR="$TESTS_ROOT/$f"
+	# echo $TEST_DIR
+	if [ -x "$TEST_DIR/test" ]; then
+		pushd $f >/dev/null
+		echo "running $f"
+		./test
+		popd >/dev/null
+	fi
+done
+
