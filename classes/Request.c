@@ -268,10 +268,10 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	TRACE();
 	GET_PRIVATE(r);
 	
-	E(((argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1]))),
+	E((argc == 1 || argc == 2),
 		"Nginx.Request#sendString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
 	
-	str = JSVAL_TO_STRING(argv[0]);
+	str = JS_ValueToString(cx, argv[0]);
 	len = JS_GetStringLength(str);
 	if (len == 0)
 		return JS_TRUE;
@@ -285,7 +285,7 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
-		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[1]), r->pool, &r->headers_out.content_type, 0),
+		E(js_str2ngx_str(cx, JS_ValueToString(cx, argv[1]), r->pool, &r->headers_out.content_type, 0),
 			"Can`t js_str2ngx_str(cx, contentType)")
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
