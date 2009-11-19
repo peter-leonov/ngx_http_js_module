@@ -1,5 +1,6 @@
 package Nginx;
 use Env;
+use LWP::UserAgent;
 
 sub new { bless {}, $_[0] }
 
@@ -38,6 +39,19 @@ sub stop
 		kill KILL => $self->{pid};
 	}
 }
+
+sub get
+{
+	my ($self, $uri) = @_;
+	
+	my $ua = LWP::UserAgent->new;
+	$ua->agent("LWP");
+	
+	
+	my $req = HTTP::Request->new(GET => "http://localhost:9090$uri");
+	return $ua->request($req);
+}
+
 
 
 1;

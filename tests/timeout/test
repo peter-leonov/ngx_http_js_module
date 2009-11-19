@@ -1,0 +1,17 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Test;
+use nginx;
+
+plan tests => 2;
+
+my $nginx = Nginx->new;
+$nginx->run;
+
+ok($nginx->get('/number')->content eq '123.456');
+ok($nginx->get('/date')->content =~ /\d\d:\d\d:\d\d GMT/);
+
+
+$nginx->stop();
+
