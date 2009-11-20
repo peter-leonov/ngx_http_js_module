@@ -102,6 +102,8 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			case 50: *vp = INT_TO_JSVAL(NGX_HTTP_LAST); break;
 			case 51: *vp = INT_TO_JSVAL(NGX_HTTP_FLUSH); break;
 			
+			
+			case 100: *vp = INT_TO_JSVAL(ngx_current_msec); break;
 		}
 	}
 	return JS_TRUE;
@@ -167,6 +169,8 @@ static JSPropertySpec nginx_class_props[] =
 	// flags NGX_HTTP_
 	{"HTTP_LAST",                          50, JSPROP_READONLY, NULL, NULL},
 	{"HTTP_FLUSH",                         51, JSPROP_READONLY, NULL, NULL},
+	
+	{"time",                              100, JSPROP_READONLY, NULL, NULL},
 	
 	
     {0, 0, 0, NULL, NULL}

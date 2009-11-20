@@ -4,31 +4,53 @@ var cache = ""
 
 self.Handler =
 {
-	processRequest: function (r)
+	timeout: function (r)
 	{
-		log("processRequest")
-		log(r.filename)
+		log("timeout")
 		
-		r.sendHttpHeader("text/html; charset=utf-8")
-		// r.sendfile("/usr/local/nginx/html/index.html")
-		r.sendfile("/etc/passwd")
-		r.sendSpecial(Nginx.HTTP_LAST)
+		function finish ()
+		{
+			r.sendString("done", "text/html; charset=utf-8")
+		}
+		
+		r.setTimeout(finish, 3000)
 		
 		return Nginx.OK
 	},
 	
-	processFilter: function (r, chain)
+	time: function (r)
 	{
-		log("processFilter: " + chain)
+		log("time")
 		
-		function callback (sr, body)
-		{
-			log(sr.uri + " is loaded: " + body.length + " bytes")
-			
-			r.nextBodyFilter(body)
-		}
-		return /nginx/.test(chain) ? r.request("/lib", callback) : r.nextBodyFilter(chain)
+		r.sendString(+new Date() + ", " + Nginx.time + "\n")
+		return Nginx.OK
 	},
+	
+	// processRequest: function (r)
+	// {
+	// 	log("processRequest")
+	// 	log(r.filename)
+	// 	
+	// 	r.sendHttpHeader("text/html; charset=utf-8")
+	// 	// r.sendfile("/usr/local/nginx/html/index.html")
+	// 	r.sendfile("/etc/passwd")
+	// 	r.sendSpecial(Nginx.HTTP_LAST)
+	// 	
+	// 	return Nginx.OK
+	// },
+	
+	// processFilter: function (r, chain)
+	// {
+	// 	log("processFilter: " + chain)
+	// 	
+	// 	function callback (sr, body)
+	// 	{
+	// 		log(sr.uri + " is loaded: " + body.length + " bytes")
+	// 		
+	// 		r.nextBodyFilter(body)
+	// 	}
+	// 	return /nginx/.test(chain) ? r.request("/lib", callback) : r.nextBodyFilter(chain)
+	// },
 	
 	// processFilter: function (r, body)
 	// {
