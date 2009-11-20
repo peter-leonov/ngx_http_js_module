@@ -14,15 +14,10 @@
 static JSBool
 method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
-	ngx_http_js_context_private_t  *private;
 	JSString                       *jsstr;
 	ngx_uint_t                      level;
 	
 	TRACE();
-	
-	private = JS_GetContextPrivate(cx);
-	if (!private)
-		return JS_FALSE;
 	
 	if (argc != 2 || !JSVAL_IS_INT(argv[0]) || !JSVAL_IS_STRING(argv[1]))
 	{
@@ -33,7 +28,7 @@ method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	level = JSVAL_TO_INT(argv[0]);
 	jsstr = JSVAL_TO_STRING(argv[1]);
 	
-	ngx_log_error(level, private->log, 0, "%s", JS_GetStringBytes(jsstr));
+	ngx_log_error(level, ngx_cycle->log, 0, "%s", JS_GetStringBytes(jsstr));
 	
 	return JS_TRUE;
 }

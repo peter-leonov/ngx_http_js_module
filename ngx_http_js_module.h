@@ -41,13 +41,6 @@ typedef struct{
 
 
 
-typedef struct {
-	ngx_conf_t                *cf;
-	ngx_http_js_main_conf_t   *jsmcf;
-	ngx_log_t                 *log;
-} ngx_http_js_context_private_t;
-
-
 extern ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter;
 extern ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter;
 

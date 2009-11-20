@@ -19,18 +19,11 @@
 void
 reportError(JSContext *cx, const char *message, JSErrorReport *report)
 {
-	ngx_http_js_context_private_t  *private;
-	
 	TRACE();
-	
-	private = JS_GetContextPrivate(cx);
-	
-	if (!private)
-		return;
 	
 	ngx_log_error
 	(
-		NGX_LOG_ERR, private->log, 0,
+		NGX_LOG_ERR, ngx_cycle->log, 0,
 		"%s:%i: %s",
 		report->filename ? report->filename : "<no filename>",
 		(unsigned int) report->lineno,
@@ -147,7 +140,6 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	static JSRuntime *rt;
 	static JSContext *static_cx = NULL;
 	JSObject  *global;
-	static ngx_http_js_context_private_t   private;
 	JSContext        *cx;
 	
 	TRACE();
@@ -166,10 +158,6 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 		return NGX_CONF_OK;
 	}
 	
-	private.cf = cf;
-	private.jsmcf = jsmcf;
-	private.log = cf->log;
-	
 	
 	rt = JS_NewRuntime(32L * 1024L * 1024L);
 	if (rt == NULL)
@@ -181,7 +169,6 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	
 	JS_SetOptions(cx, JSOPTION_VAROBJFIX);
 	JS_SetVersion(cx, 170);
-	JS_SetContextPrivate(cx, &private);
 	JS_SetErrorReporter(cx, reportError);
 	
 	
