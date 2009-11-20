@@ -16,14 +16,16 @@
 
 #include "macroses.h"
 
-void
+ngx_log_t *ngx_http_js_module_log = NULL;
+
+static void
 reportError(JSContext *cx, const char *message, JSErrorReport *report)
 {
 	TRACE();
 	
 	ngx_log_error
 	(
-		NGX_LOG_ERR, ngx_cycle->log, 0,
+		NGX_LOG_ERR, ngx_http_js_module_log ? ngx_http_js_module_log : ngx_cycle->log, 0,
 		"%s:%i: %s",
 		report->filename ? report->filename : "<no filename>",
 		(unsigned int) report->lineno,
@@ -324,6 +326,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
 	ngx_int_t                    rc;
 	ngx_connection_t            *c;
+	ngx_log_t                   *last_log;
 	JSObject                    *global, *request, *function;
 	jsval                        req;
 	jsval                        rval;
@@ -363,6 +366,8 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	c = r->connection;
 	
 	req = OBJECT_TO_JSVAL(request);
+	last_log = ngx_http_js_module_log;
+	ngx_http_js_module_log = c->log;
 	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
@@ -375,7 +380,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	}
 	else
 		rc = NGX_ERROR;
-	
+	ngx_http_js_module_log = last_log;
 	// if (r->headers_out.status == 0)
 	// 	r->headers_out.status = NGX_HTTP_OK;
 	// ngx_http_send_header(r);
