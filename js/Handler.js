@@ -36,6 +36,18 @@ self.Handler =
 		return Nginx.OK
 	},
 	
+	sendString: function (r)
+	{
+		// very quick way to send some fixed length response
+		// sendString() sets the Content-length, sends hraders and flushes data for you
+		r.sendString("Hi, Developer!")
+		
+		return Nginx.OK
+	},
+	
+	processUpload: function () { return Nginx.OK }
+
+	
 	// processRequest: function (r)
 	// {
 	// 	log("processRequest")
@@ -79,8 +91,6 @@ self.Handler =
 	// 	
 	// 	return Nginx.OK
 	// },
-	
-	processUpload: function () { return Nginx.OK }
 	
 	// processUpload: function (r)
 	// {
@@ -140,16 +150,6 @@ self.Handler =
 	// 	}
 	// 	return r.request("/lib", callback)
 	// 	// return r.request("/nginx/changes.html", callback)
-	// }
-	
-	// processRequest: function (r)
-	// {
-	// 	// very quick way to send some fixed length response
-	// 	// sendString() sets the Content-length, sends hraders and flushes data for you
-	// 	r.sendString("Hi, Developer!")
-	// 	// r.sendSpecial(Nginx.HTTP_FLUSH)
-	// 	
-	// 	return Nginx.OK
 	// }
 	
 	// processRequest: function (r)
