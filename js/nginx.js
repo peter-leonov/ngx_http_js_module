@@ -59,7 +59,11 @@ self.require = function (fname)
 				load(path)
 				return lib.required[fname] = path
 			}
-			catch (ex) {}
+			catch (ex)
+			{
+				if (ex.message.indexOf("can't open") == -1)
+					throw ex
+			}
 		}
 		throw "Can`t find '" + fname + "' in [" + lib.join(", ") + "]"
 	}
