@@ -563,7 +563,7 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	// LOG("argc = %u", argc);
 	E((argc == 1 && JSVAL_IS_STRING(argv[0]))
 		|| (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1])),
-		"Request#request takes 1 argument: uri:String; and 1 optional callback:Function");
+		"Request#subrequest takes 1 argument: uri:String; and 1 optional callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	len = JS_GetStringLength(str);
@@ -586,7 +586,7 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 		assert(callback);
 		
 		E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
-		psr->handler = method_request_handler;
+		psr->handler = method_subrequest_handler;
 		psr->data = callback;
 		
 		flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
@@ -630,7 +630,7 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 }
 
 static ngx_int_t
-method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
+method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
 	ngx_http_js_ctx_t                *ctx, *mctx;
 	JSObject                         *request, *subrequest, *callback;
@@ -806,7 +806,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
     {"printString",       method_printString,          1, 0, 0},
     {"sendString",        method_sendString,           1, 0, 0},
-    {"request",           method_request,              2, 0, 0},
+    {"subrequest",        method_subrequest,              2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
     {"discardBody",       method_discardBody,          0, 0, 0},
