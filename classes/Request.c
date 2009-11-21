@@ -284,6 +284,11 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	if (len == 0)
 		return JS_TRUE;
 	b = js_str2ngx_buf(cx, str, r->pool, len);
+	if (b == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
 	ngx_http_clear_content_length(r);
