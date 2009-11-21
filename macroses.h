@@ -36,4 +36,12 @@ if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) 
 #define CASE_COMPARE(ngxstring, cstring) ((ngxstring).len == sizeof(cstring) - 1 \
 	&& ngx_strcasecmp((ngxstring).data, (u_char *)(cstring), sizeof(cstring) - 1) == 0)
 
+
+#define ngx_assert(expr, mess, args...) \
+if (!(expr)) \
+{ \
+	ngx_log_error(NGX_LOG_EMERG, ngx_cycle->log, 0, mess, ##args); \
+	ngx_debug_point(); \
+}
+
 #endif
