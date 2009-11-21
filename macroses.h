@@ -12,6 +12,15 @@
 // #define TRACE() { fprintf(stderr, "%s()\n", __FUNCTION__); }
 #define TRACE()
 
+#define TRACE_REQUEST(func) \
+ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "%s(cx=%p, r=%p)", func, r);
+
+// #define TRACE_REQUEST_METHOD()
+// ngx_log_debug5(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "Request#%s(cx=%p, r=%p, argc=%d, argv=%p)", __FUNCTION__ + 7, cx, r, argc, argv);
+
+#define TRACE_REQUEST_METHOD() \
+ngx_log_debug5(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "Request#%s(r=%p, argc=%d)", __FUNCTION__ + 7, r, argc);
+
 #define GET_PRIVATE(private) \
 assert(cx); \
 assert(this); \

@@ -39,12 +39,10 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	JSObject                  *request;
 	ngx_http_js_ctx_t         *ctx;
 	ngx_http_cleanup_t        *cln;
-	// jsuint                     length;
-	// jsval                      req;
 	
-	TRACE();
 	assert(cx);
 	assert(r);
+	TRACE_REQUEST("request_wrap");
 	
 	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 	{
@@ -104,10 +102,10 @@ cleanup_handler(void *data)
 	JSObject                  *request;
 	jsval                      rval;
 	
-	TRACE();
 	assert(data);
-	
 	r = data;
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup_handler(r=%p)", r);
+	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	assert(ctx);
 	cx = ctx->js_cx;
@@ -160,8 +158,8 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 {
 	ngx_http_request_t *r;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	if (r->headers_out.status == 0)
 		r->headers_out.status = NGX_HTTP_OK;
@@ -194,8 +192,8 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	ngx_chain_t          out;
 	ngx_int_t            rc;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
 	
@@ -226,8 +224,8 @@ method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 	ngx_chain_t          out, *ch;
 	ngx_int_t            rc;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	E(ngx_http_js_next_body_filter != NULL, "ngx_http_js_next_body_filter is NULL at this moment");
 	
@@ -275,8 +273,8 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	ngx_chain_t          out;
 	ngx_int_t            rc;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	E((argc == 1 || argc == 2),
 		"Nginx.Request#sendString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
@@ -286,6 +284,7 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	if (len == 0)
 		return JS_TRUE;
 	b = js_str2ngx_buf(cx, str, r->pool, len);
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
 	ngx_http_clear_content_length(r);
 	r->headers_out.content_length_n = len;
@@ -320,8 +319,8 @@ method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 {
 	ngx_http_request_t  *r;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
 	
@@ -338,8 +337,8 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	E(argc == 1 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]), "Request#hasBody takes 1 argument: callback:Function");
 	
@@ -354,6 +353,7 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	assert(ctx);
 	
 	ctx->js_has_body_callback = JSVAL_TO_OBJECT(argv[0]);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "set has_body_callback to %p", ctx->js_has_body_callback);
 	E(JS_AddNamedRoot(cx, &ctx->js_has_body_callback, JS_HAS_BODY_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
 	
 	r->request_body_in_single_buf = 1;
@@ -375,7 +375,7 @@ method_hasBody_handler(ngx_http_request_t *r)
 	JSContext                        *cx;
 	jsval                             rval;
 	
-	TRACE();
+	TRACE_REQUEST("hasBody handler");
 	
 	assert(r);
 	// if (r->connection->error)
@@ -406,10 +406,9 @@ static JSBool
 method_discardBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
-	// ngx_int_t            rc;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	*rval = INT_TO_JSVAL(ngx_http_discard_request_body(r));
 	return JS_TRUE;
@@ -430,8 +429,8 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	ngx_chain_t                out;
 	// ngx_int_t            rc;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	
 	E(argc >= 1 && JSVAL_IS_STRING(argv[0]),
@@ -443,6 +442,8 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	
 	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
 	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending file \"%s\" with offset=%d and bytes=%d", filename, offset, bytes);
 	
 	b = ngx_calloc_buf(r->pool);
 	E(b != NULL, "Can`t ngx_calloc_buf()");
@@ -505,6 +506,7 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	ngx_event_t         *timer;
 	
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	assert(ctx);
@@ -528,17 +530,16 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 static void
 method_setTimeout_handler(ngx_event_t *timer)
 {
-	LOG("method_setTimeout_handler");
-	
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimeout handler");
 }
 
 
 
 static ngx_int_t
-method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
+method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
 
 static JSBool
-method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_int_t                    rc;
 	ngx_http_js_ctx_t           *ctx;
@@ -550,8 +551,8 @@ method_request(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	JSString                    *str;
 	JSObject                    *callback;
 	
-	TRACE();
 	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
 	
 	// LOG("argc = %u", argc);
 	E((argc == 1 && JSVAL_IS_STRING(argv[0]))
@@ -631,13 +632,12 @@ method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	JSContext                        *cx;
 	jsval                             rval, args[2];
 	
-	TRACE();
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
 	assert(sr);
 	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
 		return rc;
 	
-	// LOG("sr in callback = %p", sr);
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 	if (!ctx)
 		return NGX_ERROR;
