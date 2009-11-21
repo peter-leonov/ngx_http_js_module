@@ -1,4 +1,3 @@
-
 #ifndef _NGX_HTTP_JS_MACROSES_INCLUDED_
 #define _NGX_HTTP_JS_MACROSES_INCLUDED_
 
@@ -26,7 +25,8 @@ if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) 
 #define THROW(mess, args...) { JS_ReportError(cx, mess, ##args); return JS_FALSE; }
 
 // Enshure wrapper
-#define E(expr, mess, args...) if (!(expr)) { LOG(#expr); THROW(mess, ##args); return JS_FALSE; }
+// #define E(expr, mess, args...) if (!(expr)) { LOG(#expr); THROW(mess, ##args); return JS_FALSE; }
+#define E(expr, mess, args...) if (!(expr)) { THROW(mess, ##args); return JS_FALSE; }
 
 
 
