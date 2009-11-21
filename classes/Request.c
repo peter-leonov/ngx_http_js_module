@@ -477,6 +477,7 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	{
 		if (of.err != 0)
 			ngx_log_error(NGX_LOG_CRIT, r->connection->log, ngx_errno, ngx_open_file_n " \"%s\" failed", filename);
+		*rval = JS_FALSE;
 		return JS_TRUE;
 	}
 	
