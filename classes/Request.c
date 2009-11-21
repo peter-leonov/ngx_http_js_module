@@ -29,6 +29,9 @@ static JSClass *private_class = &ngx_http_js__nginx_request__class;
 static void
 cleanup_handler(void *data);
 
+static void
+method_setTimeout_handler(ngx_event_t *ev);
+
 
 JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
@@ -61,6 +64,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		}
 		
 		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+		ctx->js_timer.timer_set = 0;
 	}
 	
 	
@@ -132,8 +136,14 @@ cleanup_handler(void *data)
 		if (!JS_RemoveRoot(cx, &ctx->js_has_body_callback))
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HAS_BODY_CALLBACK_ROOT_NAME);
 	
+	if (ctx->js_timer.timer_set)
+	{
+		ngx_del_timer(&ctx->js_timer);
+		ctx->js_timer.timer_set = 0;
+	}
+	
 	// finaly mark the object as inactive
-	// after that the GET_PRIVATE macros will throw an exception when is called 
+	// after that the GET_PRIVATE macros will raise an exception when called
 	JS_SetPrivate(cx, request, NULL);
 }
 
@@ -487,6 +497,43 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 }
 
 
+static JSBool
+method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	ngx_http_js_ctx_t   *ctx;
+	ngx_event_t         *timer;
+	
+	GET_PRIVATE(r);
+	
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	assert(ctx);
+	timer = &ctx->js_timer;
+	
+	// E(timer->timer_set == 1, "only one timer may be set an once");
+	
+	// from ngx_cycle.c:740
+	timer->handler = method_setTimeout_handler;
+	timer->log = r->connection->log;
+	timer->data = r;
+	
+	
+	ngx_add_timer(timer, 3000);
+	timer->timer_set = 1;
+	
+	
+	return JS_TRUE;
+}
+
+static void
+method_setTimeout_handler(ngx_event_t *timer)
+{
+	LOG("method_setTimeout_handler");
+	
+}
+
+
+
 static ngx_int_t
 method_request_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
 
@@ -759,6 +806,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"discardBody",       method_discardBody,          0, 0, 0},
     {"hasBody",           method_hasBody,              1, 0, 0},
     {"sendfile",          method_sendfile,             1, 0, 0},
+    {"setTimeout",        method_setTimeout,           2, 0, 0},
     {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
     {0, NULL, 0, 0, 0}
 };

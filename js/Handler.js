@@ -13,9 +13,19 @@ self.Handler =
 			r.sendString("done", "text/html; charset=utf-8")
 		}
 		
-		r.setTimeout(finish, 3000)
+		r.setTimeout(finish, 1000)
 		
-		return Nginx.OK
+		return Nginx.AGAIN
+	},
+	
+	lateTimeout: function (r)
+	{
+		log("lateTimeout")
+		
+		r.setTimeout(function () {  }, 3000)
+		
+		r.sendString("done", "text/html; charset=utf-8")
+		return Nginx.DONE
 	},
 	
 	time: function (r)
