@@ -40,12 +40,29 @@ self.Handler =
 	{
 		// very quick way to send some fixed length response
 		// sendString() sets the Content-length, sends hraders and flushes data for you
-		r.sendString("Hi, Developer!")
+		r.sendString("Hi, Developer!\n")
 		
 		return Nginx.OK
 	},
 	
-	processUpload: function () { return Nginx.OK }
+	hangs: function (r)
+	{
+		return Nginx.OK
+	},
+	
+	sendfile: function (r)
+	{
+		log("sendfile")
+		
+		r.sendHttpHeader("text/html; charset=utf-8")
+		r.sendfile("/usr/local/nginx/html/index.html")
+		r.sendSpecial(Nginx.HTTP_LAST)
+		
+		return Nginx.OK
+	},
+	
+	
+	upload: function () { return Nginx.OK },
 
 	
 	// processRequest: function (r)
