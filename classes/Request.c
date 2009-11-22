@@ -7,7 +7,6 @@
 #include <nginx.h>
 
 #include <jsapi.h>
-#include <assert.h>
 
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
@@ -40,8 +39,8 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	ngx_http_js_ctx_t         *ctx;
 	ngx_http_cleanup_t        *cln;
 	
-	assert(cx);
-	assert(r);
+	ngx_assert(cx);
+	ngx_assert(r);
 	TRACE_REQUEST("request_wrap");
 	
 	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
@@ -102,16 +101,14 @@ cleanup_handler(void *data)
 	JSObject                  *request;
 	jsval                      rval;
 	
-	assert(data);
 	r = data;
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup_handler(r=%p)", r);
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	assert(ctx);
 	cx = ctx->js_cx;
 	request = ctx->js_request;
-	assert(cx);
-	assert(request);
+	ngx_assert(cx);
+	ngx_assert(request);
 	
 	// LOG("cleanup");
 	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
@@ -355,7 +352,7 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	}
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	assert(ctx);
+	ngx_assert(ctx);
 	
 	ctx->js_has_body_callback = JSVAL_TO_OBJECT(argv[0]);
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "set has_body_callback to %p", ctx->js_has_body_callback);
@@ -382,7 +379,6 @@ method_hasBody_handler(ngx_http_request_t *r)
 	
 	TRACE_REQUEST("hasBody handler");
 	
-	assert(r);
 	// if (r->connection->error)
 	// 	return;
 	
@@ -391,11 +387,11 @@ method_hasBody_handler(ngx_http_request_t *r)
 		return;
 	
 	cx = ctx->js_cx;
-	assert(cx);
+	ngx_assert(cx);
 	request = ngx_http_js__nginx_request__wrap(cx, r);
-	assert(request);
+	ngx_assert(request);
 	callback = ctx->js_has_body_callback;
-	assert(callback);
+	ngx_assert(callback);
 	
 	if (!JS_ObjectIsFunction(cx, callback))
 	{
@@ -443,7 +439,7 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	
 	
 	E(js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &filename, NULL), "Can`t js_str2c_str()");
-	assert(filename);
+	ngx_assert(filename);
 	
 	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
 	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
@@ -457,7 +453,7 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	E(b->file != NULL, "Can`t ngx_pcalloc()");
 	
 	clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
-	assert(clcf);
+	ngx_assert(clcf);
 	
 	
 	of.test_dir = 0;
@@ -515,7 +511,7 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	TRACE_REQUEST_METHOD();
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	assert(ctx);
+	ngx_assert(ctx);
 	timer = &ctx->js_timer;
 	
 	// E(timer->timer_set == 1, "only one timer may be set an once");
@@ -583,7 +579,7 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	if (argc == 2)
 	{
 		callback = JSVAL_TO_OBJECT(argv[1]);
-		assert(callback);
+		ngx_assert(callback);
 		
 		E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
 		psr->handler = method_subrequest_handler;
@@ -607,10 +603,10 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
-		assert(sr);
+		ngx_assert(sr);
 		ngx_http_js__nginx_request__wrap(cx, sr);
 		ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-		assert(ctx);
+		ngx_assert(ctx);
 		// this helps to prevent wrong JS garbage collection
 		ctx->js_request_callback = psr->data;
 		E(JS_AddNamedRoot(cx, &ctx->js_request_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
@@ -640,7 +636,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
-	assert(sr);
+	ngx_assert(sr);
 	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
 		return rc;
 	
@@ -649,16 +645,16 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		return NGX_ERROR;
 	
 	cx = ctx->js_cx;
-	assert(cx);
+	ngx_assert(cx);
 	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
-	assert(subrequest);
+	ngx_assert(subrequest);
 	callback = data;
-	assert(callback);
+	ngx_assert(callback);
 	
 	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
-	assert(mctx);
+	ngx_assert(mctx);
 	request = mctx->js_request;
-	assert(request);
+	ngx_assert(request);
 	
 	// LOG("data = %p", data);
 	// LOG("cx = %p", cx);
@@ -728,7 +724,7 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 				ngx_http_js_ctx_t  *ctx;
 				
 				ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-				assert(ctx);
+				ngx_assert(ctx);
 				if (!ctx->filename.data)
 				{
 					if (ngx_http_map_uri_to_path(r, &ctx->filename, &root, 0) == NULL)
