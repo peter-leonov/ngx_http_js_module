@@ -1,6 +1,13 @@
 #ifndef _NGX_HTTP_JS_MACROSES_INCLUDED_
 #define _NGX_HTTP_JS_MACROSES_INCLUDED_
 
+#define ngx_assert(expr) \
+if (!(expr)) \
+{ \
+	ngx_log_error(NGX_LOG_EMERG, ngx_cycle->log, 0, "Assertion failed: %s", #expr); \
+	ngx_debug_point(); \
+}
+
 
 #define LOG(mess, args...) { fprintf(stderr, mess, ##args); fprintf(stderr, " at %s:%d\n", __FILE__, __LINE__); }
 // #define LOG(mess, args...)
@@ -22,8 +29,8 @@ ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "%s(cx=%p, r=%p)", fun
 ngx_log_debug5(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "Request#%s(r=%p, argc=%d)", __FUNCTION__ + 7, r, argc);
 
 #define GET_PRIVATE(private) \
-assert(cx); \
-assert(this); \
+ngx_assert(cx); \
+ngx_assert(this); \
 if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) \
 { \
 	JS_ReportError(cx, "wrapper object has NULL private pointer in %s\n%s: %u", __FUNCTION__, __FILE__, __LINE__); \
@@ -45,12 +52,5 @@ if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) 
 #define CASE_COMPARE(ngxstring, cstring) ((ngxstring).len == sizeof(cstring) - 1 \
 	&& ngx_strcasecmp((ngxstring).data, (u_char *)(cstring), sizeof(cstring) - 1) == 0)
 
-
-#define ngx_assert(expr, mess, args...) \
-if (!(expr)) \
-{ \
-	ngx_log_error(NGX_LOG_EMERG, ngx_cycle->log, 0, mess, ##args); \
-	ngx_debug_point(); \
-}
 
 #endif
