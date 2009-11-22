@@ -4,7 +4,7 @@
 #define ngx_assert(expr) \
 if (!(expr)) \
 { \
-	ngx_log_error(NGX_LOG_EMERG, ngx_cycle->log, 0, "Assertion failed: %s", #expr); \
+	ngx_log_error(NGX_LOG_EMERG, ngx_cycle->log, 0, "Assertion failed: (%s), function %s, file %s, line %d.", #expr, __FUNCTION__, __FILE__, __LINE__); \
 	ngx_debug_point(); \
 }
 
