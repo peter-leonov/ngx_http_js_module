@@ -385,7 +385,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	// 	r->headers_out.status = NGX_HTTP_OK;
 	// ngx_http_send_header(r);
 	
-	JS_MaybeGC(cx);
+	// JS_MaybeGC(cx);
 	
 	if (c->destroyed)
 		rc = NGX_DONE;
