@@ -7,7 +7,6 @@
 #include <nginx.h>
 
 #include <jsapi.h>
-#include <assert.h>
 
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"

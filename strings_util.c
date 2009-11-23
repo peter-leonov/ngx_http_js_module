@@ -2,7 +2,6 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <nginx.h>
-#include <assert.h>
 
 #include <jsapi.h>
 
@@ -15,9 +14,9 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t len)
 	ngx_buf_t           *b;
 	const char          *p;
 	
-	assert(cx);
-	assert(str);
-	assert(pool);
+	ngx_assert(cx);
+	ngx_assert(str);
+	ngx_assert(pool);
 	
 	if (len == 0)
 		len = JS_GetStringLength(str);
@@ -40,10 +39,10 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s, siz
 {
 	const char          *p;
 	
-	assert(cx);
-	assert(str);
-	assert(pool);
-	assert(s);
+	ngx_assert(cx);
+	ngx_assert(str);
+	ngx_assert(pool);
+	ngx_assert(s);
 	
 	s->len = 0;
 	s->data = NULL;
@@ -81,10 +80,10 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, char **out_s, size_
 	size_t               len;
 	char                *pool_p;
 	
-	assert(cx);
-	assert(str);
-	assert(pool);
-	assert(out_s);
+	ngx_assert(cx);
+	ngx_assert(str);
+	ngx_assert(pool);
+	ngx_assert(out_s);
 	
 	*out_s = NULL;
 	if (out_len)

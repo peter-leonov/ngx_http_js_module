@@ -7,7 +7,6 @@
 #include <nginx.h>
 
 #include <jsapi.h>
-#include <assert.h>
 
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
@@ -66,7 +65,7 @@ ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx
 {
 	TRACE();
 	
-	assert(ctx);
+	ngx_assert(ctx);
 	
 	if (!ctx->js_headers_in)
 		return;
@@ -240,8 +239,8 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	ngx_uint_t                  i, hash; // n, 
 	
 	TRACE();
-	assert(r);
-	assert(name);
+	ngx_assert(r);
+	ngx_assert(name);
 	
 	if (len == 0)
 	{

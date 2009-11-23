@@ -4,7 +4,6 @@
 #include <nginx.h>
 
 #include <jsapi.h>
-#include <assert.h>
 
 #include "ngx_http_js_module.h"
 #include "classes/global.h"
@@ -337,21 +336,21 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	TRACE();
 	
-	assert(r);
 	if (r->zero_in_uri)
 		return NGX_HTTP_NOT_FOUND;
 	
+	ngx_assert(r);
 	
 	jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
-	assert(jsmcf);
 	
 	cx = jsmcf->js_cx;
 	global = jsmcf->js_global;
-	assert(cx && global);
+	ngx_assert(cx);
+	ngx_assert(global);
 	
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
 	function = jslcf->handler_function;
-	assert(function);
+	ngx_assert(function);
 	
 	rc = NGX_HTTP_OK;
 	
@@ -361,7 +360,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	// ctx was allocated in ngx_http_js__nginx_request__wrap
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	assert(ctx);
+	ngx_assert(ctx);
 	
 	c = r->connection;
 	
@@ -423,19 +422,19 @@ ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 	
 	TRACE();
 	
-	assert(r);
+	ngx_assert(r);
 	
 	
 	jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
-	assert(jsmcf);
+	ngx_assert(jsmcf);
 	
 	cx = jsmcf->js_cx;
 	global = jsmcf->js_global;
-	assert(cx && global);
+	ngx_assert(cx && global);
 	
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
 	function = jslcf->filter_function;
-	assert(function);
+	ngx_assert(function);
 	
 	rc = NGX_HTTP_OK;
 	
@@ -445,7 +444,7 @@ ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 	
 	// ctx was allocated in ngx_http_js__nginx_request__wrap
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	assert(ctx);
+	ngx_assert(ctx);
 	
 	
 	args[0] = OBJECT_TO_JSVAL(request);
