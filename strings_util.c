@@ -5,6 +5,8 @@
 
 #include <jsapi.h>
 
+#include "macroses.h"
+
 // TODO: think about the difference: JS_GetStringLength(str) is in 16-bit chars and strlen(JS_GetStringBytes(str)) is in bytes
 //       so if str contains a null character thees lengths wont be equal at all!
 
