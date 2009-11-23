@@ -1,0 +1,8 @@
+Some features:
+* nearly full port of ngx_http_perl_module functionality
+* support for native Nginx subrequests that calls passed JS callback with the response body
+* cosy headers management (via Nginx.HeadersIn and Nginx.HeaderOut classes)
+* environment variables handling with the code taken from Mozilla's js interpreter
+* and working require() function that finds js-files walking through JSLIB env variable (like RUBYLIB and PERL5LIB)
+
+The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debugging must not be a pain.
