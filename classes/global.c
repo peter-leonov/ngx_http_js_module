@@ -42,7 +42,9 @@ method_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
 		script = JS_CompileFile(cx, this, filename);
 		if (errno)
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "error loading script %s: %s.\n", filename, strerror(errno));
+		{
+			ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "error loading script %s: %s.\n", filename, strerror(errno));
+		}
 		// if (errno == ENOENT)
 		if (!script)
 			ok = JS_FALSE;

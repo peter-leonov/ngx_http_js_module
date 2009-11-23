@@ -444,7 +444,7 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
 	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
 	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending file \"%s\" with offset=%d and bytes=%d", filename, offset, bytes);
+	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending file \"%s\" with offset=%d and bytes=%d", filename, offset, bytes);
 	
 	b = ngx_calloc_buf(r->pool);
 	E(b != NULL, "Can`t ngx_calloc_buf()");
