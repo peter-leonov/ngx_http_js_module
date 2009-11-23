@@ -319,7 +319,6 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 }
 
 
-
 ngx_int_t
 ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
@@ -334,12 +333,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	ngx_http_js_ctx_t           *ctx;
 	JSContext                   *cx;
 	
-	TRACE();
-	
-	if (r->zero_in_uri)
-		return NGX_HTTP_NOT_FOUND;
-	
-	ngx_assert(r);
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler");
 	
 	jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
 	
@@ -351,8 +345,6 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
 	function = jslcf->handler_function;
 	ngx_assert(function);
-	
-	rc = NGX_HTTP_OK;
 	
 	request = ngx_http_js__nginx_request__wrap(cx, r);
 	if (request == NULL)
@@ -380,29 +372,19 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	else
 		rc = NGX_ERROR;
 	ngx_http_js_module_log = last_log;
-	// if (r->headers_out.status == 0)
-	// 	r->headers_out.status = NGX_HTTP_OK;
-	// ngx_http_send_header(r);
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i", rc);
 	
 	// JS_MaybeGC(cx);
 	
-	if (c->destroyed)
-		rc = NGX_DONE;
-	// LOG("%d", rc);
-	
 	if (rc == NGX_DONE)
-		return NGX_DONE;
+		return rc;
 	
 	if (rc > 600)
 		rc = NGX_OK;
 	
 	// if (rc == NGX_OK || rc == NGX_HTTP_OK)
-	// if (rc == NGX_HTTP_OK)
-	// {
 	// 	ngx_http_send_special(r, NGX_HTTP_LAST);
-	// 	// LOG("ngx_http_send_special");
-	// 	// ctx->done = 1;
-	// }
 	
 	return rc;
 }
