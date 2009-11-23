@@ -2,6 +2,9 @@
 // global class
 
 #include <ngx_config.h>
+#include <ngx_core.h>
+#include <ngx_http.h>
+#include <nginx.h>
 #include <jsapi.h>
 
 #include "../macroses.h"
@@ -33,12 +36,13 @@ method_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 			return JS_FALSE;
 		name = argv[i] = STRING_TO_JSVAL(str);
 		filename = JS_GetStringBytes(str);
-		LOG2("global.load %s\n", filename);
+		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "global.load %s\n", filename);
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
 		script = JS_CompileFile(cx, this, filename);
-		// LOG("Error: %i.\n", strerror(errno));
+		if (errno)
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "error loading script %s: %s.\n", filename, strerror(errno));
 		// if (errno == ENOENT)
 		if (!script)
 			ok = JS_FALSE;
