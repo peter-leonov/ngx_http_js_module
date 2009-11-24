@@ -15,7 +15,7 @@ self.Handler =
 		
 		r.setTimeout(finish, 1000)
 		
-		return Nginx.AGAIN
+		return Nginx.DONE
 	},
 	
 	lateTimeout: function (r)

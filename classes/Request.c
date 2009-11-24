@@ -19,6 +19,7 @@
 #define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
 #define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request subreuest callback function"
 #define JS_HAS_BODY_CALLBACK_ROOT_NAME     "Nginx.Request hasBody callback function"
+#define JS_SET_TIMEOUT_CALLBACK_ROOT_NAME     "Nginx.Request setTimeout callback function"
 
 
 JSObject *ngx_http_js__nginx_request__prototype;
@@ -506,15 +507,30 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
 	ngx_event_t         *timer;
+	JSObject            *callback;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
+	
+	E(argc >= 1 && argc <= 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ObjectIsFunction(cx, callback = JSVAL_TO_OBJECT(argv[0])) && (argc == 1 || JSVAL_IS_INT(argv[1])),
+			"Nginx.Request#setTimeout() takes one mandatory argument callback:Function and one optional milliseconds:Number");
+	
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	timer = &ctx->js_timer;
 	
-	// E(timer->timer_set == 1, "only one timer may be set an once");
+	// E(timer->timer_set != 0, "only one timer may be set an once");
+	
+	
+	if (ctx->js_timer_callback)
+	{
+		// delete root for it
+		ctx->js_timer_callback = NULL;
+	}
+	
+	ctx->js_timer_callback = callback;
+	E(JS_AddNamedRoot(cx, &ctx->js_timer_callback, JS_SET_TIMEOUT_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
 	
 	// from ngx_cycle.c:740
 	timer->handler = method_setTimeout_handler;
@@ -522,7 +538,8 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	timer->data = r;
 	
 	
-	ngx_add_timer(timer, 3000);
+	r->main->count++;
+	ngx_add_timer(timer, argc == 2 ? (ngx_uint_t) argv[1] : 0);
 	timer->timer_set = 1;
 	
 	
@@ -532,7 +549,47 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 static void
 method_setTimeout_handler(ngx_event_t *timer)
 {
+	ngx_http_request_t  *r;
+	ngx_int_t            rc;
+	ngx_http_js_ctx_t   *ctx;
+	JSContext           *cx;
+	jsval                rval;//, args[2];
+	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimeout handler");
+	
+	r = timer->data;
+	
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	
+	
+	cx = ctx->js_cx;
+	
+	if (ctx->js_timer_callback)
+	{
+		if (JS_ObjectIsFunction(cx, ctx->js_timer_callback))
+		{
+			if (JS_CallFunctionValue(cx, ctx->js_request, OBJECT_TO_JSVAL(ctx->js_timer_callback), 0, NULL, &rval))
+				rc = NGX_OK;
+			else
+				rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+		}
+		else
+		{
+			JS_ReportError(cx, "setTimeout callback is not a function");
+			rc = NGX_ERROR;
+		}
+		
+		// delete root for it
+		ctx->js_timer_callback = NULL;
+	}
+	else
+	{
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout handler called without callback set");
+		rc = NGX_ERROR;
+	}
+	
+	ngx_http_finalize_request(r, rc);
 }
 
 
