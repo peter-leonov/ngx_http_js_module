@@ -124,6 +124,8 @@ cleanup_handler(void *data)
 	if (!JS_RemoveRoot(cx, &ctx->js_request))
 		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 	
+	
+	// ensure roots deleted to prevent memory leaks
 	if (ctx->js_request_callback)
 		if (!JS_RemoveRoot(cx, &ctx->js_request_callback))
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
@@ -131,6 +133,11 @@ cleanup_handler(void *data)
 	if (ctx->js_has_body_callback)
 		if (!JS_RemoveRoot(cx, &ctx->js_has_body_callback))
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HAS_BODY_CALLBACK_ROOT_NAME);
+	
+	if (ctx->js_set_timeout_callback)
+		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
+			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
+	
 	
 	if (ctx->js_timer.timer_set)
 	{
@@ -523,14 +530,18 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	// E(timer->timer_set != 0, "only one timer may be set an once");
 	
 	
-	if (ctx->js_timer_callback)
+	if (ctx->js_set_timeout_callback)
 	{
-		// delete root for it
-		ctx->js_timer_callback = NULL;
+		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
+		{
+			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
+			return JS_FALSE;
+		}
+		ctx->js_set_timeout_callback = NULL;
 	}
 	
-	ctx->js_timer_callback = callback;
-	E(JS_AddNamedRoot(cx, &ctx->js_timer_callback, JS_SET_TIMEOUT_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
+	ctx->js_set_timeout_callback = callback;
+	E(JS_AddNamedRoot(cx, &ctx->js_set_timeout_callback, JS_SET_TIMEOUT_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
 	
 	// from ngx_cycle.c:740
 	timer->handler = method_setTimeout_handler;
@@ -565,27 +576,28 @@ method_setTimeout_handler(ngx_event_t *timer)
 	
 	cx = ctx->js_cx;
 	
-	if (ctx->js_timer_callback)
+	if (ctx->js_set_timeout_callback)
 	{
-		if (JS_ObjectIsFunction(cx, ctx->js_timer_callback))
+		if (JS_ObjectIsFunction(cx, ctx->js_set_timeout_callback))
 		{
-			if (JS_CallFunctionValue(cx, ctx->js_request, OBJECT_TO_JSVAL(ctx->js_timer_callback), 0, NULL, &rval))
+			if (JS_CallFunctionValue(cx, ctx->js_request, OBJECT_TO_JSVAL(ctx->js_set_timeout_callback), 0, NULL, &rval))
 				rc = NGX_OK;
 			else
 				rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 		}
 		else
 		{
-			JS_ReportError(cx, "setTimeout callback is not a function");
+			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout callback is not a function");
 			rc = NGX_ERROR;
 		}
 		
-		// delete root for it
-		ctx->js_timer_callback = NULL;
+		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
+			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
+		ctx->js_set_timeout_callback = NULL;
 	}
 	else
 	{
-		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout handler called without callback set");
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout handler called with NULL callback");
 		rc = NGX_ERROR;
 	}
 	

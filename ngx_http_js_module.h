@@ -18,7 +18,7 @@ typedef struct {
 	
 	int                       filter_enabled;
 	
-	void                     *js_timer_callback; // JSObject
+	void                     *js_set_timeout_callback; // JSObject
 	ngx_event_t               js_timer;
 	// ngx_uint_t                done;       /* unsigned  done:1; */
 } ngx_http_js_ctx_t;

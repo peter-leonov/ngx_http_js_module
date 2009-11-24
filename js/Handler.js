@@ -6,11 +6,10 @@ self.Handler =
 {
 	timeout: function (r)
 	{
-		log("timeout")
-		
+		r.blablalba = "args: " + unescape(r.args)
 		function finish ()
 		{
-			r.sendString("done", "text/html; charset=utf-8")
+			r.sendString("timer done for " + this.blablalba + "\n", "text/html; charset=utf-8")
 		}
 		
 		r.setTimeout(finish, 1000)
