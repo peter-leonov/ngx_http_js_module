@@ -370,7 +370,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 			rc = (ngx_int_t)JSVAL_TO_INT(rval);
 	}
 	else
-		rc = NGX_ERROR;
+		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	ngx_http_js_module_log = last_log;
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i", rc);
