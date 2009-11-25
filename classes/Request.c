@@ -215,7 +215,34 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 	rc = ngx_http_output_filter(r, &out);
 	
 	*rval = INT_TO_JSVAL(rc);
+	return JS_TRUE;
+}
+
+
+static JSBool
+method_flush(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	ngx_buf_t           *b;
+	ngx_chain_t          out;
+	ngx_int_t            rc;
 	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
+	
+	b = ngx_calloc_buf(r->pool);
+	if (b == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	b->flush = 1;
+	
+	out.buf = b;
+	out.next = NULL;
+	rc = ngx_http_output_filter(r, &out);
+	
+	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
 }
 
@@ -877,6 +904,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
     {"printString",       method_printString,          1, 0, 0},
+    {"flush",             method_flush,                0, 0, 0},
     {"sendString",        method_sendString,           1, 0, 0},
     {"subrequest",        method_subrequest,           2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},

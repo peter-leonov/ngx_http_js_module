@@ -4,20 +4,50 @@ var cache = ""
 
 self.Handler =
 {
-	timeoutCascade: function (r)
+	flush: function (r)
 	{
-		var count = +r.args || 3, total = 0
+		var count = r.args === undefined ? 3 : +r.args, total = 0
 		function walk ()
 		{
-			count--
 			total++
 			
-			if (count < 0)
-				throw "count < 0"
-			else if (count == 0)
+			r.printString(count + "\n")
+			r.flush()
+			
+			if (count <= 0)
+				throw "count <= 0"
+			else if (count == 1)
+			{
+				r.printString("print called " + total + " times\n")
+				r.sendSpecial(Nginx.HTTP_LAST)
+			}
+			else
+				r.setTimeout(walk, 500)
+			
+			count--
+		}
+		
+		r.sendHttpHeader("text/plain; charset=utf-8")
+		walk()
+		
+		return Nginx.DONE
+	},
+	
+	timeoutCascade: function (r)
+	{
+		var count = r.args === undefined ? 3 : +r.args, total = 0
+		function walk ()
+		{
+			total++
+			
+			if (count <= 0)
+				throw "count <= 0"
+			else if (count == 1)
 				r.sendString("cascade done " + total + " times\n")
 			else
 				r.setTimeout(walk, 500)
+			
+			count--
 		}
 		
 		walk()
