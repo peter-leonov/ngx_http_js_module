@@ -208,6 +208,7 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 		return JS_TRUE;
 	b = js_str2ngx_buf(cx, str, r->pool, len);
 	
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js printing string \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
 	out.buf = b;
 	out.next = NULL;
@@ -294,7 +295,7 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending \"%*s\"", len > 25 ? 25 : len , b->last - len);
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js sending string \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
 	ngx_http_clear_content_length(r);
 	r->headers_out.content_length_n = len;
