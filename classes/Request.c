@@ -878,7 +878,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
     {"printString",       method_printString,          1, 0, 0},
     {"sendString",        method_sendString,           1, 0, 0},
-    {"subrequest",        method_subrequest,              2, 0, 0},
+    {"subrequest",        method_subrequest,           2, 0, 0},
     {"cleanup",           method_cleanup,              0, 0, 0},
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
     {"discardBody",       method_discardBody,          0, 0, 0},
