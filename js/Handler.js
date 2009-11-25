@@ -4,6 +4,27 @@ var cache = ""
 
 self.Handler =
 {
+	timeoutCascade: function (r)
+	{
+		var count = +r.args || 3, total = 0
+		function walk ()
+		{
+			count--
+			total++
+			
+			if (count < 0)
+				throw "count < 0"
+			else if (count == 0)
+				r.sendString("cascade done " + total + " times\n")
+			else
+				r.setTimeout(walk, 500)
+		}
+		
+		walk()
+		
+		return Nginx.DONE
+	},
+	
 	timeout: function (r)
 	{
 		r.blablalba = "args: " + unescape(r.args)

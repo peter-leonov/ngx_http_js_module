@@ -565,6 +565,7 @@ method_setTimeout_handler(ngx_event_t *timer)
 	ngx_http_js_ctx_t   *ctx;
 	JSContext           *cx;
 	jsval                rval;//, args[2];
+	JSObject            *callback;
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimeout handler");
 	
@@ -580,7 +581,16 @@ method_setTimeout_handler(ngx_event_t *timer)
 	{
 		if (JS_ObjectIsFunction(cx, ctx->js_set_timeout_callback))
 		{
-			if (JS_CallFunctionValue(cx, ctx->js_request, OBJECT_TO_JSVAL(ctx->js_set_timeout_callback), 0, NULL, &rval))
+			// preserve current callback
+			callback = ctx->js_set_timeout_callback;
+			
+			// free current callback (TODO: check if GC may occur and destroy freed calback just here)
+			if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
+				JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
+			ctx->js_set_timeout_callback = NULL;
+			
+			// here a new timeout handler may be set
+			if (JS_CallFunctionValue(cx, ctx->js_request, OBJECT_TO_JSVAL(callback), 0, NULL, &rval))
 				rc = NGX_OK;
 			else
 				rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
@@ -590,10 +600,6 @@ method_setTimeout_handler(ngx_event_t *timer)
 			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout callback is not a function");
 			rc = NGX_ERROR;
 		}
-		
-		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
-			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
-		ctx->js_set_timeout_callback = NULL;
 	}
 	else
 	{
