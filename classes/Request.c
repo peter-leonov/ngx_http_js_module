@@ -18,9 +18,11 @@
 
 #define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
 #define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request subreuest callback function"
-#define JS_HAS_BODY_CALLBACK_ROOT_NAME     "Nginx.Request hasBody callback function"
+// #define JS_HAS_BODY_CALLBACK_ROOT_NAME     "Nginx.Request hasBody callback function"
 #define JS_SET_TIMEOUT_CALLBACK_ROOT_NAME     "Nginx.Request setTimeout callback function"
 
+#define JS_REQUEST_SLOT__HAS_BODY_CALLBACK 0
+#define JS_REQUEST_SLOTS_COUNT             1
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
@@ -129,10 +131,6 @@ cleanup_handler(void *data)
 	if (ctx->js_request_callback)
 		if (!JS_RemoveRoot(cx, &ctx->js_request_callback))
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
-	
-	if (ctx->js_has_body_callback)
-		if (!JS_RemoveRoot(cx, &ctx->js_has_body_callback))
-			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HAS_BODY_CALLBACK_ROOT_NAME);
 	
 	if (ctx->js_set_timeout_callback)
 		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
@@ -373,7 +371,6 @@ static JSBool
 method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
-	ngx_http_js_ctx_t   *ctx;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -387,12 +384,9 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 		return JS_TRUE;
 	}
 	
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	ngx_assert(ctx);
-	
-	ctx->js_has_body_callback = JSVAL_TO_OBJECT(argv[0]);
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "set has_body_callback to %p", ctx->js_has_body_callback);
-	E(JS_AddNamedRoot(cx, &ctx->js_has_body_callback, JS_HAS_BODY_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+	E(JS_SetReservedSlot(cx, this, JS_REQUEST_SLOT__HAS_BODY_CALLBACK, argv[0]),
+		"can't set slot JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "has body callback set");
 	
 	r->request_body_in_single_buf = 1;
 	r->request_body_in_persistent_file = 1;
@@ -401,6 +395,7 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 	if (r->request_body_in_file_only)
 		r->request_body_file_log_level = 0;
 	
+	// ngx_http_read_client_request_body implies count++
 	*rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_hasBody_handler));
 	return JS_TRUE;
 }
@@ -409,9 +404,9 @@ void
 method_hasBody_handler(ngx_http_request_t *r)
 {
 	ngx_http_js_ctx_t                *ctx;
-	JSObject                         *request, *callback;
+	JSObject                         *request;
 	JSContext                        *cx;
-	jsval                             rval;
+	jsval                             rval, callback;
 	
 	TRACE_REQUEST("hasBody handler");
 	
@@ -419,23 +414,22 @@ method_hasBody_handler(ngx_http_request_t *r)
 	// 	return;
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	if (!ctx)
-		return;
+	ngx_assert(ctx);
 	
 	cx = ctx->js_cx;
 	ngx_assert(cx);
-	request = ngx_http_js__nginx_request__wrap(cx, r);
-	ngx_assert(request);
-	callback = ctx->js_has_body_callback;
-	ngx_assert(callback);
 	
-	if (!JS_ObjectIsFunction(cx, callback))
+	request = ctx->js_request;
+	ngx_assert(request);
+	
+	if (!JS_GetReservedSlot(cx, request, JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
 	{
-		JS_ReportError(cx, "hasBody callback is not a function");
+		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
 		return;
 	}
 	
-	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(callback), 0, NULL, &rval);
+	JS_CallFunctionValue(cx, request, callback, 0, NULL, &rval);
+	ngx_http_finalize_request(r, NGX_DONE);
 }
 
 
@@ -920,7 +914,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
 JSClass ngx_http_js__nginx_request__class =
 {
 	"Request",
-	JSCLASS_HAS_PRIVATE,
+	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_REQUEST_SLOTS_COUNT),
 	JS_PropertyStub, JS_PropertyStub, request_getProperty, JS_PropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS

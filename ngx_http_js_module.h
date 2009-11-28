@@ -14,7 +14,6 @@ typedef struct {
 	void                     *js_request_callback; // JSObject
 	void                     *js_headers_in; // JSObject
 	void                     *js_headers_out; // JSObject
-	void                     *js_has_body_callback; // JSObject
 	
 	int                       filter_enabled;
 	

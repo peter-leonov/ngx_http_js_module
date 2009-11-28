@@ -4,6 +4,20 @@ var cache = ""
 
 self.Handler =
 {
+	hasBody: function (r)
+	{
+		log("hasBody")
+		
+		function callback ()
+		{
+			r.sendString(JSON.stringify({body: String(this.body).substr(0, 25), bodyFilename: String(this.bodyFilename).substr(0, 25)}) + "\n")
+		}
+		
+		r.hasBody(callback)
+		
+		return Nginx.DONE
+	},
+	
 	flush: function (r)
 	{
 		var count = r.args === undefined ? 3 : +r.args, total = 0
