@@ -18,11 +18,10 @@
 
 #define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
 #define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request subreuest callback function"
-// #define JS_HAS_BODY_CALLBACK_ROOT_NAME     "Nginx.Request hasBody callback function"
-#define JS_SET_TIMEOUT_CALLBACK_ROOT_NAME     "Nginx.Request setTimeout callback function"
 
 #define JS_REQUEST_SLOT__HAS_BODY_CALLBACK 0
-#define JS_REQUEST_SLOTS_COUNT             1
+#define JS_REQUEST_SLOT__SET_TIMEOUT       1
+#define JS_REQUEST_SLOTS_COUNT             2
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
@@ -131,11 +130,6 @@ cleanup_handler(void *data)
 	if (ctx->js_request_callback)
 		if (!JS_RemoveRoot(cx, &ctx->js_request_callback))
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
-	
-	if (ctx->js_set_timeout_callback)
-		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
-			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
-	
 	
 	if (ctx->js_timer.timer_set)
 	{
@@ -536,12 +530,11 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
 	ngx_event_t         *timer;
-	JSObject            *callback;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc >= 1 && argc <= 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ObjectIsFunction(cx, callback = JSVAL_TO_OBJECT(argv[0])) && (argc == 1 || JSVAL_IS_INT(argv[1])),
+	E(argc >= 1 && argc <= 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]) && (argc == 1 || JSVAL_IS_INT(argv[1])),
 			"Nginx.Request#setTimeout() takes one mandatory argument callback:Function and one optional milliseconds:Number");
 	
 	
@@ -551,19 +544,9 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	// E(timer->timer_set != 0, "only one timer may be set an once");
 	
+	E(JS_SetReservedSlot(cx, this, JS_REQUEST_SLOT__SET_TIMEOUT, argv[0]),
+		"can't set slot JS_REQUEST_SLOT__SET_TIMEOUT(%d)", JS_REQUEST_SLOT__SET_TIMEOUT);
 	
-	if (ctx->js_set_timeout_callback)
-	{
-		if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
-		{
-			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
-			return JS_FALSE;
-		}
-		ctx->js_set_timeout_callback = NULL;
-	}
-	
-	ctx->js_set_timeout_callback = callback;
-	E(JS_AddNamedRoot(cx, &ctx->js_set_timeout_callback, JS_SET_TIMEOUT_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
 	
 	// from ngx_cycle.c:740
 	timer->handler = method_setTimeout_handler;
@@ -586,8 +569,8 @@ method_setTimeout_handler(ngx_event_t *timer)
 	ngx_int_t            rc;
 	ngx_http_js_ctx_t   *ctx;
 	JSContext           *cx;
-	jsval                rval;//, args[2];
-	JSObject            *callback;
+	jsval                rval, callback;
+	JSObject            *request;
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimeout handler");
 	
@@ -598,35 +581,20 @@ method_setTimeout_handler(ngx_event_t *timer)
 	
 	
 	cx = ctx->js_cx;
+	request = ctx->js_request;
 	
-	if (ctx->js_set_timeout_callback)
+	if (!JS_GetReservedSlot(cx, request, JS_REQUEST_SLOT__SET_TIMEOUT, &callback))
 	{
-		if (JS_ObjectIsFunction(cx, ctx->js_set_timeout_callback))
-		{
-			// preserve current callback
-			callback = ctx->js_set_timeout_callback;
-			
-			// free current callback (TODO: check if GC may occur and destroy freed calback just here)
-			if (!JS_RemoveRoot(cx, &ctx->js_set_timeout_callback))
-				JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_SET_TIMEOUT_CALLBACK_ROOT_NAME);
-			ctx->js_set_timeout_callback = NULL;
-			
-			// here a new timeout handler may be set
-			if (JS_CallFunctionValue(cx, ctx->js_request, OBJECT_TO_JSVAL(callback), 0, NULL, &rval))
-				rc = NGX_OK;
-			else
-				rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
-		}
-		else
-		{
-			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout callback is not a function");
-			rc = NGX_ERROR;
-		}
+		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__SET_TIMEOUT(%d)", JS_REQUEST_SLOT__SET_TIMEOUT);
+		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	else
 	{
-		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "setTimeout handler called with NULL callback");
-		rc = NGX_ERROR;
+		// here a new timeout handler may be set
+		if (JS_CallFunctionValue(cx, request, callback, 0, NULL, &rval))
+			rc = NGX_OK;
+		else
+			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
 	ngx_http_finalize_request(r, rc);
