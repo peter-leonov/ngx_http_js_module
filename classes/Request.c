@@ -107,9 +107,12 @@ cleanup_handler(void *data)
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup_handler(r=%p)", r);
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	
 	cx = ctx->js_cx;
-	request = ctx->js_request;
 	ngx_assert(cx);
+	
+	request = ctx->js_request;
 	ngx_assert(request);
 	
 	// LOG("cleanup");
