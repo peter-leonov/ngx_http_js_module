@@ -4,6 +4,24 @@ var cache = ""
 
 self.Handler =
 {
+	properties: function (r)
+	{
+		var hash =
+		{
+			uri: r.uri,
+			method: r.method,
+			filename: r.filename,
+			remoteAddr: r.remoteAddr,
+			args: r.args,
+			headerOnly: r.headerOnly,
+			bodyFilename: r.bodyFilename,
+			body: r.body
+		}
+		
+		r.sendString(JSON.stringify(hash) + "\n")
+		return Nginx.DONE
+	},
+	
 	hasBodyFile: function (r)
 	{
 		function callback ()
