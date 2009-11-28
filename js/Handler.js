@@ -4,10 +4,20 @@ var cache = ""
 
 self.Handler =
 {
+	hasBodyFile: function (r)
+	{
+		function callback ()
+		{
+			r.sendString(JSON.stringify({body: String(this.body).substr(0, 25), bodyFilename: String(this.bodyFilename).substr(0, 25)}) + "\n")
+		}
+		
+		r.hasBody(callback)
+		
+		return Nginx.DONE
+	},
+	
 	hasBody: function (r)
 	{
-		log("hasBody")
-		
 		function callback ()
 		{
 			r.sendString(JSON.stringify({body: String(this.body).substr(0, 25), bodyFilename: String(this.bodyFilename).substr(0, 25)}) + "\n")
