@@ -818,18 +818,13 @@ request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 			case REQUEST_FILENAME:
 			{
 				size_t root;
-				ngx_http_js_ctx_t  *ctx;
+				ngx_str_t           filename;
 				
-				ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-				ngx_assert(ctx);
-				if (!ctx->filename.data)
-				{
-					if (ngx_http_map_uri_to_path(r, &ctx->filename, &root, 0) == NULL)
-						break;
-					ctx->filename.len--;
-				}
+				if (ngx_http_map_uri_to_path(r, &filename, &root, 0) == NULL)
+					break;
+				filename.len--;
 				
-				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) ctx->filename.data, ctx->filename.len));
+				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) filename.data, filename.len));
 			}
 			break;
 			
