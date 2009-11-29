@@ -128,11 +128,21 @@ self.Handler =
 		return Nginx.OK
 	},
 	
+	printString: function (r)
+	{
+		r.sendHttpHeader("text/plain; charset=utf-8")
+		r.printString("printString\n")
+		// sending last chunk in chunked connection
+		r.sendSpecial(Nginx.HTTP_LAST)
+		
+		return Nginx.OK // or DONE
+	},
+	
 	sendString: function (r)
 	{
 		// very quick way to send some fixed length response
 		// sendString() sets the Content-length, sends hraders and flushes data for you
-		r.sendString("Hi, Developer!\n")
+		r.sendString("sendString\n")
 		
 		return Nginx.OK
 	},
