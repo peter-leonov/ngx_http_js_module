@@ -160,7 +160,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	}
 	
 	
-	rt = JS_NewRuntime(32L * 1024L * 1024L);
+	rt = JS_NewRuntime(jsmcf->maxmem == NGX_CONF_UNSET_SIZE ? 2L * 1024L * 1024L : jsmcf->maxmem);
 	if (rt == NULL)
 		return NGX_CONF_ERROR;
 	

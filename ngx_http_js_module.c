@@ -167,6 +167,8 @@ ngx_http_js_create_main_conf(ngx_conf_t *cf)
 	if (ngx_array_init(&jsmcf->loads, cf->pool, 1, sizeof(u_char *)) != NGX_OK)
 		return NULL;
 	
+	jsmcf->maxmem = NGX_CONF_UNSET_SIZE;
+	
 	return jsmcf;
 }
 
@@ -357,10 +359,17 @@ ngx_http_js_filter_types(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 
-
-
 static ngx_command_t  ngx_http_js_commands[] =
 {
+	{
+		ngx_string("js_maxmem"),
+		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,
+		ngx_conf_set_size_slot,
+		NGX_HTTP_MAIN_CONF_OFFSET,
+		offsetof(ngx_http_js_main_conf_t, maxmem),
+		NULL
+	},
+	
 	{
 		ngx_string("js_load"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,

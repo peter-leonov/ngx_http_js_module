@@ -30,6 +30,7 @@ typedef struct {
 
 
 typedef struct{
+	size_t                     maxmem;
 	void                      *js_cx; // JSContext
 	void                      *js_global; // JSObject
 	ngx_array_t                requires, loads;

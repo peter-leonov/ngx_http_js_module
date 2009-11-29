@@ -1,7 +1,21 @@
 ;(function(){
 
+var memory = []
+
 self.Handler =
 {
+	eatMemory: function (r)
+	{
+		var arr = []
+		for (var i = 0; i < 100000; i++)
+			arr[i] = {num: 123, string: "ABC"}
+		memory.push(arr)
+		
+		r.sendString("memory.length = " + memory.length + "\n")
+		
+		return Nginx.OK
+	},
+	
 	subrequest: function (r)
 	{
 		function callback (body, rc)
