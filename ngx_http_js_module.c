@@ -3,7 +3,7 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
-// #include <jsapi.h>
+#include <jsapi.h>
 
 #include "ngx_http_js_module.h"
 #include "nginx_js_glue.h"
@@ -41,6 +41,20 @@ ngx_http_js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	*p = value[1].data;
 	
 	return NGX_CONF_OK;
+}
+
+static char *
+ngx_http_js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	JS_SetCStringsAreUTF8();
+	
+	if (JS_CStringsAreUTF8())
+		return NGX_CONF_OK;
+	else
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "couldn't set JS_CStringsAreUTF8()", &cmd->name);
+		return NGX_CONF_ERROR;
+	}
 }
 
 
@@ -367,6 +381,15 @@ static ngx_command_t  ngx_http_js_commands[] =
 		ngx_conf_set_size_slot,
 		NGX_HTTP_MAIN_CONF_OFFSET,
 		offsetof(ngx_http_js_main_conf_t, maxmem),
+		NULL
+	},
+	
+	{
+		ngx_string("js_utf8"),
+		NGX_HTTP_MAIN_CONF|NGX_CONF_NOARGS,
+		ngx_http_js_utf8,
+		0,
+		0,
 		NULL
 	},
 	
