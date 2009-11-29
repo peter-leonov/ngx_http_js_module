@@ -16,11 +16,31 @@ self.Handler =
 		return Nginx.OK
 	},
 	
-	subrequest: function (r)
+	subrequestQuick: function (r)
 	{
 		function callback (body, rc)
 		{
-			r.printString("callback with body='" + String(body).substr(0, 25) + "…', length=" + body.length + "\n")
+			body = String(body)
+			r.printString("callback with body='" + body.substr(0, 25) + "…', length=" + body.length + "\n")
+			r.flush()
+			r.sendSpecial(Nginx.HTTP_LAST)
+		}
+		
+		r.sendHttpHeader("text/plain; charset=utf-8")
+		r.printString("handler\n")
+		r.flush()
+		
+		r.subrequest("/quick", callback)
+		
+		return Nginx.OK
+	},
+	
+	subrequestSlow: function (r)
+	{
+		function callback (body, rc)
+		{
+			body = String(body)
+			r.printString("callback with body='" + body.substr(0, 25) + "…', length=" + body.length + "\n")
 			r.flush()
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}
@@ -193,9 +213,6 @@ self.Handler =
 		return Nginx.OK
 	},
 	
-	
-	upload: function () { return Nginx.OK },
-
 	
 	// processRequest: function (r)
 	// {
