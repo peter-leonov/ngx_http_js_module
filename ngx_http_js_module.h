@@ -7,10 +7,10 @@ typedef struct {
 	ngx_str_t                 redirect_uri;
 	ngx_str_t                 redirect_args;
 	
-	void                     *js_cx; // JSContext
-	void                     *js_request; // JSObject
-	void                     *js_headers_in; // JSObject
-	void                     *js_headers_out; // JSObject
+	JSContext                *js_cx;
+	JSObject                 *js_request;
+	JSObject                 *js_headers_in;
+	JSObject                 *js_headers_out;
 	
 	int                       filter_enabled;
 	
@@ -20,9 +20,9 @@ typedef struct {
 
 
 typedef struct {
-	void                      *handler_function; // JSObject
+	JSObject                  *handler_function;
 	ngx_str_t                  handler_name;
-	void                      *filter_function; // JSObject;
+	JSObject                  *filter_function;
 	ngx_str_t                  filter_name;
 	ngx_array_t               *filter_types;
 } ngx_http_js_loc_conf_t;
@@ -31,8 +31,8 @@ typedef struct {
 
 typedef struct{
 	size_t                     maxmem;
-	void                      *js_cx; // JSContext
-	void                      *js_global; // JSObject
+	JSContext                 *js_cx;
+	JSObject                  *js_global;
 	ngx_array_t                requires, loads;
 } ngx_http_js_main_conf_t;
 
