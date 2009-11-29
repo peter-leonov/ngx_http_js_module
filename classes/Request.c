@@ -106,8 +106,11 @@ cleanup_handler(void *data)
 	r = data;
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup_handler(r=%p)", r);
 	
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	ngx_assert(ctx);
+	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	{
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "empty module context");
+		return;
+	}
 	
 	cx = ctx->js_cx;
 	ngx_assert(cx);
