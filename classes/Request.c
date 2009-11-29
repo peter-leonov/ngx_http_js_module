@@ -396,6 +396,7 @@ method_hasBody_handler(ngx_http_request_t *r)
 	JSObject                         *request;
 	JSContext                        *cx;
 	jsval                             rval, callback;
+	ngx_int_t                         rc;
 	
 	TRACE_REQUEST("hasBody handler");
 	
@@ -417,8 +418,12 @@ method_hasBody_handler(ngx_http_request_t *r)
 		return;
 	}
 	
-	JS_CallFunctionValue(cx, request, callback, 0, NULL, &rval);
-	ngx_http_finalize_request(r, NGX_DONE);
+	if (JS_CallFunctionValue(cx, request, callback, 0, NULL, &rval))
+		rc = NGX_DONE;
+	else
+		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+	
+	ngx_http_finalize_request(r, rc);
 }
 
 
