@@ -4,7 +4,7 @@ self.Handler =
 {
 	subrequest: function (r)
 	{
-		function callback (sr, body)
+		function callback (body, rc)
 		{
 			r.printString("callback with body='" + String(body).substr(0, 25) + "…', length=" + body.length + "\n")
 			r.flush()

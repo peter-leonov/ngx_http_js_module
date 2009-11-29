@@ -708,13 +708,16 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
 	
 	if (sr->upstream)
-		args[1] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
+		args[0] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
 	else
-		args[1] = JSVAL_VOID;
+		args[0] = JSVAL_VOID;
 	
 	
-	args[0] = OBJECT_TO_JSVAL(subrequest);
-	JS_CallFunctionValue(cx, subrequest, callback, 2, args, &rval);
+	args[1] = INT_TO_JSVAL(rc);
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
+	
+	if (!JS_CallFunctionValue(cx, subrequest, callback, 2, args, &rval))
+		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	
 	return rc;
 }
