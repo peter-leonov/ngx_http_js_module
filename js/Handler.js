@@ -1,9 +1,25 @@
 ;(function(){
 
-var cache = ""
-
 self.Handler =
 {
+	subrequest: function (r)
+	{
+		function callback (sr, body)
+		{
+			r.printString("callback with body='" + body + "'\n")
+			r.flush()
+			r.sendSpecial(Nginx.HTTP_LAST)
+		}
+		
+		r.sendHttpHeader("text/plain; charset=utf-8")
+		r.printString("handler\n")
+		r.flush()
+		
+		r.subrequest("/quick", callback)
+		
+		return Nginx.OK
+	},
+	
 	properties: function (r)
 	{
 		var hash =

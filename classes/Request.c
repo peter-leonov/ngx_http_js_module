@@ -661,10 +661,9 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	
 	sr = NULL;
-	// LOG("before");
-	// if subrequest is finished quickly, the callback will be called immediately
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "before ngx_http_subrequest()");
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
-	// LOG("after");
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "after ngx_http_subrequest()");
 	if (sr == NULL || rc == NGX_ERROR)
 	{
 		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
@@ -674,23 +673,19 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
-		ngx_assert(sr);
-		ngx_http_js__nginx_request__wrap(cx, sr);
-		ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-		ngx_assert(ctx);
-		// this helps to prevent wrong JS garbage collection
-		ctx->js_request_callback = psr->data;
-		E(JS_AddNamedRoot(cx, &ctx->js_request_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+		if (ngx_http_js__nginx_request__wrap(cx, sr))
+		{
+			ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+			ctx->js_request_callback = psr->data;
+			// this helps to prevent wrong JS garbage collection
+			E(JS_AddNamedRoot(cx, &ctx->js_request_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+		}
+		else
+		{
+			JS_ReportError(cx, "couldn't wrap subrequest");
+			return JS_FALSE;
+		}
 	}
-	
-	// LOG("sr in request() = %p", sr);
-	
-	// request = ngx_http_js__nginx_request__wrap(cx, sr);
-	// if (request == NULL)
-	// {
-	// 	ngx_http_finalize_request(sr, NGX_ERROR);
-	// 	return NGX_ERROR;
-	// }
 	
 	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
@@ -699,37 +694,31 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 static ngx_int_t
 method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
-	ngx_http_js_ctx_t                *ctx, *mctx;
-	JSObject                         *request, *subrequest, *callback;
-	// JSString                         *body;
+	ngx_http_js_ctx_t                *ctx;
+	JSObject                         *subrequest, *callback;
 	JSContext                        *cx;
 	jsval                             rval, args[2];
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
-	ngx_assert(sr);
 	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
 		return rc;
 	
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 	if (!ctx)
-		return NGX_ERROR;
+	{
+		ngx_log_error(NGX_LOG_CRIT, sr->connection->log, 0, "subrequest handler with empty module context");
+		return NGX_HTTP_INTERNAL_SERVER_ERROR;
+	}
 	
 	cx = ctx->js_cx;
 	ngx_assert(cx);
-	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
+	
+	subrequest = ctx->js_request;
 	ngx_assert(subrequest);
+	
 	callback = data;
 	ngx_assert(callback);
-	
-	mctx = ngx_http_get_module_ctx(sr->main, ngx_http_js_module);
-	ngx_assert(mctx);
-	request = mctx->js_request;
-	ngx_assert(request);
-	
-	// LOG("data = %p", data);
-	// LOG("cx = %p", cx);
-	// LOG("request = %p", request);
 	
 	// LOG("sr->upstream = %p", sr->upstream);
 	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
@@ -747,9 +736,9 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	}
 	
 	args[0] = OBJECT_TO_JSVAL(subrequest);
-	JS_CallFunctionValue(cx, request, OBJECT_TO_JSVAL(callback), 2, args, &rval);
+	JS_CallFunctionValue(cx, subrequest, OBJECT_TO_JSVAL(callback), 2, args, &rval);
 	
-	return NGX_OK;
+	return rc;
 }
 
 
