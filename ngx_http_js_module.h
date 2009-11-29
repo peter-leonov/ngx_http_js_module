@@ -9,7 +9,6 @@ typedef struct {
 	
 	void                     *js_cx; // JSContext
 	void                     *js_request; // JSObject
-	void                     *js_request_callback; // JSObject
 	void                     *js_headers_in; // JSObject
 	void                     *js_headers_out; // JSObject
 	

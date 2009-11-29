@@ -17,11 +17,11 @@
 #include "../macroses.h"
 
 #define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
-#define JS_REQUEST_CALLBACK_ROOT_NAME      "Nginx.Request subreuest callback function"
 
-#define JS_REQUEST_SLOT__HAS_BODY_CALLBACK 0
-#define JS_REQUEST_SLOT__SET_TIMEOUT       1
-#define JS_REQUEST_SLOTS_COUNT             2
+#define JS_REQUEST_SLOT__HAS_BODY_CALLBACK        0
+#define JS_REQUEST_SLOT__SET_TIMEOUT              1
+#define JS_REQUEST_SLOT__SUBREQUEST_CALLBACK      2
+#define JS_REQUEST_SLOTS_COUNT                    3
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
@@ -131,11 +131,6 @@ cleanup_handler(void *data)
 	if (!JS_RemoveRoot(cx, &ctx->js_request))
 		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 	
-	
-	// ensure roots deleted to prevent memory leaks
-	if (ctx->js_request_callback)
-		if (!JS_RemoveRoot(cx, &ctx->js_request_callback))
-			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
 	
 	if (ctx->js_timer.timer_set)
 	{
@@ -615,14 +610,13 @@ static JSBool
 method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_int_t                    rc;
-	ngx_http_js_ctx_t           *ctx;
 	ngx_http_request_t          *r, *sr;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
 	size_t                       len;
 	JSString                    *str;
-	JSObject                    *callback;
+	JSObject                    *subrequest;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -649,12 +643,9 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	psr = NULL;
 	if (argc == 2)
 	{
-		callback = JSVAL_TO_OBJECT(argv[1]);
-		ngx_assert(callback);
-		
 		E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
 		psr->handler = method_subrequest_handler;
-		psr->data = callback;
+		// psr->data = r;
 		
 		flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	}
@@ -673,12 +664,11 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
-		if (ngx_http_js__nginx_request__wrap(cx, sr))
+		subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
+		if (subrequest)
 		{
-			ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-			ctx->js_request_callback = psr->data;
-			// this helps to prevent wrong JS garbage collection
-			E(JS_AddNamedRoot(cx, &ctx->js_request_callback, JS_REQUEST_CALLBACK_ROOT_NAME), "Can`t add new root %s", JS_REQUEST_CALLBACK_ROOT_NAME);
+			E(JS_SetReservedSlot(cx, subrequest, JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
+				"can't set slot JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
 		}
 		else
 		{
@@ -695,9 +685,9 @@ static ngx_int_t
 method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
 	ngx_http_js_ctx_t                *ctx;
-	JSObject                         *subrequest, *callback;
+	JSObject                         *subrequest;
 	JSContext                        *cx;
-	jsval                             rval, args[2];
+	jsval                             callback, rval, args[2];
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
@@ -717,8 +707,11 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	subrequest = ctx->js_request;
 	ngx_assert(subrequest);
 	
-	callback = data;
-	ngx_assert(callback);
+	if (!JS_GetReservedSlot(cx, subrequest, JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
+	{
+		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+		return NGX_HTTP_INTERNAL_SERVER_ERROR;
+	}
 	
 	// LOG("sr->upstream = %p", sr->upstream);
 	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
@@ -729,14 +722,8 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		args[1] = JSVAL_VOID;
 	
 	
-	if (!JS_ObjectIsFunction(cx, callback))
-	{
-		JS_ReportError(cx, "subrequest callback is not a function");
-		return NGX_ERROR;
-	}
-	
 	args[0] = OBJECT_TO_JSVAL(subrequest);
-	JS_CallFunctionValue(cx, subrequest, OBJECT_TO_JSVAL(callback), 2, args, &rval);
+	JS_CallFunctionValue(cx, subrequest, callback, 2, args, &rval);
 	
 	return rc;
 }
