@@ -15,7 +15,7 @@ self.Handler =
 		r.printString("handler\n")
 		r.flush()
 		
-		r.subrequest("/quick", callback)
+		r.subrequest("/slow", callback)
 		
 		return Nginx.OK
 	},

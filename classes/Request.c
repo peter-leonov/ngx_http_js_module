@@ -685,9 +685,6 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
-	if (rc == NGX_ERROR || sr->connection->error || sr->request_output)
-		return rc;
-	
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 	if (!ctx)
 	{
