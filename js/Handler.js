@@ -6,7 +6,7 @@ self.Handler =
 	{
 		function callback (sr, body)
 		{
-			r.printString("callback with body='" + body + "'\n")
+			r.printString("callback with body='" + String(body).substr(0, 25) + "…', length=" + body.length + "\n")
 			r.flush()
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}
