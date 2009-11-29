@@ -706,7 +706,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	if (!JS_GetReservedSlot(cx, subrequest, JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
 	{
 		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
-		return NGX_HTTP_INTERNAL_SERVER_ERROR;
+		return NGX_ERROR;
 	}
 	
 	// LOG("sr->upstream = %p", sr->upstream);
@@ -722,7 +722,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
 	
 	if (!JS_CallFunctionValue(cx, subrequest, callback, 2, args, &rval))
-		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+		rc = NGX_ERROR;
 	
 	return rc;
 }
