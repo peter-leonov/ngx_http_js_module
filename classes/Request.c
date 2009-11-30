@@ -714,6 +714,8 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	if (sr->upstream)
 		args[0] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
+	else if (ctx->chain_first != NULL)
+		args[0] = OBJECT_TO_JSVAL(ngx_http_js__nginx_chain__wrap(cx, ctx->chain_first, subrequest));
 	else
 		args[0] = JSVAL_VOID;
 	

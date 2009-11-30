@@ -21,7 +21,7 @@ self.Handler =
 		function callback (body, rc)
 		{
 			body = String(body)
-			r.printString("callback with body='" + body.substr(0, 25) + "…', length=" + body.length + "\n")
+			r.printString("callback with body='" + body + "', length=" + body.length + "\n")
 			r.flush()
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}
@@ -40,7 +40,7 @@ self.Handler =
 		function callback (body, rc)
 		{
 			body = String(body)
-			r.printString("callback with body='" + body.substr(0, 25) + "…', length=" + body.length + "\n")
+			r.printString("callback with body='" + body.substr(0, 25) + "', length=" + body.length + "\n")
 			r.flush()
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}

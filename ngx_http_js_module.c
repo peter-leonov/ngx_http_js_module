@@ -315,15 +315,87 @@ ngx_http_js_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 }
 
 static ngx_int_t
+ngx_http_js_header_buffer_filter(ngx_http_request_t *r)
+{
+	ngx_http_js_ctx_t        *ctx;
+	
+	if (r == r->main)
+		return ngx_http_js_next_header_filter(r);
+	
+	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	{
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+			return NGX_ERROR;
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	ctx->filter_enabled = 1;
+	ctx->chain_first = NULL;
+	ctx->chain_last = NULL;
+	
+	r->filter_need_in_memory = 1;
+	
+	
+	return ngx_http_js_next_header_filter(r);
+}
+
+static ngx_int_t
+ngx_http_js_body_buffer_filter(ngx_http_request_t *r, ngx_chain_t *in)
+{
+	ngx_http_js_ctx_t        *ctx;
+	
+	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "http js buffer filter \"%V?%V\" %p", &r->uri, &r->args, in);
+	
+	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)) && ctx->filter_enabled)
+	{
+		ngx_chain_t *cl;
+		
+		for (; in != NULL; in = in->next)
+		{
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "buf: %*s", in->buf->last - in->buf->pos, in->buf->pos);
+			
+			cl = ngx_palloc(r->pool, sizeof(ngx_chain_t));
+			if (cl == NULL)
+				return NGX_ERROR;
+			
+			cl->buf = in->buf;
+			
+			if (ctx->chain_last)
+			{
+				ctx->chain_last->next = cl;
+				ctx->chain_last = cl;
+			}
+			else
+			{
+				ctx->chain_first = cl;
+				ctx->chain_last = cl;
+			}
+			
+			// if (chain_link->buf->last_buf)
+		}
+		ctx->chain_last->next = NULL;
+		
+		return NGX_OK;
+	}
+	
+	return ngx_http_js_next_body_filter(r, in);
+}
+
+static ngx_int_t
 ngx_http_js_filter_init(ngx_conf_t *cf)
 {
 	TRACE();
 	
     ngx_http_js_next_header_filter = ngx_http_top_header_filter;
 	ngx_http_top_header_filter = ngx_http_js_header_filter;
+	ngx_http_top_header_filter = ngx_http_js_header_buffer_filter;
     
     ngx_http_js_next_body_filter = ngx_http_top_body_filter;
     ngx_http_top_body_filter = ngx_http_js_body_filter;
+    ngx_http_top_body_filter = ngx_http_js_body_buffer_filter;
 
     return NGX_OK;
 }

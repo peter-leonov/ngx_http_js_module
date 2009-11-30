@@ -13,6 +13,7 @@ typedef struct {
 	JSObject                 *js_headers_out;
 	
 	int                       filter_enabled;
+	ngx_chain_t              *chain_first, *chain_last;
 	
 	ngx_event_t               js_timer;
 } ngx_http_js_ctx_t;
