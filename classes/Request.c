@@ -748,10 +748,6 @@ static JSBool
 request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t   *r;
-	JSObject             *headers;
-	// LOG("Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
-	// JS_ReportError(cx, "Nginx.Request property id = %d\n", JSVAL_TO_INT(id));
-	
 	GET_PRIVATE(r);
 	
 	if (JSVAL_IS_INT(id))
@@ -792,13 +788,19 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			break;
 			
 			case REQUEST_HEADERS_IN:
-			E(headers = ngx_http_js__nginx_headers_in__wrap(cx, r), "Can`t ngx_http_js__nginx_headers_in__wrap()");
-			*vp = OBJECT_TO_JSVAL(headers);
+			{
+				JSObject             *headers;
+				E(headers = ngx_http_js__nginx_headers_in__wrap(cx, r), "couldn't wrap headers_in");
+				*vp = OBJECT_TO_JSVAL(headers);
+			}
 			break;
 			
 			case REQUEST_HEADERS_OUT:
-			E(headers = ngx_http_js__nginx_headers_out__wrap(cx, r), "Can`t ngx_http_js__nginx_headers_out__wrap()");
-			*vp = OBJECT_TO_JSVAL(headers);
+			{
+				JSObject             *headers;
+				E(headers = ngx_http_js__nginx_headers_out__wrap(cx, r), "couldn't wrap headers_out");
+				*vp = OBJECT_TO_JSVAL(headers);
+			}
 			break;
 			
 			case REQUEST_BODY_FILENAME:
