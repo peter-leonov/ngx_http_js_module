@@ -12,7 +12,7 @@
 #include "../macroses.h"
 
 static JSBool
-method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_logError(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString                       *jsstr;
 	ngx_uint_t                      level;
@@ -34,7 +34,7 @@ method_logError(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 }
 
 static JSBool
-js_nginx_class_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
 	

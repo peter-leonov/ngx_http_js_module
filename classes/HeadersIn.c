@@ -79,7 +79,7 @@ ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx
 
 
 static JSBool
-constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	TRACE();
 	return JS_TRUE;
@@ -90,7 +90,7 @@ constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 
 
 static JSBool
-getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	char                       *name;
@@ -119,7 +119,7 @@ getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 
 
 static JSBool
-setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
@@ -179,7 +179,7 @@ setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 }
 
 static JSBool
-delProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
 	return JS_TRUE;

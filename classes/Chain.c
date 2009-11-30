@@ -42,7 +42,7 @@ ngx_http_js__nginx_chain__wrap(JSContext *cx, ngx_chain_t *ch, JSObject *request
 
 
 static JSBool
-method_toString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_toString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	TRACE();
 	ngx_chain_t  *ch, *next;
@@ -88,7 +88,7 @@ method_toString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 
 
 static JSBool
-constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	TRACE();
 	return JS_TRUE;
@@ -99,7 +99,7 @@ constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 
 
 static JSBool
-getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_chain_t  *ch;
 	
@@ -112,7 +112,7 @@ getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
 
 
 static JSBool
-setProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_chain_t  *ch;
 	

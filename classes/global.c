@@ -12,7 +12,7 @@
 #include "environment.c"
 
 static JSBool
-method_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	uintN i;
 	JSString *str;
@@ -40,7 +40,7 @@ method_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
-		script = JS_CompileFile(cx, this, filename);
+		script = JS_CompileFile(cx, self, filename);
 		if (errno)
 		{
 			ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "error loading script %s: %s.\n", filename, strerror(errno));
@@ -52,7 +52,7 @@ method_load(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
 		{
 			JS_GetProperty(cx, global, filevar_name, &old);
 			JS_SetProperty(cx, global, filevar_name, &name);
-			ok = JS_ExecuteScript(cx, this, script, &result);
+			ok = JS_ExecuteScript(cx, self, script, &result);
 			JS_SetProperty(cx, global, filevar_name, &old);
 		}
 		JS_SetOptions(cx, oldopts);

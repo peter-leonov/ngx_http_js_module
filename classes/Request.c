@@ -139,14 +139,14 @@ cleanup_handler(void *data)
 
 
 static JSBool
-method_cleanup(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_cleanup(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
 	
@@ -175,7 +175,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 
 
 static JSBool
-method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_printString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
@@ -207,7 +207,7 @@ method_printString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 
 
 static JSBool
-method_flush(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_flush(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
@@ -235,7 +235,7 @@ method_flush(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval
 
 
 static JSBool
-method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_nextBodyFilter(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
@@ -284,7 +284,7 @@ method_nextBodyFilter(JSContext *cx, JSObject *this, uintN argc, jsval *argv, js
 
 
 static JSBool
-method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
@@ -340,7 +340,7 @@ method_sendString(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 
 
 static JSBool
-method_sendSpecial(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_sendSpecial(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	
@@ -357,7 +357,7 @@ void
 method_hasBody_handler(ngx_http_request_t *r);
 
 static JSBool
-method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_hasBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	
@@ -373,7 +373,7 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 		return JS_TRUE;
 	}
 	
-	E(JS_SetReservedSlot(cx, this, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, argv[0]),
+	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, argv[0]),
 		"can't set slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "has body callback set");
 	
@@ -428,7 +428,7 @@ method_hasBody_handler(ngx_http_request_t *r)
 
 
 static JSBool
-method_discardBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_discardBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	
@@ -441,7 +441,7 @@ method_discardBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval
 
 
 static JSBool
-method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	char                      *filename;
@@ -525,7 +525,7 @@ method_sendfile(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *r
 
 
 static JSBool
-method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_setTimeout(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
@@ -544,7 +544,7 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	// E(timer->timer_set != 0, "only one timer may be set an once");
 	
-	E(JS_SetReservedSlot(cx, this, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, argv[0]),
+	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, argv[0]),
 		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
 	
 	
@@ -606,7 +606,7 @@ static ngx_int_t
 method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
 
 static JSBool
-method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_int_t                    rc;
 	ngx_http_request_t          *r, *sr;
@@ -731,7 +731,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 
 
 static JSBool
-request_constructor(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rval)
+request_constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	return JS_TRUE;
 }
@@ -745,7 +745,7 @@ enum request_propid
 };
 
 static JSBool
-request_getProperty(JSContext *cx, JSObject *this, jsval id, jsval *vp)
+request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t   *r;
 	JSObject             *headers;

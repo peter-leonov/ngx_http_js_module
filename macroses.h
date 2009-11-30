@@ -21,8 +21,8 @@ if (!(expr)) \
 
 #define GET_PRIVATE(private) \
 ngx_assert(cx); \
-ngx_assert(this); \
-if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) \
+ngx_assert(self); \
+if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) \
 { \
 	JS_ReportError(cx, "wrapper object has NULL private pointer at %s\n%s: %u", __FUNCTION__, __FILE__, __LINE__); \
 	return JS_FALSE; \
@@ -42,7 +42,7 @@ if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) 
 
 
 #define GET_PRIVATE(private) \
-if ( (private = JS_GetInstancePrivate(cx, this, private_class, NULL)) == NULL ) \
+if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) \
 { \
 	JS_ReportError(cx, "sorry, the native request had been deleted (see http://wiki.github.com/kung-fu-tzu/ngx_http_js_module/garbagecollecting)"); \
 	return JS_FALSE; \
