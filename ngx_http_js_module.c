@@ -388,7 +388,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 		ngx_string("js_utf8"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_NOARGS,
 		ngx_http_js_utf8,
-		0,
+		NGX_HTTP_MAIN_CONF_OFFSET,
 		0,
 		NULL
 	},
