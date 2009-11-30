@@ -35,7 +35,7 @@ ngx_http_js__nginx_chain__wrap(JSContext *cx, ngx_chain_t *ch, JSObject *request
 	}
 	
 	JS_SetPrivate(cx, chain, ch);
-	JS_SetReservedSlot(cx, chain, NGX_HTTP_JS_CHAIN_REQUEST_SLOT, OBJECT_TO_JSVAL(request));
+	JS_SetReservedSlot(cx, chain, NGX_JS_CHAIN_SLOT__REQUEST, OBJECT_TO_JSVAL(request));
 	
 	return chain;
 }
@@ -139,7 +139,7 @@ JSFunctionSpec ngx_http_js__nginx_chain__funcs[] = {
 JSClass ngx_http_js__nginx_chain__class =
 {
 	"Chain",
-	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(1),
+	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(NGX_JS_CHAIN_SLOTS_COUNT),
 	JS_PropertyStub, JS_PropertyStub, getProperty, setProperty,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS

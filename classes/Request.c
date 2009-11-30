@@ -373,8 +373,8 @@ method_hasBody(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval *rv
 		return JS_TRUE;
 	}
 	
-	E(JS_SetReservedSlot(cx, this, JS_REQUEST_SLOT__HAS_BODY_CALLBACK, argv[0]),
-		"can't set slot JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
+	E(JS_SetReservedSlot(cx, this, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, argv[0]),
+		"can't set slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "has body callback set");
 	
 	r->request_body_in_single_buf = 1;
@@ -412,9 +412,9 @@ method_hasBody_handler(ngx_http_request_t *r)
 	request = ctx->js_request;
 	ngx_assert(request);
 	
-	if (!JS_GetReservedSlot(cx, request, JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
+	if (!JS_GetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
 	{
-		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
 		return;
 	}
 	
@@ -544,8 +544,8 @@ method_setTimeout(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 	
 	// E(timer->timer_set != 0, "only one timer may be set an once");
 	
-	E(JS_SetReservedSlot(cx, this, JS_REQUEST_SLOT__SET_TIMEOUT, argv[0]),
-		"can't set slot JS_REQUEST_SLOT__SET_TIMEOUT(%d)", JS_REQUEST_SLOT__SET_TIMEOUT);
+	E(JS_SetReservedSlot(cx, this, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, argv[0]),
+		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
 	
 	
 	// from ngx_cycle.c:740
@@ -583,9 +583,9 @@ method_setTimeout_handler(ngx_event_t *timer)
 	cx = ctx->js_cx;
 	request = ctx->js_request;
 	
-	if (!JS_GetReservedSlot(cx, request, JS_REQUEST_SLOT__SET_TIMEOUT, &callback))
+	if (!JS_GetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, &callback))
 	{
-		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__SET_TIMEOUT(%d)", JS_REQUEST_SLOT__SET_TIMEOUT);
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
 		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	else
@@ -666,8 +666,8 @@ method_subrequest(JSContext *cx, JSObject *this, uintN argc, jsval *argv, jsval 
 		subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
 		if (subrequest)
 		{
-			E(JS_SetReservedSlot(cx, subrequest, JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
-				"can't set slot JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+			E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
+				"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
 		}
 		else
 		{
@@ -703,9 +703,9 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	subrequest = ctx->js_request;
 	ngx_assert(subrequest);
 	
-	if (!JS_GetReservedSlot(cx, subrequest, JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
+	if (!JS_GetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
 	{
-		JS_ReportError(cx, "can't get slot JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
 		return NGX_ERROR;
 	}
 	
@@ -860,7 +860,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
 JSClass ngx_http_js__nginx_request__class =
 {
 	"Request",
-	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(JS_REQUEST_SLOTS_COUNT),
+	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(NGX_JS_REQUEST_SLOTS_COUNT),
 	JS_PropertyStub, JS_PropertyStub, request_getProperty, JS_PropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS

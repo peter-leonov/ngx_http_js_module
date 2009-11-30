@@ -14,7 +14,8 @@ ngx_http_js__nginx_chain__init(JSContext *cx);
 extern JSObject *
 ngx_http_js__nginx_chain__wrap(JSContext *cx, ngx_chain_t *ch, JSObject *request);
 
-#define NGX_HTTP_JS_CHAIN_REQUEST_SLOT 0
+#define NGX_JS_CHAIN_SLOT__REQUEST                  0
+#define NGX_JS_CHAIN_SLOTS_COUNT                    1
 
 
 #endif
