@@ -355,7 +355,7 @@ ngx_http_js_body_buffer_filter(ngx_http_request_t *r, ngx_chain_t *in)
 		
 		for (; in != NULL; in = in->next)
 		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "buf: %*s", in->buf->last - in->buf->pos, in->buf->pos);
+			ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "buf: %*s", in->buf->last - in->buf->pos, in->buf->pos);
 			
 			cl = ngx_palloc(r->pool, sizeof(ngx_chain_t));
 			if (cl == NULL)
