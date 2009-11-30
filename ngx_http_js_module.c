@@ -306,7 +306,7 @@ ngx_http_js_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
 	ngx_http_js_ctx_t        *ctx;
 	
-	TRACE();
+	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "http postpone filter \"%V?%V\" %p", &r->uri, &r->args, in);
 	
 	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)) && ctx->filter_enabled)
 		return ngx_http_js__glue__call_filter(r, in);
