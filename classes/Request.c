@@ -39,26 +39,17 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	ngx_assert(r);
 	TRACE_REQUEST("request_wrap");
 	
-	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
-	{
-		if (!ctx->js_cx)
-			ctx->js_cx = cx;
-		if (ctx->js_request)
-			return ctx->js_request;
-	}
-	else
+	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 	{
 		// ngx_pcalloc fills allocated memory with zeroes
-		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
-		if (ctx == NULL)
-		{
-			JS_ReportOutOfMemory(cx);
+		if ((ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t))))
+			ngx_http_set_ctx(r, ctx, ngx_http_js_module) // ; is in the macro
+		else
 			return NULL;
-		}
-		
-		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
-		ctx->js_timer.timer_set = 0;
 	}
+	
+	if (ctx->js_request)
+		return ctx->js_request;
 	
 	
 	request = JS_NewObject(cx, &ngx_http_js__nginx_request__class, ngx_http_js__nginx_request__prototype, NULL);
