@@ -213,6 +213,24 @@ self.Handler =
 		return Nginx.OK
 	},
 	
+	headersInPrint: function (r)
+	{
+		var headers = r.headersIn
+		
+		r.sendString(JSON.stringify({"User-Agent": headers["User-Agent"]}) + "\n")
+		
+		return Nginx.OK
+	},
+	
+	headersOutPrint: function (r)
+	{
+		var headers = r.headersOut
+		headers["X-Powered-By"] = "nginx"
+		r.sendString(JSON.stringify({"X-Powered-By": headers["X-Powered-By"]}) + "\n")
+		
+		return Nginx.OK
+	}
+	
 	
 	// processRequest: function (r)
 	// {
