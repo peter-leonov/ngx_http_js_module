@@ -389,7 +389,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	return rc;
 }
 
-
+/*
 ngx_int_t
 ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
@@ -462,3 +462,4 @@ ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in)
 	
 	return rc;
 }
+*/
