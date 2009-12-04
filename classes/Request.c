@@ -93,9 +93,6 @@ cleanup_handler(void *data)
 {
 	ngx_http_request_t        *r;
 	ngx_http_js_ctx_t         *ctx;
-	JSContext                 *cx;
-	JSObject                  *request;
-	jsval                      rval;
 	
 	r = data;
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup_handler(r=%p)", r);
@@ -106,15 +103,27 @@ cleanup_handler(void *data)
 		return;
 	}
 	
-	cx = ctx->js_cx;
-	ngx_assert(cx);
+	ngx_http_js__nginx_request__cleanup(ctx, r);
+}
+
+void
+ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r)
+{
+	JSContext                 *cx;
+	JSObject                  *request;
+	// jsval                      rval;
+	
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
 	
 	request = ctx->js_request;
 	ngx_assert(request);
 	
+	cx = ctx->js_cx;
+	ngx_assert(cx);
+	
 	// LOG("cleanup");
-	if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
-		JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
+	// if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
+	// 	JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
 	
 	// let the Headers modules to deside what to clean up
 	ngx_http_js__nginx_headers_in__cleanup(cx, r, ctx);

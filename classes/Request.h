@@ -24,5 +24,8 @@ ngx_http_js__nginx_request__init(JSContext *cx);
 extern JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r);
 
+extern void
+ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r);
+
 
 #endif
