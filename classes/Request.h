@@ -19,7 +19,7 @@ extern JSPropertySpec ngx_http_js__nginx_request__props[];
 extern JSFunctionSpec ngx_http_js__nginx_request__funcs[];
 
 extern JSBool
-ngx_http_js__nginx_request__init(JSContext *cx);
+ngx_http_js__nginx_request__init(JSContext *cx, JSObject *global);
 
 extern JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r);

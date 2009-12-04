@@ -9,7 +9,7 @@ extern JSObject *ngx_http_js__nginx_chain__prototype;
 // extern JSFunctionSpec ngx_http_js__nginx_chain__funcs;
 
 extern JSBool
-ngx_http_js__nginx_chain__init(JSContext *cx);
+ngx_http_js__nginx_chain__init(JSContext *cx, JSObject *global);
 
 extern JSObject *
 ngx_http_js__nginx_chain__wrap(JSContext *cx, ngx_chain_t *ch, JSObject *request);

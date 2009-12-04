@@ -8,7 +8,7 @@ extern JSPropertySpec ngx_http_js__nginx_headers_out__props;
 extern JSFunctionSpec ngx_http_js__nginx_headers_out__funcs;
 
 extern JSBool
-ngx_http_js__nginx_headers_out__init(JSContext *cx);
+ngx_http_js__nginx_headers_out__init(JSContext *cx, JSObject *global);
 
 extern JSObject *
 ngx_http_js__nginx_headers_out__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r);

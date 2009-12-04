@@ -191,14 +191,12 @@ static JSFunctionSpec nginx_class_funcs[] = {
 };
 
 JSBool
-ngx_http_js__nginx__init(JSContext *cx)
+ngx_http_js__nginx__init(JSContext *cx, JSObject *global)
 {
 	JSObject *nginxobj;
-	JSObject *global;
 	
 	TRACE();
 	
-	global = JS_GetGlobalObject(cx);
 	nginxobj = JS_DefineObject(cx, global, "Nginx", &nginx_class, NULL, JSPROP_ENUMERATE);
 	if (!nginxobj)
 	{

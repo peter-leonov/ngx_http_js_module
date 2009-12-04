@@ -7,7 +7,6 @@ typedef struct {
 	ngx_str_t                 redirect_uri;
 	ngx_str_t                 redirect_args;
 	
-	JSContext                *js_cx;
 	JSObject                 *js_request;
 	JSObject                 *js_headers_in;
 	JSObject                 *js_headers_out;
@@ -32,8 +31,6 @@ typedef struct {
 
 typedef struct{
 	size_t                     maxmem;
-	JSContext                 *js_cx;
-	JSObject                  *js_global;
 	ngx_array_t                requires, loads;
 } ngx_http_js_main_conf_t;
 

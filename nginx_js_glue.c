@@ -6,6 +6,7 @@
 #include <jsapi.h>
 
 #include "ngx_http_js_module.h"
+#include "nginx_js_glue.h"
 #include "classes/global.h"
 #include "classes/Nginx.h"
 #include "classes/Request.h"
@@ -14,6 +15,11 @@
 #include "classes/Chain.h"
 
 #include "macroses.h"
+
+JSRuntime *ngx_http_js_module_js_runtime = NULL;
+JSContext *ngx_http_js_module_js_context = NULL;
+JSObject  *ngx_http_js_module_js_global  = NULL;
+
 
 ngx_log_t *ngx_http_js_module_log = NULL;
 
@@ -138,26 +144,17 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 char *
 ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
 {
-	static JSRuntime *rt;
-	static JSContext *static_cx = NULL;
-	JSObject  *global;
-	JSContext        *cx;
-	
-	TRACE();
-	
-	if (jsmcf->js_cx != NULL)
+	if (ngx_http_js_module_js_runtime != NULL)
 		return NGX_CONF_OK;
 	
-	if (static_cx)
-	{
-		if (ngx_set_environment(cf->cycle, NULL) == NULL)
-			return NGX_CONF_ERROR;
-		
-		jsmcf->js_cx = static_cx;
-		jsmcf->js_global = JS_GetGlobalObject(static_cx);
-		
-		return NGX_CONF_OK;
-	}
+	JSContext   *cx;
+	JSRuntime   *rt;
+	JSObject    *global;
+	
+	ngx_log_debug0(NGX_LOG_DEBUG, cf->log, 0, "init interpreter");
+	
+	if (ngx_set_environment(cf->cycle, NULL) == NULL)
+		return NGX_CONF_ERROR;
 	
 	
 	rt = JS_NewRuntime(jsmcf->maxmem == NGX_CONF_UNSET_SIZE ? 2L * 1024L * 1024L : jsmcf->maxmem);
@@ -218,14 +215,15 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	// call some external func
 	
 	
-	jsmcf->js_cx = static_cx = cx;
-	jsmcf->js_global = global;
-	
-	if (ngx_http_js_run_loads(static_cx, global, &jsmcf->loads, cf->log) != NGX_OK)
+	if (ngx_http_js_run_loads(cx, global, &jsmcf->loads, cf->log) != NGX_OK)
 		return NGX_CONF_ERROR;
 	
-	if (ngx_http_js_run_requires(static_cx, global, &jsmcf->requires, cf->log) != NGX_OK)
+	if (ngx_http_js_run_requires(cx, global, &jsmcf->requires, cf->log) != NGX_OK)
 		return NGX_CONF_ERROR;
+	
+	ngx_http_js_module_js_runtime = rt;
+	ngx_http_js_module_js_context = cx;
+	ngx_http_js_module_js_global  = global;
 	
 	return NGX_CONF_OK;
 }
@@ -235,41 +233,32 @@ char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
 {
 	ngx_str_t                  *value;
-	ngx_http_js_main_conf_t    *jsmcf;
-	JSContext                  *cx;
-	JSObject                   *global;
 	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
-	TRACE();
-	
-	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-	
-	if (jsmcf->js_cx == NULL)
+	{
+		ngx_http_js_main_conf_t    *jsmcf;
+		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
 		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
 			return NGX_CONF_ERROR;
-	
-	cx = jsmcf->js_cx;
-	global = jsmcf->js_global;
-	
+	}
 	
 	value = cf->args->elts;
-	if (!JS_EvaluateScript(cx, global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
+	if (!JS_EvaluateScript(js_cx, js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(cx, function))
+	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
 	{
 		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
 		return NGX_CONF_ERROR;
 	}
 	
 	jslcf->handler_function = JSVAL_TO_OBJECT(function);
-	if (!JS_AddNamedRoot(cx, &jslcf->handler_function, JS_CALLBACK_ROOT_NAME))
+	if (!JS_AddNamedRoot(js_cx, &jslcf->handler_function, JS_CALLBACK_ROOT_NAME))
 	{
-		JS_ReportError(cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
+		JS_ReportError(js_cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
 		return NGX_CONF_ERROR;
 	}
-	
 	
 	return NGX_CONF_OK;
 }
@@ -279,38 +268,30 @@ char *
 ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
 {
 	ngx_str_t                  *value;
-	ngx_http_js_main_conf_t    *jsmcf;
-	JSContext                  *cx;
-	JSObject                   *global;
 	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js filter instance";
 	
-	TRACE();
-	
-	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-	
-	if (jsmcf->js_cx == NULL)
+	{
+		ngx_http_js_main_conf_t    *jsmcf;
+		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
 		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
 			return NGX_CONF_ERROR;
-	
-	cx = jsmcf->js_cx;
-	global = jsmcf->js_global;
-	
+	}
 	
 	value = cf->args->elts;
-	if (!JS_EvaluateScript(cx, global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
+	if (!JS_EvaluateScript(js_cx, js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(cx, function))
+	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
 	{
 		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
 		return NGX_CONF_ERROR;
 	}
 	
 	jslcf->filter_function = JSVAL_TO_OBJECT(function);
-	if (!JS_AddNamedRoot(cx, &jslcf->filter_function, JS_CALLBACK_ROOT_NAME))
+	if (!JS_AddNamedRoot(js_cx, &jslcf->filter_function, JS_CALLBACK_ROOT_NAME))
 	{
-		JS_ReportError(cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
+		JS_ReportError(js_cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
 		return NGX_CONF_ERROR;
 	}
 	
@@ -325,46 +306,50 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	ngx_int_t                    rc;
 	ngx_connection_t            *c;
 	ngx_log_t                   *last_log;
-	JSObject                    *global, *request, *function;
+	JSObject                    *request, *function;
 	jsval                        req;
 	jsval                        rval;
 	ngx_http_js_loc_conf_t      *jslcf;
-	ngx_http_js_main_conf_t     *jsmcf;
 	ngx_http_js_ctx_t           *ctx;
-	JSContext                   *cx;
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler");
 	
-	jsmcf = ngx_http_get_module_main_conf(r, ngx_http_js_module);
+	ngx_assert(js_cx);
+	ngx_assert(js_global);
 	
-	cx = jsmcf->js_cx;
-	global = jsmcf->js_global;
-	ngx_assert(cx);
-	ngx_assert(global);
-	
+	// location configuration for current request
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
+	// get the callback function, was set in config by ngx_http_js__glue__set_callback()
 	function = jslcf->handler_function;
 	ngx_assert(function);
 	
-	request = ngx_http_js__nginx_request__wrap(cx, r);
+	// get a js module context or create a js module context or return an error
+	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	{
+		// ngx_pcalloc fills allocated memory with zeroes
+		if ((ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t))))
+			ngx_http_set_ctx(r, ctx, ngx_http_js_module) // ; is in the macro
+		else
+			return NGX_ERROR;
+	}
+	
+	// create a wrapper js object for native request struct
+	request = ngx_http_js__nginx_request__wrap(js_cx, r);
 	if (request == NULL)
 		return NGX_ERROR;
 	
-	// ctx was allocated in ngx_http_js__nginx_request__wrap
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	ngx_assert(ctx);
 	
 	c = r->connection;
 	
 	req = OBJECT_TO_JSVAL(request);
 	last_log = ngx_http_js_module_log;
 	ngx_http_js_module_log = c->log;
-	if (JS_CallFunctionValue(cx, global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
+	if (JS_CallFunctionValue(js_cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
 		{
 			rc = NGX_ERROR;
-			JS_ReportError(cx, "Request processor must return an Integer");
+			JS_ReportError(js_cx, "Request processor must return an Integer");
 		}
 		else
 			rc = (ngx_int_t)JSVAL_TO_INT(rval);
@@ -375,7 +360,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i", rc);
 	
-	// JS_MaybeGC(cx);
+	// JS_MaybeGC(js_cx);
 	
 	if (rc == NGX_DONE)
 		return rc;
