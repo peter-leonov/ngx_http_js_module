@@ -11,7 +11,7 @@ extern JSBool
 ngx_http_js__nginx_headers_in__init(JSContext *cx);
 
 extern JSObject *
-ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r);
+ngx_http_js__nginx_headers_in__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r);
 
 extern void
 ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx_http_js_ctx_t *ctx);

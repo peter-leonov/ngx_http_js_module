@@ -1,6 +1,3 @@
-
-// Nginx.HeadersOut class
-
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
@@ -14,9 +11,6 @@
 
 #include "../macroses.h"
 
-//#define unless(a) if(!(a))
-#define JS_HEADER_IN_ROOT_NAME      "Nginx.HeadersOut instance"
-
 
 JSObject *ngx_http_js__nginx_headers_out__prototype;
 JSClass ngx_http_js__nginx_headers_out__class;
@@ -27,14 +21,13 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len);
 
 
 JSObject *
-ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
+ngx_http_js__nginx_headers_out__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r)
 {
-	TRACE();
 	JSObject                  *headers;
 	ngx_http_js_ctx_t         *ctx;
 	
 	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
-		ngx_http_js__nginx_request__wrap(cx, r);
+		return NULL;
 	
 	if (ctx->js_headers_out)
 		return ctx->js_headers_out;
@@ -46,9 +39,9 @@ ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
-	if (!JS_AddNamedRoot(cx, &ctx->js_headers_out, JS_HEADER_IN_ROOT_NAME))
+	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__HEADERS_OUT, OBJECT_TO_JSVAL(headers)))
 	{
-		JS_ReportError(cx, "Can`t add new root %s", JS_HEADER_IN_ROOT_NAME);
+		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__HEADERS_OUT(%d)", NGX_JS_REQUEST_SLOT__HEADERS_OUT);
 		return NULL;
 	}
 	
@@ -63,15 +56,10 @@ ngx_http_js__nginx_headers_out__wrap(JSContext *cx, ngx_http_request_t *r)
 void
 ngx_http_js__nginx_headers_out__cleanup(JSContext *cx, ngx_http_request_t *r, ngx_http_js_ctx_t *ctx)
 {
-	TRACE();
-	
 	ngx_assert(ctx);
 	
 	if (!ctx->js_headers_out)
 		return;
-	
-	if (!JS_RemoveRoot(cx, &ctx->js_headers_out))
-		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HEADER_IN_ROOT_NAME);
 	
 	JS_SetPrivate(cx, ctx->js_headers_out, NULL);
 	ctx->js_headers_out = NULL;
@@ -145,7 +133,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
 			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
-			
+			// LOG("by hash");
 			return JS_TRUE;
 		}
 		
@@ -154,7 +142,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		if (header)
 		{
 			header->hash = 1;
-		
+			
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
 			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
@@ -164,12 +152,12 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
 				r->headers_out.content_length_n = (off_t) JSVAL_TO_INT(*vp);
 				r->headers_out.content_length = header;
-				
+				// LOG("by list");
 				return JS_TRUE;
 			}
 		}
 		else
-			THROW("Can`t ngx_list_push()")
+			THROW("Can`t ngx_list_push()");
 	}
 	
 	
@@ -182,6 +170,7 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	TRACE();
 	return JS_TRUE;
 }
+
 
 JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 {

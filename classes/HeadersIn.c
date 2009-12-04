@@ -1,6 +1,3 @@
-
-// Nginx.HeadersIn class
-
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
@@ -14,9 +11,6 @@
 
 #include "../macroses.h"
 
-//#define unless(a) if(!(a))
-#define JS_HEADER_IN_ROOT_NAME      "Nginx.HeadersIn instance"
-
 
 JSObject *ngx_http_js__nginx_headers_in__prototype;
 JSClass ngx_http_js__nginx_headers_in__class;
@@ -27,14 +21,13 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len);
 
 
 JSObject *
-ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
+ngx_http_js__nginx_headers_in__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r)
 {
-	TRACE();
 	JSObject                  *headers;
 	ngx_http_js_ctx_t         *ctx;
 	
 	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
-		ngx_http_js__nginx_request__wrap(cx, r);
+		return NULL;
 	
 	if (ctx->js_headers_in)
 		return ctx->js_headers_in;
@@ -46,9 +39,9 @@ ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
-	if (!JS_AddNamedRoot(cx, &ctx->js_headers_in, JS_HEADER_IN_ROOT_NAME))
+	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__HEADERS_IN, OBJECT_TO_JSVAL(headers)))
 	{
-		JS_ReportError(cx, "Can`t add new root %s", JS_HEADER_IN_ROOT_NAME);
+		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__HEADERS_IN(%d)", NGX_JS_REQUEST_SLOT__HEADERS_IN);
 		return NULL;
 	}
 	
@@ -63,15 +56,10 @@ ngx_http_js__nginx_headers_in__wrap(JSContext *cx, ngx_http_request_t *r)
 void
 ngx_http_js__nginx_headers_in__cleanup(JSContext *cx, ngx_http_request_t *r, ngx_http_js_ctx_t *ctx)
 {
-	TRACE();
-	
 	ngx_assert(ctx);
 	
 	if (!ctx->js_headers_in)
 		return;
-	
-	if (!JS_RemoveRoot(cx, &ctx->js_headers_in))
-		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_HEADER_IN_ROOT_NAME);
 	
 	JS_SetPrivate(cx, ctx->js_headers_in, NULL);
 	ctx->js_headers_in = NULL;
@@ -140,7 +128,6 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		// LOG("setProperty: %s (%u)", key, (int)key_len);
 		
 		header = search_headers_in(r, key, key_len);
-		
 		if (header)
 		{
 			header->key.data = (u_char*)key;
@@ -155,13 +142,12 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		if (header)
 		{
 			header->hash = 1;
-		
+			
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
 			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
-		
-			if (header->key.len == sizeof("Content-Length") - 1
-				&& ngx_strncasecmp(header->key.data, (u_char *)"Content-Length", sizeof("Content-Length") - 1) == 0)
+			
+			if (NCASE_COMPARE(header->key, "Content-Length"))
 			{
 				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
 				r->headers_in.content_length_n = (off_t) JSVAL_TO_INT(*vp);

@@ -790,7 +790,7 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case REQUEST_HEADERS_IN:
 			{
 				JSObject             *headers;
-				E(headers = ngx_http_js__nginx_headers_in__wrap(cx, r), "couldn't wrap headers_in");
+				E(headers = ngx_http_js__nginx_headers_in__wrap(cx, self, r), "couldn't wrap headers_in");
 				*vp = OBJECT_TO_JSVAL(headers);
 			}
 			break;
@@ -798,7 +798,7 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case REQUEST_HEADERS_OUT:
 			{
 				JSObject             *headers;
-				E(headers = ngx_http_js__nginx_headers_out__wrap(cx, r), "couldn't wrap headers_out");
+				E(headers = ngx_http_js__nginx_headers_out__wrap(cx, self, r), "couldn't wrap headers_out");
 				*vp = OBJECT_TO_JSVAL(headers);
 			}
 			break;
