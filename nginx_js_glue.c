@@ -176,7 +176,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	// global
 	if (!ngx_http_js__global__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize global object");
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "global object initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	global = JS_GetGlobalObject(cx);
@@ -184,33 +184,33 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	// Nginx
 	if (!ngx_http_js__nginx__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize Nginx object");
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx object initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	
 	// Nginx.Request
 	if (!ngx_http_js__nginx_request__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize Nginx.Request class");
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Request class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	
 	// Nginx.Headers
 	if (!ngx_http_js__nginx_headers_in__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize Nginx.HeadersIn class");
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.HeadersIn class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	if (!ngx_http_js__nginx_headers_out__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize Nginx.HeadersOut class");
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.HeadersOut class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	
 	// Nginx.Chain
 	if (!ngx_http_js__nginx_chain__init(cx))
 	{
-		JS_ReportError(cx, "Can`t initialize Nginx.Chain class");
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Chain class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	
