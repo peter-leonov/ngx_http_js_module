@@ -159,7 +159,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 	{
 		E(JSVAL_IS_STRING(argv[0]), "sendHttpHeader() takes one optional argument: contentType:String");
 		
-		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type, 0),
+		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type),
 			"Can`t js_str2ngx_str(cx, contentType)")
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
@@ -189,10 +189,15 @@ method_printString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval
 	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
 	
 	str = JSVAL_TO_STRING(argv[0]);
-	len = JS_GetStringLength(str);
+	b = js_str2ngx_buf(cx, str, r->pool);
+	if (b == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	len = b->last - b->pos;
 	if (len == 0)
 		return JS_TRUE;
-	b = js_str2ngx_buf(cx, str, r->pool, len);
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js printing string \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
@@ -251,10 +256,16 @@ method_nextBodyFilter(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 	if (argc == 1 && JSVAL_IS_STRING(argv[0]))
 	{
 		str = JSVAL_TO_STRING(argv[0]);
-		len = JS_GetStringLength(str);
+		b = js_str2ngx_buf(cx, str, r->pool);
+		if (b == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		len = b->last - b->pos;
 		if (len == 0)
 			return JS_TRUE;
-		b = js_str2ngx_buf(cx, str, r->pool, len);
+		
 		b->last_buf = 1;
 	
 		out.buf = b;
@@ -295,19 +306,20 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E((argc == 1 || argc == 2),
+	E(( (argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1])) ),
 		"Nginx.Request#sendString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
 	
 	str = JS_ValueToString(cx, argv[0]);
-	len = JS_GetStringLength(str);
-	if (len == 0)
-		return JS_TRUE;
-	b = js_str2ngx_buf(cx, str, r->pool, len);
+	b = js_str2ngx_buf(cx, str, r->pool);
 	if (b == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	len = b->last - b->pos;
+	if (len == 0)
+		return JS_TRUE;
+	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js sending string \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
 	ngx_http_clear_content_length(r);
@@ -318,7 +330,7 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
-		E(js_str2ngx_str(cx, JS_ValueToString(cx, argv[1]), r->pool, &r->headers_out.content_type, 0),
+		E(js_str2ngx_str(cx, JS_ValueToString(cx, argv[1]), r->pool, &r->headers_out.content_type),
 			"Can`t js_str2ngx_str(cx, contentType)")
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
@@ -458,7 +470,7 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		"Nginx.Request#sendfile takes 1 mandatory argument: filename:String, and 2 optional offset:Number and bytes:Number");
 	
 	
-	E(js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &filename, NULL), "Can`t js_str2c_str()");
+	E(filename = js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, NULL), "Can`t js_str2c_str()");
 	ngx_assert(filename);
 	
 	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
@@ -607,7 +619,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
-	size_t                       len;
 	JSString                    *str;
 	
 	GET_PRIVATE(r);
@@ -619,12 +630,10 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		"Request#subrequest takes 1 argument: uri:String; and 1 optional callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);
-	len = JS_GetStringLength(str);
-	E(len, "empty uri passed");
 	
-	E(uri = ngx_palloc(r->pool, sizeof(ngx_str_t)), "Can`t ngx_palloc(...)");
-	E(js_str2ngx_str(cx, str, r->pool, uri, len), "Can`t js_str2ngx_str(...)")
-	
+	E(uri = ngx_palloc(r->pool, sizeof(ngx_str_t)), "Can`t ngx_palloc(ngx_str_t)");
+	E(js_str2ngx_str(cx, str, r->pool, uri), "Can`t js_str2ngx_str()")
+	E(uri->len, "empty uri passed");
 	
 	flags = 0;
 	args.len = 0;

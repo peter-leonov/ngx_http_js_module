@@ -122,7 +122,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	if (JSVAL_IS_STRING(id))
 	{
 		key_jsstr = JSVAL_TO_STRING(id);
-		E(js_str2c_str(cx, key_jsstr, r->pool, &key, &key_len), "Can`t js_str2c_str(key_jsstr)");
+		E(key = js_str2c_str(cx, key_jsstr, r->pool, &key_len), "Can`t js_str2c_str(key_jsstr)");
 		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
 		
 		// LOG("setProperty: %s (%u)", key, (int)key_len);
@@ -132,7 +132,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		{
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
+			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
 			// LOG("by hash");
 			return JS_TRUE;
 		}
@@ -145,7 +145,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value, 0), "Can`t js_str2ngx_str(value_jsstr)");
+			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
 			
 			if (NCASE_COMPARE(header->key, "Content-Length"))
 			{
