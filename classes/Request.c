@@ -9,6 +9,7 @@
 #include <jsapi.h>
 
 #include "../ngx_http_js_module.h"
+#include "../nginx_js_glue.h"
 #include "../strings_util.h"
 #include "Request.h"
 #include "HeadersIn.h"
@@ -32,52 +33,56 @@ JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
 	JSObject                  *request;
-	ngx_http_js_ctx_t         *ctx;
-	ngx_http_cleanup_t        *cln;
 	
-	ngx_assert(cx);
-	ngx_assert(r);
 	TRACE_REQUEST("request_wrap");
-	
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
-	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		if ((ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t))))
-			ngx_http_set_ctx(r, ctx, ngx_http_js_module) // ; is in the macro
-		else
-			return NULL;
-	}
-	
-	if (ctx->js_request)
-		return ctx->js_request;
-	
 	
 	request = JS_NewObject(cx, &ngx_http_js__nginx_request__class, ngx_http_js__nginx_request__prototype, NULL);
 	if (!request)
 	{
-		JS_ReportOutOfMemory(cx);
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not create a wrapper object");
 		return NULL;
 	}
 	
+	JS_SetPrivate(cx, request, r);
+	
+	return request;
+}
+
+ngx_int_t
+ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx, JSObject *request)
+{
+	ngx_http_cleanup_t        *cln;
+	
+	TRACE_REQUEST("request_root");
+	
+	if (ctx->js_request)
+	{
+		if (ctx->js_request == request)
+		{
+			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more than one time", request, ctx);
+		}
+		else
+		{
+			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root JS request %p in ctx %p in place of JS request %p", request, ctx, ctx->js_request);
+		}
+		return NGX_ERROR;
+	}
+	
+	
+	ctx->js_request = request;
+	
 	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
-		JS_ReportError(cx, "Can`t add new root %s", JS_REQUEST_ROOT_NAME);
-		return NULL;
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not add new root %s", JS_REQUEST_ROOT_NAME);
+		return NGX_ERROR;
 	}
 	
 	cln = ngx_http_cleanup_add(r, 0);
 	cln->data = r;
 	cln->handler = cleanup_handler;
 	
-	JS_SetPrivate(cx, request, r);
-	
-	ctx->js_request = request;
-	ctx->js_cx = cx;
-	
-	return request;
+	return NGX_OK;
 }
-
-
 
 static void
 cleanup_handler(void *data)
@@ -94,31 +99,23 @@ cleanup_handler(void *data)
 		return;
 	}
 	
-	ngx_http_js__nginx_request__cleanup(ctx, r);
+	ngx_http_js__nginx_request__cleanup(ctx, r, js_cx);
 }
 
 void
-ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r)
+ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
-	JSContext                 *cx;
-	JSObject                  *request;
 	// jsval                      rval;
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
-	
-	request = ctx->js_request;
-	ngx_assert(request);
-	
-	cx = ctx->js_cx;
-	ngx_assert(cx);
 	
 	// LOG("cleanup");
 	// if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
 	// 	JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
 	
 	// let the Headers modules to deside what to clean up
-	ngx_http_js__nginx_headers_in__cleanup(cx, r, ctx);
-	ngx_http_js__nginx_headers_out__cleanup(cx, r, ctx);
+	ngx_http_js__nginx_headers_in__cleanup(ctx, r, cx);
+	ngx_http_js__nginx_headers_out__cleanup(ctx, r, cx);
 	
 	// second param has to be &ctx->js_request
 	// because JS_AddRoot was used with it's address
@@ -134,7 +131,9 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	
 	// finaly mark the object as inactive
 	// after that the GET_PRIVATE macros will raise an exception when called
-	JS_SetPrivate(cx, request, NULL);
+	JS_SetPrivate(cx, ctx->js_request, NULL);
+	// and set the native request as unwrapped
+	ctx->js_request = NULL;
 }
 
 
@@ -394,7 +393,6 @@ method_hasBody_handler(ngx_http_request_t *r)
 {
 	ngx_http_js_ctx_t                *ctx;
 	JSObject                         *request;
-	JSContext                        *cx;
 	jsval                             rval, callback;
 	ngx_int_t                         rc;
 	
@@ -406,23 +404,21 @@ method_hasBody_handler(ngx_http_request_t *r)
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	
-	cx = ctx->js_cx;
-	ngx_assert(cx);
-	
 	request = ctx->js_request;
 	ngx_assert(request);
 	
-	if (!JS_GetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
+	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
 	{
-		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
+		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
 		return;
 	}
 	
-	if (JS_CallFunctionValue(cx, request, callback, 0, NULL, &rval))
+	if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 		rc = NGX_DONE;
 	else
 		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	
+	// implies count--
 	ngx_http_finalize_request(r, rc);
 }
 
@@ -568,7 +564,6 @@ method_setTimeout_handler(ngx_event_t *timer)
 	ngx_http_request_t  *r;
 	ngx_int_t            rc;
 	ngx_http_js_ctx_t   *ctx;
-	JSContext           *cx;
 	jsval                rval, callback;
 	JSObject            *request;
 	
@@ -579,24 +574,23 @@ method_setTimeout_handler(ngx_event_t *timer)
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	
-	
-	cx = ctx->js_cx;
 	request = ctx->js_request;
 	
-	if (!JS_GetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, &callback))
+	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, &callback))
 	{
-		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
+		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
 		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	else
 	{
 		// here a new timeout handler may be set
-		if (JS_CallFunctionValue(cx, request, callback, 0, NULL, &rval))
+		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 			rc = NGX_OK;
 		else
 			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
+	// implies count--
 	ngx_http_finalize_request(r, rc);
 }
 
@@ -615,7 +609,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_uint_t                   flags;
 	size_t                       len;
 	JSString                    *str;
-	JSObject                    *subrequest;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -663,11 +656,33 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
+		ngx_http_js_ctx_t      *ctx;
+		JSObject               *subrequest;
+		
 		subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
+		
+		// get a js module context or create a js module context or return an error
+		if (!(ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module)))
+		{
+			// ngx_pcalloc fills allocated memory with zeroes
+			if ((ctx = ngx_pcalloc(sr->pool, sizeof(ngx_http_js_ctx_t))))
+				ngx_http_set_ctx(sr, ctx, ngx_http_js_module) // ; is in the macro
+			else
+			{
+				JS_ReportError(cx, "could not create modlue ctx");
+				return JS_FALSE;
+			}
+		}
+		
 		if (subrequest)
 		{
 			E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
 				"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+			if (ngx_http_js__nginx_request__root_in(ctx, sr, js_cx, subrequest) != NGX_OK)
+			{
+				JS_ReportError(cx, "could not root subrequest in it's native request ctx");
+				return JS_FALSE;
+			}
 		}
 		else
 		{
@@ -685,7 +700,6 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
 	ngx_http_js_ctx_t                *ctx;
 	JSObject                         *subrequest;
-	JSContext                        *cx;
 	jsval                             callback, rval, args[2];
 	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
@@ -697,15 +711,12 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
-	cx = ctx->js_cx;
-	ngx_assert(cx);
-	
 	subrequest = ctx->js_request;
 	ngx_assert(subrequest);
 	
-	if (!JS_GetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
+	if (!JS_GetReservedSlot(js_cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
 	{
-		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
 		return NGX_ERROR;
 	}
 	
@@ -713,9 +724,9 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
 	
 	if (sr->upstream)
-		args[0] = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
+		args[0] = STRING_TO_JSVAL(JS_NewStringCopyN(js_cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
 	else if (ctx->chain_first != NULL)
-		args[0] = OBJECT_TO_JSVAL(ngx_http_js__nginx_chain__wrap(cx, ctx->chain_first, subrequest));
+		args[0] = OBJECT_TO_JSVAL(ngx_http_js__nginx_chain__wrap(js_cx, ctx->chain_first, subrequest));
 	else
 		args[0] = JSVAL_VOID;
 	
@@ -723,7 +734,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	args[1] = INT_TO_JSVAL(rc);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
 	
-	if (!JS_CallFunctionValue(cx, subrequest, callback, 2, args, &rval))
+	if (!JS_CallFunctionValue(js_cx, subrequest, callback, 2, args, &rval))
 		rc = NGX_ERROR;
 	
 	return rc;

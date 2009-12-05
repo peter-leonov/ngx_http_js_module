@@ -333,7 +333,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 			return NGX_ERROR;
 	}
 	
-	// create a wrapper js object for native request struct
+	// create a wrapper js object (not yet rooted) for native request struct
 	request = ngx_http_js__nginx_request__wrap(js_cx, r);
 	if (request == NULL)
 		return NGX_ERROR;
@@ -358,7 +358,15 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	ngx_http_js_module_log = last_log;
 	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i", rc);
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i (main->count = %i)", rc, r->main->count);
+	
+	// if timer was set, or subrequest performed, or body is awaited
+	if (r->main->count > 2)
+	{
+		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
+		if (ngx_http_js__nginx_request__root_in(ctx, r, js_cx, request) != NGX_OK)
+			return NGX_ERROR;
+	}
 	
 	// JS_MaybeGC(js_cx);
 	

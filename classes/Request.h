@@ -25,7 +25,10 @@ extern JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r);
 
 extern void
-ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r);
+ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
+
+extern ngx_int_t
+ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx, JSObject *request);
 
 
 #endif
