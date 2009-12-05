@@ -1,0 +1,15 @@
+http://127.0.0.1:9090/subrequest-quick
+http://127.0.0.1:9090/subrequest-slow
+http://127.0.0.1:9090/properties
+http://127.0.0.1:9090/timeout-late
+http://127.0.0.1:9090/timeout
+http://127.0.0.1:9090/time
+http://127.0.0.1:9090/print-string
+http://127.0.0.1:9090/send-string
+http://127.0.0.1:9090/sendfile
+http://127.0.0.1:9090/headers-in-print
+http://127.0.0.1:9090/headers-out-print
+http://127.0.0.1:9090/has-body-file
+http://127.0.0.1:9090/has-body
+http://127.0.0.1:9090/flush
+http://127.0.0.1:9090/timeout-cascade
