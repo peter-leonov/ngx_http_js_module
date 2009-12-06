@@ -160,6 +160,18 @@ self.Handler =
 		return Nginx.DONE
 	},
 	
+	timeoutZero: function (r)
+	{
+		function finish ()
+		{
+			r.sendString("timer done\n")
+		}
+		
+		r.setTimeout(finish, 0)
+		
+		return Nginx.DONE
+	},
+	
 	lateTimeout: function (r)
 	{
 		log("lateTimeout")
