@@ -162,15 +162,18 @@ self.Handler =
 	
 	timeoutOrder: function (r)
 	{
-		var order = [], count = 2
+		var order = [], count = 8
 		function handler (num)
 		{
+			order.push(num)
 			r.print(num + " has expired\n")
 			r.flush()
 			if (--count == 0)
 			{
-				order.push(num)
-				r.print("all done:" + JSON.stringify(order) + "\n")
+				var orderStr = JSON.stringify(order),
+					rightStr = JSON.stringify(right)
+				r.print("all done: " + orderStr + "\n")
+				r.print(orderStr == rightStr ? "order passed\n" : "order failed, the right is " + rightStr)
 				r.sendSpecial(Nginx.HTTP_LAST)
 			}
 		}
@@ -186,6 +189,9 @@ self.Handler =
 		r.setTimeout(function () { handler(5) }, 5)
 		r.setTimeout(function () { handler(6) }, 2000)
 		r.setTimeout(function () { handler(7) }, 1000)
+		r.setTimeout(function () { handler(8) }, 0)
+		
+		var right = [1, 2, 3, 8, 5, 4, 7, 6]
 		
 		return Nginx.DONE
 	},
