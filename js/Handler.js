@@ -114,7 +114,7 @@ self.Handler =
 				r.sendSpecial(Nginx.HTTP_LAST)
 			}
 			else
-				r.setTimeout(walk, 500)
+				r.setTimer(walk, 500)
 			
 			count--
 		}
@@ -137,7 +137,7 @@ self.Handler =
 			else if (count == 1)
 				r.sendString("cascade done " + total + " times\n")
 			else
-				r.setTimeout(walk, 500)
+				r.setTimer(walk, 500)
 			
 			count--
 		}
@@ -155,7 +155,7 @@ self.Handler =
 			r.sendString("timer done for " + this.blablalba + "\n", "text/html; charset=utf-8")
 		}
 		
-		r.setTimeout(finish, 1000)
+		r.setTimer(finish, 1000)
 		
 		return Nginx.DONE
 	},
@@ -167,7 +167,7 @@ self.Handler =
 			r.sendString("timer done\n")
 		}
 		
-		r.setTimeout(finish, 0)
+		r.setTimer(finish, 0)
 		
 		return Nginx.DONE
 	},
@@ -176,7 +176,7 @@ self.Handler =
 	{
 		log("lateTimeout")
 		
-		r.setTimeout(function () {  }, 3000)
+		r.setTimer(function () {  }, 3000)
 		
 		r.sendString("done", "text/html; charset=utf-8")
 		return Nginx.DONE

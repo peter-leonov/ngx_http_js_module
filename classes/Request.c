@@ -26,7 +26,7 @@ static void
 cleanup_handler(void *data);
 
 static void
-method_setTimeout_handler(ngx_event_t *ev);
+method_setTimer_handler(ngx_event_t *ev);
 
 
 JSObject *
@@ -533,7 +533,7 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 
 
 static JSBool
-method_setTimeout(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
@@ -543,7 +543,7 @@ method_setTimeout(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	TRACE_REQUEST_METHOD();
 	
 	E(argc >= 1 && argc <= 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]) && (argc == 1 || JSVAL_IS_INT(argv[1])),
-			"Nginx.Request#setTimeout() takes one mandatory argument callback:Function and one optional milliseconds:Number");
+			"Nginx.Request#setTimer() takes one mandatory argument callback:Function and one optional milliseconds:Number");
 	
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
@@ -557,7 +557,7 @@ method_setTimeout(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	
 	// from ngx_cycle.c:740
-	timer->handler = method_setTimeout_handler;
+	timer->handler = method_setTimer_handler;
 	timer->log = r->connection->log;
 	timer->data = r;
 	
@@ -571,7 +571,7 @@ method_setTimeout(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 }
 
 static void
-method_setTimeout_handler(ngx_event_t *timer)
+method_setTimer_handler(ngx_event_t *timer)
 {
 	ngx_http_request_t  *r;
 	ngx_int_t            rc;
@@ -579,7 +579,7 @@ method_setTimeout_handler(ngx_event_t *timer)
 	jsval                rval, callback;
 	JSObject            *request;
 	
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimeout handler");
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimer handler");
 	
 	r = timer->data;
 	
@@ -874,7 +874,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"discardBody",       method_discardBody,          0, 0, 0},
     {"hasBody",           method_hasBody,              1, 0, 0},
     {"sendfile",          method_sendfile,             1, 0, 0},
-    {"setTimeout",        method_setTimeout,           2, 0, 0},
+    {"setTimer",          method_setTimer,             2, 0, 0},
     {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
