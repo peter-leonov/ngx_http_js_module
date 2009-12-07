@@ -25,8 +25,7 @@
 	
 	var Me = self.Nginx.Request
 	var slice = Array.prototype.slice
-	Me.prototype.print = function () { this.printString(slice.apply(arguments).join("")) }
-	Me.prototype.puts = function () { this.printString(slice.apply(arguments).join("") + "\n") }
+	Me.prototype.puts = function (str) { this.print(str + "\n") }
 })();
 
 

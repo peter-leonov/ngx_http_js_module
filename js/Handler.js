@@ -21,13 +21,13 @@ self.Handler =
 		function callback (body, rc)
 		{
 			body = String(body)
-			r.printString("callback with body='" + body + "', length=" + body.length + "\n")
+			r.print("callback with body='" + body + "', length=" + body.length + "\n")
 			r.flush()
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}
 		
 		r.sendHttpHeader("text/plain; charset=utf-8")
-		r.printString("handler\n")
+		r.print("handler\n")
 		r.flush()
 		
 		r.subrequest("/quick", callback)
@@ -40,13 +40,13 @@ self.Handler =
 		function callback (body, rc)
 		{
 			body = String(body)
-			r.printString("callback with body='" + body.substr(0, 25) + "', length=" + body.length + "\n")
+			r.print("callback with body='" + body.substr(0, 25) + "', length=" + body.length + "\n")
 			r.flush()
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}
 		
 		r.sendHttpHeader("text/plain; charset=utf-8")
-		r.printString("handler\n")
+		r.print("handler\n")
 		r.flush()
 		
 		r.subrequest("/slow", callback)
@@ -103,14 +103,14 @@ self.Handler =
 		{
 			total++
 			
-			r.printString(count + "\n")
+			r.print(count + "\n")
 			r.flush()
 			
 			if (count <= 0)
 				throw "count <= 0"
 			else if (count == 1)
 			{
-				r.printString("print called " + total + " times\n")
+				r.print("print called " + total + " times\n")
 				r.sendSpecial(Nginx.HTTP_LAST)
 			}
 			else
@@ -190,10 +190,10 @@ self.Handler =
 		return Nginx.OK
 	},
 	
-	printString: function (r)
+	print: function (r)
 	{
 		r.sendHttpHeader("text/plain; charset=utf-8")
-		r.printString("printString\n")
+		r.print("print\n")
 		// sending last chunk in chunked connection
 		r.sendSpecial(Nginx.HTTP_LAST)
 		
@@ -352,7 +352,7 @@ self.Handler =
 	// {
 	// 	log("processRequest")
 	// 	r.sendHttpHeader("text/html; charset=utf-8")
-	// 	r.printString("Hi, Developer!\nYou'v called the " + r.uri + " page, with method " + r.method + ", from " + r.remoteAddr + " IP\n")
+	// 	r.print("Hi, Developer!\nYou'v called the " + r.uri + " page, with method " + r.method + ", from " + r.remoteAddr + " IP\n")
 	// 	r.sendSpecial(Nginx.HTTP_FLUSH)
 	// 	return Nginx.OK
 	// }
@@ -361,7 +361,7 @@ self.Handler =
 	// {
 	// 	log("processRequest")
 	// 	r.sendHttpHeader("text/html; charset=utf-8")
-	// 	r.printString("Hi, Developer!\nYou'v called the " + r.uri + " page, with method " + r.method + ", from " + r.remoteAddr + " IP\n")
+	// 	r.print("Hi, Developer!\nYou'v called the " + r.uri + " page, with method " + r.method + ", from " + r.remoteAddr + " IP\n")
 	// 	r.sendSpecial(Nginx.HTTP_FLUSH)
 	// 	
 	// 	// log(rc == Nginx.OK)

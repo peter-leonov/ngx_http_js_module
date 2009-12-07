@@ -174,7 +174,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 
 
 static JSBool
-method_printString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
@@ -186,7 +186,7 @@ method_printString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
+	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#print takes 1 argument: str:String");
 	
 	str = JS_ValueToString(cx, argv[0]);
 	b = js_str2ngx_buf(cx, str, r->pool);
@@ -865,7 +865,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 
 JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
-    {"printString",       method_printString,          1, 0, 0},
+    {"print",             method_print,                1, 0, 0},
     {"flush",             method_flush,                0, 0, 0},
     {"sendString",        method_sendString,           1, 0, 0},
     {"subrequest",        method_subrequest,           2, 0, 0},
