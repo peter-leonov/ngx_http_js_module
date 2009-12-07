@@ -188,7 +188,7 @@ method_printString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval
 	
 	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#printString takes 1 argument: str:String");
 	
-	str = JSVAL_TO_STRING(argv[0]);
+	str = JS_ValueToString(cx, argv[0]);
 	b = js_str2ngx_buf(cx, str, r->pool);
 	if (b == NULL)
 	{
