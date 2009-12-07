@@ -160,6 +160,36 @@ self.Handler =
 		return Nginx.DONE
 	},
 	
+	timeoutOrder: function (r)
+	{
+		var order = [], count = 2
+		function handler (num)
+		{
+			r.print(num + " has expired\n")
+			r.flush()
+			if (--count == 0)
+			{
+				order.push(num)
+				r.print("all done:" + JSON.stringify(order) + "\n")
+				r.sendSpecial(Nginx.HTTP_LAST)
+			}
+		}
+		
+		r.sendHttpHeader("text/plain")
+		r.print("it has begun!\n")
+		r.flush()
+		
+		r.setTimeout(function () { handler(1) }, 0)
+		r.setTimeout(function () { handler(2) }, 0)
+		r.setTimeout(function () { handler(3) }, 0)
+		r.setTimeout(function () { handler(4) }, 10)
+		r.setTimeout(function () { handler(5) }, 5)
+		r.setTimeout(function () { handler(6) }, 2000)
+		r.setTimeout(function () { handler(7) }, 1000)
+		
+		return Nginx.DONE
+	},
+	
 	timeoutZero: function (r)
 	{
 		function finish ()
