@@ -186,7 +186,7 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_STRING(argv[0]), "Nginx.Request#print takes 1 argument: str:String");
+	E(argc == 1, "Nginx.Request#print takes 1 argument: str");
 	
 	str = JS_ValueToString(cx, argv[0]);
 	b = js_str2ngx_buf(cx, str, r->pool);
