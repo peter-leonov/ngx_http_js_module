@@ -166,7 +166,7 @@ self.Handler =
 	
 	timeoutOrder: function (r)
 	{
-		var order = [], count = 8
+		var order = [], count = 9
 		function handler (num)
 		{
 			order.push(num)
@@ -194,8 +194,9 @@ self.Handler =
 		r.setTimeout(function () { handler(6) }, 2000)
 		r.setTimeout(function () { handler(7) }, 1000)
 		r.setTimeout(function () { handler(8) }, 0)
+		r.setTimeout(function () { handler(9) }, 1001)
 		
-		var right = [1, 2, 3, 8, 5, 4, 7, 6]
+		var right = [1, 2, 3, 8, 5, 4, 7, 9, 6]
 		
 		return Nginx.DONE
 	},
