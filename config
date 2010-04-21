@@ -35,6 +35,9 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Chain.h"
 echo "checking for JavaScript"
 NGX_JS_CONFIG="js-config"
 NGX_JS_VER=$($NGX_JS_CONFIG --version)
+if [[ $NGX_JS_VER == "" ]]; then
+    NGX_JS_VER="1.9.x"
+fi
 if [[ $NGX_JS_VER == 1.9.* ]]; then
     echo " + SpiderMonkey version: $NGX_JS_VER"
     
