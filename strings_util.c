@@ -3,7 +3,7 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
-#include <jsapi.h>
+#include <js/jsapi.h>
 
 #include "strings_util.h"
 #include "macroses.h"

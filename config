@@ -41,11 +41,13 @@ fi
 if [[ $NGX_JS_VER == 1.9.* ]]; then
     echo " + SpiderMonkey version: $NGX_JS_VER"
     
-    NGX_JS_CONFIG_CFLAGS=$($NGX_JS_CONFIG --cflags)
-    CFLAGS="$NGX_JS_CONFIG_CFLAGS $CFLAGS"
+    # NGX_JS_CONFIG_CFLAGS=$($NGX_JS_CONFIG --cflags)
+    # CFLAGS="$NGX_JS_CONFIG_CFLAGS $CFLAGS"
+    CFLAGS="-I $ngx_addon_dir $CFLAGS"
     
-    NGX_JS_CONFIG_LIBS=$($NGX_JS_CONFIG --libs)
-    CORE_LIBS="$CORE_LIBS $NGX_JS_CONFIG_LIBS"
+    # NGX_JS_CONFIG_LIBS=$($NGX_JS_CONFIG --libs)
+    # CORE_LIBS="$CORE_LIBS $NGX_JS_CONFIG_LIBS"
+    CORE_LIBS="$CORE_LIBS -lmozjs"
 else
     if [[ -z $NGX_JS_VER ]]; then
         $NGX_JS_VER="(none)"

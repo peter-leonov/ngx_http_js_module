@@ -5,7 +5,7 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <nginx.h>
-#include <jsapi.h>
+#include <js/jsapi.h>
 
 #include "../macroses.h"
 
