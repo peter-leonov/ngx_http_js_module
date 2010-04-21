@@ -35,7 +35,7 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Chain.h"
 echo "checking for JavaScript"
 NGX_JS_CONFIG="js-config"
 NGX_JS_VER=$($NGX_JS_CONFIG --version)
-if [[ $NGX_JS_VER == 1.8.* ]]; then
+if [[ $NGX_JS_VER == 1.9.* ]]; then
     echo " + SpiderMonkey version: $NGX_JS_VER"
     
     NGX_JS_CONFIG_CFLAGS=$($NGX_JS_CONFIG --cflags)
@@ -49,7 +49,7 @@ else
     fi
     
     echo
-    echo "$0: error: SpiderMonkey 1.8.0 or higher is required: $NGX_JS_VER was found"
+    echo "$0: error: SpiderMonkey 1.9.0 or higher is required: $NGX_JS_VER was found"
     echo
     
     exit 1;
