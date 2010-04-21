@@ -48,7 +48,7 @@ if [[ $NGX_JS_VER == 1.9.* ]]; then
     CORE_LIBS="$CORE_LIBS $NGX_JS_CONFIG_LIBS"
 else
     if [[ -z $NGX_JS_VER ]]; then
-    	$NGX_JS_VER="(none)"
+        $NGX_JS_VER="(none)"
     fi
     
     echo
