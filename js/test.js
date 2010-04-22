@@ -141,9 +141,9 @@ var sup = Super.prototype,
 		if (typeof callback !== 'function')
 			throw new Error('callback is not present')
 		
-		var reporter = this.reporter.create()
 		var test = new Me(this, name, conf, callback)
-		test.reporter = reporter
+		test.holder = this.holder
+		test.reporter = this.reporter.create()
 		
 		// link cascades
 		this.add(test)

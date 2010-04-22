@@ -12,9 +12,11 @@ var myName = 'Tests', Me = self[myName] =
 	
 	run: function (r, title)
 	{
-		var reporter = new Reporter(r)
 		var test = this.mainTest = new Test(this, this.name, null, this.callback)
-		test.reporter = reporter
+		test.holder = r
+		
+		test.reporter = new Reporter(r)
+		
 		test.run()
 	},
 	

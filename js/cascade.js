@@ -20,7 +20,7 @@ Me.prototype =
 	jobCompleted: false,
 	parallel: Infinity,
 	spawnable: true,
-	holder: self, // window
+	holder: null,
 	oncomplete: function () {},
 	
 	doJob: function ()
@@ -43,7 +43,10 @@ Me.prototype =
 		var children = this.children
 		
 		if (typeof job === 'function')
+		{
 			job = new Me(job)
+			job.holder = this.holder
+		}
 		else
 			if (children.indexOf(job) >= 0)
 				return null
