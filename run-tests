@@ -1,0 +1,25 @@
+#!/bin/bash
+
+MODULE_ROOT="$1"
+NGX_OBJS="$2"
+NGINX="$NGX_OBJS/nginx"
+PIDFILE="/tmp/nginx-js.pid"
+
+function kill_process {
+	if [ -f $PIDFILE ]; then
+		PID=$(cat $PIDFILE)
+		kill -QUIT $PID
+		sleep 1
+		if [ -f $PIDFILE ]; then
+			kill -KILL $PID
+		fi
+	fi
+}
+
+# kill_process
+
+$NGINX -c "$MODULE_ROOT/nginx.conf" &
+sleep 1
+curl -i http://127.0.0.1:19090/run-tests
+
+kill_process

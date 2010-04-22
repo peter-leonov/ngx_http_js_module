@@ -4,7 +4,7 @@ cat << END                                                >> $NGX_MAKEFILE
 
 test-js:
 	@ echo "Testing $ngx_addon_name"
-	@ $ngx_addon_dir/tests/run "$ngx_addon_dir" "\$(PWD)/objs"
+	@ $ngx_addon_dir/run-tests "$ngx_addon_dir" "\$(PWD)/objs"
 
 END
 
