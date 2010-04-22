@@ -1,6 +1,6 @@
 ;(function(){
 
-Handler.cascadeTests = function (r)
+NginxTests.cascadeTests = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	r.flush()

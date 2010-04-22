@@ -3,6 +3,8 @@ require("test.js")
 require("test-tool.js")
 require("tests.js")
 
+var NginxTests = {}
+
 ;(function(){
 
 var memory = []
@@ -17,8 +19,8 @@ var myName = 'Handler', Me =
 		{
 			var method = m[1].replace(/-(\w)/, function (m) { return m[1].toUpperCase() })
 			
-			if (Me[method])
-				return Me[method](r)
+			if (NginxTests[method])
+				return NginxTests[method](r)
 			else
 				r.sendString('no such method')
 		}
