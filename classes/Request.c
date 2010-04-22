@@ -562,7 +562,7 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	
 	r->main->count++;
-	ngx_add_timer(timer, argc == 2 ? (ngx_uint_t) argv[1] : 0);
+	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
 	timer->timer_set = 1;
 	
 	
