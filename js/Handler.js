@@ -38,3 +38,4 @@ self[myName] = Me
 
 require("tests/cascade-tests.js")
 require("tests/timer-parallel.js")
+require("tests/timer-order.js")
