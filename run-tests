@@ -20,6 +20,12 @@ function kill_process {
 
 $NGINX -c "$MODULE_ROOT/nginx.conf" &
 sleep 1
-curl -i http://127.0.0.1:19090/run-tests
+
+# curl -i http://127.0.0.1:19090/run/time
+# curl -i http://127.0.0.1:19090/run/timeout-order
+curl -i http://127.0.0.1:19090/run/timeout-cascade
+# curl -i http://127.0.0.1:19090/run/tests
 
 kill_process
+
+echo
