@@ -7,8 +7,27 @@ require("tests.js")
 
 var memory = []
 
-self.Handler =
+var myName = 'Handler', Me =
 {
+	run: function (r)
+	{
+		var m = /([^\/]+)$/.exec(r.uri)
+		
+		if (m)
+		{
+			var method = m[1].replace(/-(\w)/, function (m) { return m[1].toUpperCase() })
+			
+			if (Me[method])
+				return Me[method](r)
+			else
+				r.sendString('no such method')
+		}
+		else
+			r.sendString('error in uri')
+		
+		return Nginx.OK
+	},
+	
 	runTests: function (r)
 	{
 		r.sendHttpHeader('text/plain; charset=utf-8')
@@ -432,5 +451,8 @@ self.Handler =
 
 // Nginx.Request.prototype.cleanup = function () { log("cleanup(): " + this.uri) }
 // Nginx.Request.prototype.cleanup = function () { log("cleanup") }
+
+Me.className = myName
+self[myName] = Me
 
 })();
