@@ -20,7 +20,7 @@ Me.prototype =
 		if (!(timers = this.__timers))
 			timers = this.__timers = {}
 		
-		var t = +new Date() + d
+		var t = Nginx.time + d
 		
 		if (timers[t])
 			timers[t].push(f)
@@ -42,7 +42,7 @@ Me.prototype =
 		
 		var todo = []
 		
-		var now = +new Date(), min = Infinity
+		var now = Nginx.time, min = Infinity
 		for (var k in timers)
 		{
 			var d = k - now
@@ -68,7 +68,7 @@ Me.prototype =
 				{
 					f.call(this, now - t)
 				}
-				catch (ex) { /* needs to be reported */ }
+				catch (ex) { Nginx.logError(Nginx.LOG_CRIT, ex.message) }
 			}
 		}
 		
