@@ -125,8 +125,8 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	
 	if (ctx->js_timer.timer_set)
 	{
+		/* implies timer_set = 0 */
 		ngx_del_timer(&ctx->js_timer);
-		ctx->js_timer.timer_set = 0;
 	}
 	
 	// finaly mark the object as inactive
@@ -562,8 +562,8 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	
 	r->main->count++;
+	// implies timer_set = 1;
 	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
-	timer->timer_set = 1;
 	
 	
 	return JS_TRUE;
