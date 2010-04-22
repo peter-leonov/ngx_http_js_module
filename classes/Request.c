@@ -542,9 +542,8 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc >= 1 && argc <= 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]) && (argc == 1 || JSVAL_IS_INT(argv[1])),
-			"Nginx.Request#setTimer() takes one mandatory argument callback:Function and one optional milliseconds:Number");
-	
+	E(argc == 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]) && JSVAL_IS_INT(argv[1]),
+			"Nginx.Request#setTimer() takes two mandatory argument callback:Function and milliseconds:Number");
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
