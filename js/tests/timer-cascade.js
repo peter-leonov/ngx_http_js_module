@@ -7,14 +7,14 @@ NginxTests.timerCascade = function (r)
 	{
 		total++
 		
-		r.print(count + "\n")
+		r.print(count + '\n')
 		r.flush()
 		
 		if (count <= 0)
-			throw "count <= 0"
+			throw 'count <= 0'
 		else if (count == 1)
 		{
-			r.print("print called " + total + " times\n")
+			r.print('print called ' + total + ' times\n')
 			r.sendSpecial(Nginx.HTTP_LAST)
 		}
 		else
@@ -23,7 +23,7 @@ NginxTests.timerCascade = function (r)
 		count--
 	}
 	
-	r.sendHttpHeader("text/plain; charset=utf-8")
+	r.sendHttpHeader('text/plain; charset=utf-8')
 	walk()
 	
 	return Nginx.DONE
