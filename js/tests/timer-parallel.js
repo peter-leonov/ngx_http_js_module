@@ -6,6 +6,7 @@ NginxTests.timerParallel = function (r)
 	{
 		r.puts('callback')
 		r.flush()
+		r.sendSpecial(Nginx.HTTP_LAST)
 	}
 	
 	r.sendHttpHeader('text/plain; charset=utf-8')
