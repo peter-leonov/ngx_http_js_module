@@ -157,7 +157,7 @@ self.Handler =
 		return Nginx.DONE
 	},
 	
-	timeout: function (r)
+	timer: function (r)
 	{
 		r.blablalba = "args: " + unescape(r.args)
 		function finish ()
@@ -207,7 +207,7 @@ self.Handler =
 		return Nginx.DONE
 	},
 	
-	timeoutZero: function (r)
+	timerZero: function (r)
 	{
 		function finish ()
 		{
@@ -219,10 +219,8 @@ self.Handler =
 		return Nginx.DONE
 	},
 	
-	lateTimeout: function (r)
+	timerLate: function (r)
 	{
-		log("lateTimeout")
-		
 		r.setTimer(function () {  }, 3000)
 		
 		r.sendString("done", "text/html; charset=utf-8")
