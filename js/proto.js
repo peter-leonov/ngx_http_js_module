@@ -3,6 +3,9 @@
 if (!Object.extend)
 	Object.extend = function (d, s) { if (d) for (var k in s) d[k] = s[k]; return d }
 
+if (!Object.add)
+	Object.add = function (d, s) { if (d) for (var k in s) if (!(k in d)) d[k] = s[k]; return d }
+
 if (!Object.copy)
 	Object.copy = function (s) { var d = {}; for (var k in s) d[k] = s[k]; return d }
 
@@ -14,5 +17,8 @@ if (!Array.copy)
 
 if (!Function.prototype.bind)
 	Function.prototype.bind = function (inv, args) { var me = this; return function () { me.apply(inv, args || arguments) } }
+
+if (!Function.prototype.mixIn)
+	Function.prototype.mixIn = function (module) { return Object.add(this.prototype, module.prototype) }
 
 // log("proto.js is loaded by path " + __FILE__)
