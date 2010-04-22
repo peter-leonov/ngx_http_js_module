@@ -549,19 +549,19 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	ngx_assert(ctx);
 	timer = &ctx->js_timer;
 	
-	// E(timer->timer_set != 0, "only one timer may be set an once");
-	
 	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMER, argv[0]),
 		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMER(%d)", NGX_JS_REQUEST_SLOT__SET_TIMER);
 	
+	if (!timer->timer_set)
+	{
+		// from ngx_cycle.c:740
+		timer->handler = method_setTimer_handler;
+		timer->log = r->connection->log;
+		timer->data = r;
+		
+		r->main->count++;
+	}
 	
-	// from ngx_cycle.c:740
-	timer->handler = method_setTimer_handler;
-	timer->log = r->connection->log;
-	timer->data = r;
-	
-	
-	r->main->count++;
 	// implies timer_set = 1;
 	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
 	
@@ -600,6 +600,8 @@ method_setTimer_handler(ngx_event_t *timer)
 		else
 			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
+	
+	// ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
 	
 	// implies count--
 	ngx_http_finalize_request(r, rc);
