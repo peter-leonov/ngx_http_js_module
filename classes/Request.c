@@ -551,8 +551,8 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	// E(timer->timer_set != 0, "only one timer may be set an once");
 	
-	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, argv[0]),
-		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
+	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMER, argv[0]),
+		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMER(%d)", NGX_JS_REQUEST_SLOT__SET_TIMER);
 	
 	
 	// from ngx_cycle.c:740
@@ -587,9 +587,9 @@ method_setTimer_handler(ngx_event_t *timer)
 	
 	request = ctx->js_request;
 	
-	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__SET_TIMEOUT, &callback))
+	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__SET_TIMER, &callback))
 	{
-		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__SET_TIMEOUT(%d)", NGX_JS_REQUEST_SLOT__SET_TIMEOUT);
+		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__SET_TIMER(%d)", NGX_JS_REQUEST_SLOT__SET_TIMER);
 		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	else

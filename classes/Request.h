@@ -5,7 +5,7 @@
 #define JS_REQUEST_ROOT_NAME               "Nginx.Request instance"
 
 #define NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK        0
-#define NGX_JS_REQUEST_SLOT__SET_TIMEOUT              1
+#define NGX_JS_REQUEST_SLOT__SET_TIMER                1
 #define NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK      2
 #define NGX_JS_REQUEST_SLOT__HEADERS_IN               3
 #define NGX_JS_REQUEST_SLOT__HEADERS_OUT              4
