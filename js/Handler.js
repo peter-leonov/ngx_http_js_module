@@ -1,5 +1,6 @@
 require("cascade.js")
 require("test.js")
+require("test-tool.js")
 require("tests.js")
 
 ;(function(){

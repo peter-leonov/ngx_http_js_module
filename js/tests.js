@@ -13,14 +13,18 @@ var myName = 'Tests', Me = self[myName] =
 	run: function (r, title)
 	{
 		var reporter = new Reporter(r)
-		var test = this.mainTest = new Test().initialize(this, this.name, reporter, null, this.callback, r)
+		var test = this.mainTest = new Test(this, this.name, null, this.callback)
+		test.reporter = reporter
 		test.run()
 	},
 	
-	sigchild: function ()
+	childTest: function ()
 	{
 		this.oncomplete()
-	}
+	},
+	
+	// ignore raw sigchilds
+	sigchild: function () {}
 }
 
 var Reporter = function (holder)
