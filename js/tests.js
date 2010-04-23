@@ -55,14 +55,14 @@ Reporter.prototype =
 	
 	send: function (msg)
 	{
-		this.holder.puts(msg)
+		this.holder.puts(this.testName + ': ' + msg)
 		this.holder.flush()
 	},
 	
 	name: function (name)
 	{
 		this.testName = name
-		this.send('starting ' + name + 'лялял…')
+		this.send('starting…')
 	},
 	
 	setStatus: function (s)
