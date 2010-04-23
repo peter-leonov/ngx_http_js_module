@@ -11,15 +11,12 @@ NginxTests.cascadeTests = function (r)
 		
 		t.test('headers out', function (t)
 		{
-			// t.wait(5)
+			t.wait(3000)
 		})
 		
 	})
-	
 	Tests.oncomplete = function ()
 	{
-		r.puts('all done')
-		r.flush()
 		r.sendSpecial(Nginx.HTTP_LAST)
 	}
 	Tests.run(r)
