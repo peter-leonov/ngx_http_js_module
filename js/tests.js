@@ -49,7 +49,8 @@ Reporter.prototype =
 	
 	name: function (name)
 	{
-		this.send(name)
+		this.testName = name
+		this.send('starting ' + name + 'лялял…')
 	},
 	
 	setStatus: function (s)
