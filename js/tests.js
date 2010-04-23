@@ -1,5 +1,7 @@
 ;(function(){
 
+Label = Test.Label
+
 var myName = 'Tests', Me = self[myName] =
 {
 	oncomplete: function () {},
@@ -69,18 +71,33 @@ Reporter.prototype =
 		this.send('summary: ' + text.join(', ') + '.')
 	},
 	
-	line: function (cn, m, desc)
+	inspect: function (v)
 	{
-		var msg = ''
-		if (desc !== undefined)
-			msg += desc + ': '
+		return new Test.Inspector().inspect(v)
+	},
+	
+	line: function (cn, m, d)
+	{
+		var row = ''
 		
-		if (m.constructor === Array)
-			msg += m.join(' ')
-		else
-			msg += m
+		if (d !== undefined)
+			row += d + ': '
 		
-		this.send(msg)
+		if (!m || typeof m != 'object' || m.constructor != Array)
+			m = [m]
+		
+		for (var i = 0; i < m.length; i++)
+		{
+			var v = m[i]
+			
+			if (v instanceof Label)
+				row += v.text
+			else
+				row += this.inspect(m[i])
+			row += ' '
+		}
+		
+		this.send(row)
 	},
 	
 	fail: function (m, d) { this.line('fail', m, d) },
