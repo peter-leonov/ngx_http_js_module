@@ -72,13 +72,7 @@ Reporter.prototype =
 	
 	summary: function (summary)
 	{
-		var text = [summary.passed + ' passed']
-		if (summary.failed)
-			text.push(summary.failed + ' failed')
-		
-		text.push(summary.total + ' total')
-		
-		this.send('summary: ' + text.join(', ') + '.')
+		this.send('summary: ' + summary)
 	},
 	
 	inspect: function (v)
