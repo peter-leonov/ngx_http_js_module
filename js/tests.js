@@ -38,6 +38,16 @@ var Reporter = function (holder)
 }
 Reporter.prototype =
 {
+	colors:
+	{
+		fail: '\x1B[31m',
+		warn: '\x1B[33m',
+		pass: '\x1B[32m',
+		info: '',
+		log: '',
+		clear: '\x1B[0m'
+	},
+	
 	create: function ()
 	{
 		return new Reporter(this.holder)
@@ -97,7 +107,7 @@ Reporter.prototype =
 			row += ' '
 		}
 		
-		this.send(row)
+		this.send(this.colors[cn] + row + this.colors.clear)
 	},
 	
 	fail: function (m, d) { this.line('fail', m, d) },
