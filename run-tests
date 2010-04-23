@@ -16,15 +16,17 @@ function kill_process {
 	fi
 }
 
-# kill_process
+kill_process
 
 $NGINX -c "$MODULE_ROOT/nginx.conf" &
 sleep 1
 
 # curl -i http://127.0.0.1:19090/run/time
-# curl -i http://127.0.0.1:19090/run/timeout-order
-curl -i http://127.0.0.1:19090/run/timeout-cascade
-# curl -i http://127.0.0.1:19090/run/tests
+# curl -i http://127.0.0.1:19090/run/timer-order
+# curl -i http://127.0.0.1:19090/run/timer-cascade
+# curl -i http://127.0.0.1:19090/run/timer-parallel
+# curl -i http://127.0.0.1:19090/run/cascade-tests
+curl -i http://127.0.0.1:19090/run/subrequest-quick
 
 kill_process
 
