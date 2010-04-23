@@ -17,7 +17,7 @@ if (!(expr)) \
 // #define TRACE() { fprintf(stderr, "%s()\n", __FUNCTION__); }
 #define TRACE()
 #define TRACE_REQUEST(func) ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "%s(r=%p)", func, r);
-#define TRACE_REQUEST_METHOD() ngx_log_debug5(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "Request#%s(r=%p, argc=%d)", __FUNCTION__ + 7, r, argc);
+#define TRACE_REQUEST_METHOD() ngx_log_debug4(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "\x1B[32mRequest#%s\x1B[0m(r=%p, argc=%d)", __FUNCTION__ + 7, r);
 
 #define GET_PRIVATE(private) \
 ngx_assert(cx); \
