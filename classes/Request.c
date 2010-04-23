@@ -726,7 +726,11 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	}
 	
 	subrequest = ctx->js_request;
-	ngx_assert(subrequest);
+	// ctx->js_request may not be present if the subrequest construction has failed
+	if (!subrequest)
+	{
+		return NGX_ERROR;
+	}
 	
 	if (!JS_GetReservedSlot(js_cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
 	{
