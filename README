@@ -6,3 +6,15 @@ Some features:
 * and working require() function that finds js-files walking through JSLIB env variable (like RUBYLIB and PERL5LIB)
 
 The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debugging must not be a pain.
+
+
+INSTALLATION
+
+The JS module could be compiled as any other nginx module:
+./configure --add-module=/Users/peter/pro/ngx_http_js_module/
+
+If you want to look into the guts please configure like the following:
+HTTP_JS_COLOR=yes ./configure --with-debug --add-module=/absolute/path/to/the/ngx_http_js_module/
+
+--with-debug enables the JS module debug logging in addition to the nginx builtin;
+HTTP_JS_COLOR=yes enables the colored logging for the JS module.

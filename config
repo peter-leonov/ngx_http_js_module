@@ -59,3 +59,7 @@ else
     
     exit 1;
 fi
+
+if [[ $HTTP_JS_COLOR != "" ]]; then
+	have=NGX_HTTP_JS_COLORED value="1" . auto/define
+fi

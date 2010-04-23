@@ -1,6 +1,14 @@
 #ifndef _NGX_HTTP_JS_MACROSES_INCLUDED_
 #define _NGX_HTTP_JS_MACROSES_INCLUDED_
 
+#if (NGX_HTTP_JS_COLORED)
+#define COLOR_GREEN "\x1B[32m"
+#define COLOR_CLEAR "\x1B[0m"
+#else
+#define COLOR_GREEN ""
+#define COLOR_CLEAR ""
+#endif
+
 #if (NGX_DEBUG)
 
 #define ngx_assert(expr) \
@@ -17,7 +25,7 @@ if (!(expr)) \
 // #define TRACE() { fprintf(stderr, "%s()\n", __FUNCTION__); }
 #define TRACE()
 #define TRACE_REQUEST(func) ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "%s(r=%p)", func, r);
-#define TRACE_REQUEST_METHOD() ngx_log_debug4(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "\x1B[32mRequest#%s\x1B[0m(r=%p, argc=%d)", __FUNCTION__ + 7, r);
+#define TRACE_REQUEST_METHOD() ngx_log_debug4(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_GREEN "Request#%s" COLOR_CLEAR "(r=%p, argc=%d)", __FUNCTION__ + 7, r);
 
 #define GET_PRIVATE(private) \
 ngx_assert(cx); \
