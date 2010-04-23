@@ -408,7 +408,7 @@ method_hasBody_handler(ngx_http_request_t *r)
 	jsval                             rval, callback;
 	ngx_int_t                         rc;
 	
-	TRACE_REQUEST("hasBody handler");
+	TRACE_REQUEST_METHOD();
 	
 	// if (r->connection->error)
 	// 	return;
@@ -580,12 +580,16 @@ method_setTimer_handler(ngx_event_t *timer)
 	jsval                rval, callback;
 	JSObject            *request;
 	
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimer handler");
+	// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimer handler");
 	
 	r = timer->data;
+	TRACE_REQUEST_METHOD();
+	
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
+	
+	TRACE_REQUEST_METHOD();
 	
 	request = ctx->js_request;
 	
@@ -711,10 +715,13 @@ static ngx_int_t
 method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
 	ngx_http_js_ctx_t                *ctx;
+	ngx_http_request_t               *r;
 	JSObject                         *subrequest;
 	jsval                             callback, rval, args[2];
 	
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
+	r = sr->main;
+	TRACE_REQUEST_METHOD();
+	// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 	if (!ctx)
