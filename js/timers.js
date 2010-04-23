@@ -36,6 +36,8 @@ Me.prototype =
 	
 	expireTimers: function ()
 	{
+		this.__timers_nextTimer = Infinity
+		
 		var timers
 		if (!(timers = this.__timers))
 			return
