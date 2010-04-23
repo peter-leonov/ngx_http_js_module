@@ -25,11 +25,12 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool)
 	p = JS_GetStringBytes(str);
 	if (p == NULL)
 		return NULL;
-	
-	// run the UTF-8 string again
+	// run through the UTF-8 string again
 	len = ngx_strlen(p);
 	
-	// allocate another buffer for the string (the third!!!)
+	// allocate another buffer for the string, the third:
+	// the first for the original string,
+	// the second for its UTF-8 representation
 	b = ngx_create_temp_buf(pool, len);
 	if (b == NULL)
 		return NULL;
@@ -59,7 +60,7 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 		return JS_FALSE;
 	}
 	
-	// run the UTF-8 string again
+	// run through the UTF-8 string again
 	len = ngx_strlen(p);
 	
 	// allocate another buffer for the string (the third, again!!!)
@@ -75,7 +76,8 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 	s->data[len] = 0;
 	s->len = len;
 	
-	// all this was very uneffective, exiting
+	// all this was very uneffective,
+	// finally, exiting
 	return JS_TRUE;
 }
 
