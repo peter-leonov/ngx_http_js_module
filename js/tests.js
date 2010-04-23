@@ -54,7 +54,7 @@ Reporter.prototype =
 	
 	setStatus: function (s)
 	{
-		this.send('status: ' + s)
+		// this.send('status: ' + s)
 	},
 	
 	summary: function (summary)
