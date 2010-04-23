@@ -8,7 +8,7 @@ Some features:
 The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debugging must not be a pain.
 
 
-INSTALLATION
+CONFIGURE
 
 The JS module could be compiled as any other nginx module:
 ./configure --add-module=/Users/peter/pro/ngx_http_js_module/
@@ -18,3 +18,19 @@ HTTP_JS_COLOR=yes ./configure --with-debug --add-module=/absolute/path/to/the/ng
 
 --with-debug enables the JS module debug logging in addition to the nginx builtin;
 HTTP_JS_COLOR=yes enables the colored logging for the JS module.
+
+
+MAKE
+
+Then run make as you usual do.
+
+After make processe has successfuly completed you may run some simple tests for JS module (before the actual installation) with this:
+make test-js
+
+This will run nginx on 19090 port and process some requests to it with curl.
+
+
+INSTALL
+
+Then you may peacefully run:
+make install
