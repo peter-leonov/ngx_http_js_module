@@ -623,18 +623,20 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 {
 	ngx_int_t                    rc;
 	ngx_http_request_t          *r, *sr;
+	ngx_http_js_ctx_t           *ctx;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
 	JSString                    *str;
+	JSObject                    *subrequest;
+	
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
 	// LOG("argc = %u", argc);
-	E((argc == 1 && JSVAL_IS_STRING(argv[0]))
-		|| (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1])),
-		"Request#subrequest takes 1 argument: uri:String; and 1 optional callback:Function");
+	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
+		"Request#subrequest takes 2 mandatory arguments: uri:String and callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	
@@ -649,62 +651,55 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	E(ngx_http_parse_unsafe_uri(r, uri, &args, &flags) == NGX_OK, "Error in ngx_http_parse_unsafe_uri(%s)", uri->data)
 	
 	psr = NULL;
-	if (argc == 2)
-	{
-		E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
-		psr->handler = method_subrequest_handler;
-		// psr->data = r;
-		
-		flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
-	}
+	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
+	psr->handler = method_subrequest_handler;
+	// psr->data = r;
+	
+	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	
 	
 	sr = NULL;
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "before ngx_http_subrequest()");
 	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "after ngx_http_subrequest()");
-	if (sr == NULL || rc == NGX_ERROR)
+	if (sr == NULL || rc != NGX_OK)
 	{
 		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
 		return JS_FALSE;
 	}
 	// sr->filter_need_in_memory = 1;
 	
-	if (argc == 2)
+	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
+	
+	// get a js module context or create a js module context or return an error
+	if (!(ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module)))
 	{
-		ngx_http_js_ctx_t      *ctx;
-		JSObject               *subrequest;
-		
-		subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
-		
-		// get a js module context or create a js module context or return an error
-		if (!(ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module)))
+		// ngx_pcalloc fills allocated memory with zeroes
+		if ((ctx = ngx_pcalloc(sr->pool, sizeof(ngx_http_js_ctx_t))))
 		{
-			// ngx_pcalloc fills allocated memory with zeroes
-			if ((ctx = ngx_pcalloc(sr->pool, sizeof(ngx_http_js_ctx_t))))
-				ngx_http_set_ctx(sr, ctx, ngx_http_js_module) // ; is in the macro
-			else
-			{
-				JS_ReportError(cx, "could not create modlue ctx");
-				return JS_FALSE;
-			}
-		}
-		
-		if (subrequest)
-		{
-			E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
-				"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
-			if (ngx_http_js__nginx_request__root_in(ctx, sr, js_cx, subrequest) != NGX_OK)
-			{
-				JS_ReportError(cx, "could not root subrequest in it's native request ctx");
-				return JS_FALSE;
-			}
+			ngx_http_set_ctx(sr, ctx, ngx_http_js_module);
 		}
 		else
 		{
-			JS_ReportError(cx, "couldn't wrap subrequest");
+			JS_ReportError(cx, "could not create modlue ctx");
 			return JS_FALSE;
 		}
+	}
+	
+	if (subrequest)
+	{
+		E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
+			"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+		if (ngx_http_js__nginx_request__root_in(ctx, sr, js_cx, subrequest) != NGX_OK)
+		{
+			JS_ReportError(cx, "could not root subrequest in it's native request ctx");
+			return JS_FALSE;
+		}
+	}
+	else
+	{
+		JS_ReportError(cx, "couldn't wrap subrequest");
+		return JS_FALSE;
 	}
 	
 	*rval = INT_TO_JSVAL(rc);
