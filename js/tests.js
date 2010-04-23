@@ -12,6 +12,7 @@ var myName = 'Tests', Me = self[myName] =
 	
 	run: function (r, title)
 	{
+		this.request = r
 		var test = this.mainTest = new Test(this, this.name, null, this.callback)
 		test.holder = r
 		
