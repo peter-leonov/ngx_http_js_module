@@ -565,6 +565,7 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	}
 	
 	// implies timer_set = 1;
+	// AFAIK, the socond addition of the timer does not duplicate it
 	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
 	
 	
