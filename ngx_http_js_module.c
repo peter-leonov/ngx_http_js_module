@@ -156,9 +156,9 @@ ngx_http_js_handler(ngx_http_request_t *r)
 	
 	r->main->count++;
 	
-	// implies count--
-	ngx_http_finalize_request(r, ngx_http_js__glue__call_handler(r));
+	ngx_http_js__glue__call_handler(r);
 	
+	// return implies ngx_http_finalize_request() which in turn implies count--
 	return NGX_DONE;
 }
 
