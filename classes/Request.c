@@ -589,8 +589,6 @@ method_setTimer_handler(ngx_event_t *timer)
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	
-	TRACE_REQUEST_METHOD();
-	
 	request = ctx->js_request;
 	
 	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__SET_TIMER, &callback))
