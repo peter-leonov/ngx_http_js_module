@@ -304,7 +304,6 @@ ngx_int_t
 ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
 	ngx_int_t                    rc;
-	ngx_connection_t            *c;
 	ngx_log_t                   *last_log;
 	JSObject                    *request, *function;
 	jsval                        req;
@@ -338,12 +337,9 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	if (request == NULL)
 		return NGX_ERROR;
 	
-	
-	c = r->connection;
-	
 	req = OBJECT_TO_JSVAL(request);
 	last_log = ngx_http_js_module_log;
-	ngx_http_js_module_log = c->log;
+	ngx_http_js_module_log = r->connection->log;
 	if (JS_CallFunctionValue(js_cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
 	{
 		if (!JSVAL_IS_INT(rval))
