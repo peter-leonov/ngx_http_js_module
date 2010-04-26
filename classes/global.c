@@ -16,7 +16,8 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	uintN i;
 	JSString *str;
-	const char *filename, *filevar_name;
+	char *filename, *filevar_name;
+	u_char real[NGX_MAX_PATH], *the_end;
 	JSScript *script;
 	JSBool ok;
 	jsval result, name, old;
@@ -36,6 +37,12 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 			return JS_FALSE;
 		name = argv[i] = STRING_TO_JSVAL(str);
 		filename = JS_GetStringBytes(str);
+		if (filename[0] != '/')
+		{
+			the_end = ngx_snprintf(real, NGX_MAX_PATH, "%*s/%s", ngx_cycle->conf_prefix.len, ngx_cycle->conf_prefix.data, (u_char *) filename);
+			the_end[0] = '\0';
+			filename = (char *) real;
+		}
 		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "global.load %s\n", filename);
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
