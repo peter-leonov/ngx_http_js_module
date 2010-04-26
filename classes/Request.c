@@ -705,6 +705,9 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	return JS_TRUE;
 }
 
+// here we are called form ngx_http_finalize_request() for the subrequest
+// via sr->post_subrequest->handler(sr, data, rc)
+// “rc” is the code was passed to the ngx_http_finalize_request()
 static ngx_int_t
 method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 {
