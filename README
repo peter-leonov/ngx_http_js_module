@@ -11,7 +11,7 @@ The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debuggi
 CONFIGURE
 
 The JS module could be compiled as any other nginx module:
-./configure --add-module=/Users/peter/pro/ngx_http_js_module/
+./configure --add-module=/absolute/path/to/the/ngx_http_js_module/
 
 If you want to look into the guts please configure like the following:
 HTTP_JS_COLOR=yes ./configure --with-debug --add-module=/absolute/path/to/the/ngx_http_js_module/
