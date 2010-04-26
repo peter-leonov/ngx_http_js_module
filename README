@@ -29,6 +29,14 @@ make test-js
 
 This will run nginx on 19090 port and process some requests to it with curl.
 
+If you get the following error:
+.../objs/nginx: error while loading shared libraries: libmozjs.so: cannot open shared object file: No such file or directory
+
+please, try to set LD_LIBRARY_PATH env variable like so:
+export LD_LIBRARY_PATH="/usr/local/lib/"
+and then run make test-js again.
+
+
 
 INSTALL
 
