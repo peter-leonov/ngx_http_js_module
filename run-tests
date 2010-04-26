@@ -18,10 +18,11 @@ function kill_process {
 
 kill_process
 
+# gdb --args $NGINX -c "$MODULE_ROOT/nginx.conf"
 $NGINX -c "$MODULE_ROOT/nginx.conf" &
 sleep 1
 
-OPTS="-i -m 10"
+OPTS="-i -m 10" # --http1.0
 
 # curl $OPTS http://127.0.0.1:19090/run/time
 # curl $OPTS http://127.0.0.1:19090/run/timer-order
