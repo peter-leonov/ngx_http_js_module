@@ -129,11 +129,18 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 		ngx_del_timer(&ctx->js_timer);
 	}
 	
-	// finaly mark the object as inactive
-	// after that the GET_PRIVATE macros will raise an exception when called
-	JS_SetPrivate(cx, ctx->js_request, NULL);
-	// and set the native request as unwrapped
-	ctx->js_request = NULL;
+	if (ctx->js_request)
+	{
+		// finaly mark the object as inactive
+		// after that the GET_PRIVATE macros will raise an exception when called
+		JS_SetPrivate(cx, ctx->js_request, NULL);
+		// and set the native request as unwrapped
+		ctx->js_request = NULL;
+	}
+	else
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_RED "trying to cleanup the request with an empty wrapper" COLOR_CLEAR);
+	}
 }
 
 
