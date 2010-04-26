@@ -104,6 +104,24 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			
 			case 100: *vp = INT_TO_JSVAL(ngx_current_msec); break;
+			case 101:
+			{
+				JSString *prefix;
+				if (!ngx_cycle->conf_prefix.len)
+				{
+					JS_ReportError(cx, "conf_prefix is an empty string");
+					return JS_FALSE;
+				}
+				prefix = JS_NewStringCopyN(cx, (char *) ngx_cycle->conf_prefix.data, ngx_cycle->conf_prefix.len);
+				if (!prefix)
+				{
+					JS_ReportOutOfMemory(cx);
+					return JS_FALSE;
+				}
+				
+				*vp = STRING_TO_JSVAL(prefix);
+			}
+			break;
 		}
 	}
 	return JS_TRUE;
@@ -171,6 +189,7 @@ static JSPropertySpec nginx_class_props[] =
 	{"HTTP_FLUSH",                         51, JSPROP_READONLY, NULL, NULL},
 	
 	{"time",                              100, JSPROP_READONLY, NULL, NULL},
+	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
 	
 	
     {0, 0, 0, NULL, NULL}
