@@ -58,8 +58,8 @@ Me.prototype =
 	
 	sigchild: function (child)
 	{
-		if (this.state != 'running')
-			throw new Error('sigchild() while "' + this.state + '" state from ' + child.name)
+		// if (this.state != 'running')
+		// 	throw new Error('sigchild() while "' + this.state + '" state from ' + child.name)
 		
 		this.spawn()
 		this.checkCompleteness()
