@@ -18,7 +18,7 @@ var myName = 'Handler', Me =
 		
 		if (m)
 		{
-			var method = m[1].replace(/-(\w)/, function (m) { return m[1].toUpperCase() })
+			var method = m[1].replace(/-(\w)/g, function (m) { return m[1].toUpperCase() })
 			
 			if (NginxTests[method])
 				return NginxTests[method](r)
