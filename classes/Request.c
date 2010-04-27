@@ -372,10 +372,10 @@ method_sendSpecial(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval
 }
 
 void
-method_hasBody_handler(ngx_http_request_t *r);
+method_getBody_handler(ngx_http_request_t *r);
 
 static JSBool
-method_hasBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_getBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
 	
@@ -403,12 +403,12 @@ method_hasBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 		r->request_body_file_log_level = 0;
 	
 	// ngx_http_read_client_request_body implies count++
-	*rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_hasBody_handler));
+	*rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_getBody_handler));
 	return JS_TRUE;
 }
 
 void
-method_hasBody_handler(ngx_http_request_t *r)
+method_getBody_handler(ngx_http_request_t *r)
 {
 	ngx_http_js_ctx_t                *ctx;
 	JSObject                         *request;
@@ -779,7 +779,7 @@ enum request_propid
 {
 	REQUEST_URI, REQUEST_METHOD, REQUEST_FILENAME, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
 	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
-	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_BODY
+	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY
 };
 
 static JSBool
@@ -847,7 +847,7 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 					r->request_body->temp_file->file.name.len));
 			break;
 			
-			case REQUEST_BODY:
+			case REQUEST_HAS_BODY:
 			if (r->request_body == NULL || r->request_body->temp_file || r->request_body->bufs == NULL)
 			{
 				*vp = JSVAL_FALSE;
@@ -881,7 +881,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"args",            REQUEST_ARGS,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"headerOnly",      REQUEST_HEADER_ONLY,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"hasBody",         REQUEST_HAS_BODY,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
@@ -900,7 +900,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"cleanup",           method_cleanup,              0, 0, 0},
     {"sendSpecial",       method_sendSpecial,          1, 0, 0},
     {"discardBody",       method_discardBody,          0, 0, 0},
-    {"hasBody",           method_hasBody,              1, 0, 0},
+    {"getBody",           method_getBody,              1, 0, 0},
     {"sendfile",          method_sendfile,             1, 0, 0},
     {"setTimer",          method_setTimer,             2, 0, 0},
     {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
