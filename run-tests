@@ -26,8 +26,9 @@ sleep 1
 
 OPTS="-i -m 10" # --http1.0
 
-curl $OPTS "http://127.0.0.1:19090/run/nginx-object?prefix=$MODULE_ROOT"
-curl $OPTS "http://127.0.0.1:19090/run/request-object?nginx=yes&uri=/run/request-object&method=GET"
+# curl $OPTS "http://127.0.0.1:19090/run/nginx-object?prefix=$MODULE_ROOT"
+# curl $OPTS "http://127.0.0.1:19090/run/request-object?nginx=yes&uri=/run/request-object&method=GET"
+curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body?body=some+text+body,+ля-ля-ля"
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests

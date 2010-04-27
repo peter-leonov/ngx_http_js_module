@@ -39,6 +39,7 @@ self[myName] = Me
 
 require('tests/nginx-object.js')
 require('tests/request-object.js')
+require('tests/request-body.js')
 require('tests/cascade-tests.js')
 require('tests/timer-parallel.js')
 require('tests/timer-order.js')
