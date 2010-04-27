@@ -26,12 +26,12 @@ sleep 1
 
 OPTS="-i -m 10" # --http1.0
 
-# curl $OPTS http://127.0.0.1:19090/run/time
+curl $OPTS http://127.0.0.1:19090/run/time
 # curl $OPTS http://127.0.0.1:19090/run/timer-order
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests
-curl $OPTS http://127.0.0.1:19090/run/subrequest-quick
+# curl $OPTS http://127.0.0.1:19090/run/subrequest-quick
 
 kill_process
 
