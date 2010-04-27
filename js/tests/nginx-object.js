@@ -1,12 +1,12 @@
 ;(function(){
 
-NginxTests.time = function (r)
+NginxTests.nginxObject = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
 	Tests.test('tests for Nginx object', function (t)
 	{
-		t.istypeof(Nginx, 'Nginx present')
+		t.type(Nginx, 'object', 'Nginx present')
 		
 		t.test('Nginx.time', function (t)
 		{
