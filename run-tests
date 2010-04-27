@@ -21,7 +21,7 @@ mkdir -p $MODULE_ROOT/logs
 kill_process
 
 # gdb --args
-$NGINX -p $MODULE_ROOT -c nginx.conf &
+$NGINX -c "$MODULE_ROOT/nginx.conf" &
 sleep 1
 
 OPTS="-i -m 10" # --http1.0
