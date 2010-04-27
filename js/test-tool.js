@@ -47,6 +47,14 @@ var prototype =
 			this.fail([a, new Label('===', 'label middle'), b], d)
 	},
 	
+	peq: function (a, b, p, d)
+	{
+		if (Math.abs(a - b) <= p)
+			this.pass([a, new Label('≈', 'label middle'), b], d)
+		else
+			this.fail([a, new Label('!≈', 'label middle'), b], d)
+	},
+	
 	like: function (a, b, d)
 	{
 		var same = false
