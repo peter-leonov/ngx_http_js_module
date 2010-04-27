@@ -1,2 +1,5 @@
 .DS_Store
 *.log
+client_body_temp/
+proxy_temp/
+logs/
