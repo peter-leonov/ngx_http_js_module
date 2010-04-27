@@ -15,7 +15,7 @@ NginxTests.requestObject = function (r)
 		t.eq(r.filename, Nginx.prefix + 'html/run/request-object', 'filename')
 		t.eq(r.remoteAddr, '127.0.0.1', 'remoteAddr')
 		t.eq(r.headerOnly, false, 'headerOnly')
-		t.eq(r.requestBody, undefined, 'requestBody')
+		t.eq(r.hasBody, false, 'hasBody')
 	})
 	Tests.oncomplete = function ()
 	{

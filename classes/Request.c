@@ -855,14 +855,8 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			else
 			{
 				size_t len = r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos;
-				if (len == 0)
-				{
-					*vp = JSVAL_VOID;
-				}
-				else
-				{
-					*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
-				}
+				*vp = len == 0 ? JSVAL_FALSE : JSVAL_TRUE;
+				// *vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
 			}
 			break;
 		}
