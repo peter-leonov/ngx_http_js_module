@@ -1,7 +1,8 @@
-require("cascade.js")
-require("test.js")
-require("test-tool.js")
-require("tests.js")
+require('cascade.js')
+require('test.js')
+require('test-tool.js')
+require('tests.js')
+require('url-encode.js')
 
 var NginxTests = {}
 

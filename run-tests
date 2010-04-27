@@ -26,7 +26,7 @@ sleep 1
 
 OPTS="-i -m 10" # --http1.0
 
-curl $OPTS http://127.0.0.1:19090/run/nginx-object
+curl $OPTS http://127.0.0.1:19090/run/nginx-object?prefix=$MODULE_ROOT
 # curl $OPTS http://127.0.0.1:19090/run/timer-order
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
