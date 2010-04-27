@@ -779,7 +779,7 @@ enum request_propid
 {
 	REQUEST_URI, REQUEST_METHOD, REQUEST_FILENAME, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
 	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
-	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY
+	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY, REQUEST_BODY
 };
 
 static JSBool
@@ -848,15 +848,18 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			break;
 			
 			case REQUEST_HAS_BODY:
+			*vp = r->headers_in.content_length_n <= 0 ? JSVAL_FALSE : JSVAL_TRUE;
+			break;
+			
+			case REQUEST_BODY:
 			if (r->request_body == NULL || r->request_body->temp_file || r->request_body->bufs == NULL)
 			{
-				*vp = JSVAL_FALSE;
+				*vp = JSVAL_VOID;
 			}
 			else
 			{
 				size_t len = r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos;
-				*vp = len == 0 ? JSVAL_FALSE : JSVAL_TRUE;
-				// *vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
+				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
 			}
 			break;
 		}
@@ -876,6 +879,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"headerOnly",      REQUEST_HEADER_ONLY,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"hasBody",         REQUEST_HAS_BODY,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
