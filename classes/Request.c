@@ -848,11 +848,21 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			break;
 			
 			case REQUEST_BODY:
-		    if (r->request_body != NULL && !r->request_body->temp_file && r->request_body->bufs != NULL)
+			if (r->request_body == NULL || r->request_body->temp_file || r->request_body->bufs == NULL)
+			{
+				*vp = JSVAL_FALSE;
+			}
+			else
 			{
 				size_t len = r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos;
-				// if (len >= 0)
+				if (len == 0)
+				{
+					*vp = JSVAL_VOID;
+				}
+				else
+				{
 					*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
+				}
 			}
 			break;
 		}
