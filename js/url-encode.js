@@ -17,8 +17,8 @@ var myName = 'UrlEncode',
 		{
 			var pair = parts[i].split('='),
 				name = decode(pair[0]),
-				val = decode(pair[1] || '')
-		
+				val = decode(pair[1] || '').replace(/\+/g, ' ')
+			
 			if (forceArray)
 			{
 				if (res[name])
