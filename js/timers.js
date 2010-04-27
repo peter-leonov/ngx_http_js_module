@@ -20,6 +20,10 @@ Me.prototype =
 		var n = callbacks.length
 		callbacks.push(f)
 		
+		
+		// TODO: guess why it was needed
+		d >>= 1
+		
 		var t = Nginx.time + d
 		
 		if (timers[t])
