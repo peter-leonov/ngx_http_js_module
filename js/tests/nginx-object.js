@@ -8,7 +8,9 @@ NginxTests.nginxObject = function (r)
 	
 	Tests.test('tests for Nginx object', function (t)
 	{
-		t.type(Nginx, 'object', 'Nginx present')
+		t.type(Nginx, 'object', 'Nginx object')
+		t.type(Nginx.logError, 'function', 'Nginx.logError')
+		t.eq(Nginx.prefix, args.prefix, 'compare Nginx.prefix and args.prefix')
 		
 		t.test('Nginx.time', function (t)
 		{
@@ -29,12 +31,6 @@ NginxTests.nginxObject = function (r)
 			}
 			t.async(later, timerPrecision * 4)
 		})
-		
-		t.test('Nginx.prefix', function (t)
-		{
-			t.eq(Nginx.prefix, args.prefix, 'compare Nginx.prefix and args.prefix')
-		})
-		
 	})
 	Tests.oncomplete = function ()
 	{
