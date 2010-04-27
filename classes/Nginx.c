@@ -103,7 +103,19 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case 51: *vp = INT_TO_JSVAL(NGX_HTTP_FLUSH); break;
 			
 			
-			case 100: *vp = INT_TO_JSVAL(ngx_current_msec); break;
+			case 100:
+			{
+				// ngx_time_t *tp;
+				// tp = ngx_timeofday();
+				// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "%L", tp->sec * 1000 + tp->msec);
+				if (!JS_NewNumberValue(cx, ngx_current_msec, vp))
+				{
+					JS_ReportOutOfMemory(cx);
+					return JS_FALSE;
+				}
+			}
+			break;
+			
 			case 101:
 			{
 				JSString *prefix;
