@@ -426,16 +426,18 @@ method_getBody_handler(ngx_http_request_t *r)
 	request = ctx->js_request;
 	ngx_assert(request);
 	
-	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
+	if (JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
+	{
+		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
+			rc = NGX_DONE;
+		else
+			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+	}
+	else
 	{
 		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
-		return;
+		rc = NGX_ERROR;
 	}
-	
-	if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
-		rc = NGX_DONE;
-	else
-		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	
 	// implies count--
 	ngx_http_finalize_request(r, rc);
