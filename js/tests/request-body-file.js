@@ -6,13 +6,14 @@ NginxTests.requestBodyFile = function (r)
 	
 	Tests.test('tests for body receiving', function (t)
 	{
-		t.expect(6)
+		t.expect(7)
 		
 		var args = UrlEncode.parse(r.args)
 		
 		t.eq(r.method, 'POST', 'hasBody')
 		t.eq(r.hasBody, true, 'hasBody')
 		t.eq(r.body, undefined, 'body')
+		t.eq(r.bodyFilename, undefined, 'bodyFilename')
 		
 		if (!r.hasBody)
 			return
