@@ -57,7 +57,7 @@ self.require = function (fname)
 
 })();
 
-require("proto.js")
+require("prototype.js")
 require("timers.js")
 
 ;(function(){
