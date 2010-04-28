@@ -5,6 +5,9 @@ require('tests.js')
 require('url-encode.js')
 require('regexp-escape.js')
 
+Test.Inspector.prototype.sep = ' '
+Test.Inspector.prototype.indc = ''
+
 var NginxTests = {}
 
 ;(function(){
