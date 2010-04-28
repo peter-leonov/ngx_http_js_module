@@ -12,6 +12,9 @@ NginxTests.requestBodyFile = function (r)
 		t.eq(r.hasBody, true, 'hasBody')
 		t.eq(r.body, undefined, 'body')
 		
+		if (!r.hasBody)
+			return
+		
 		function body ()
 		{
 			t.eq(r.body, undefined, 'body')
