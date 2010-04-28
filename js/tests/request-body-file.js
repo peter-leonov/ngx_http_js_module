@@ -6,7 +6,7 @@ NginxTests.requestBodyFile = function (r)
 	
 	Tests.test('tests for body receiving', function (t)
 	{
-		t.expect(7)
+		t.expect(8)
 		
 		var args = UrlEncode.parse(r.args)
 		
@@ -23,19 +23,18 @@ NginxTests.requestBodyFile = function (r)
 		{
 			t.eq(r.body, undefined, 'body')
 			t.ok(r.bodyFilename, 'bodyFilename')
-			// getBody() may run callback synchronously
-			// if all the body has been got in the first packet
-			// with headers
-			t.async(function (t) { t.done() }, 10)
+			t.done()
 		}
 		
 		var rc = r.getBody(body)
-		t.eq(rc, Nginx.OK, 'getBody()')
+		t.eq(rc, Nginx.AGAIN, 'Nginx.AGAIN')
 		
-		t.wait(10000)
+		t.wait(5000)
 	})
 	Tests.oncomplete = function ()
 	{
+		r.puts('all done')
+		r.flush()
 		r.sendSpecial(Nginx.HTTP_LAST)
 	}
 	Tests.run(r)
