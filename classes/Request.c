@@ -892,7 +892,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 
 
 JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
-    {"sendHttpHeader",    method_sendHttpHeader,       0, 0, 0},
+    {"sendHttpHeader",    method_sendHttpHeader,       2, 0, 0},
     {"print",             method_print,                1, 0, 0},
     {"flush",             method_flush,                0, 0, 0},
     {"sendString",        method_sendString,           1, 0, 0},
