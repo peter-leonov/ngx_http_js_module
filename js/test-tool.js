@@ -66,7 +66,7 @@ var prototype =
 	ina: function (a, b, d)
 	{
 		if (b.indexOf(a) != -1)
-			this.pass([a, new Label('matchs', 'in'), b], d)
+			this.pass([a, new Label('in', 'label middle'), b], d)
 		else
 			this.fail([a, new Label('is not in', 'label middle'), b], d)
 	},
