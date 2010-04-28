@@ -18,7 +18,9 @@ var myName = 'Tests', Me = self[myName] =
 		var test = this.mainTest = new Test(this, this.name, null, this.callback)
 		test.holder = r
 		
-		test.reporter = new Reporter(r)
+		var h = new Holder(r)
+		// h.buffered = this.buffered
+		test.reporter = new Reporter(h)
 		
 		test.run()
 	},
@@ -32,7 +34,30 @@ var myName = 'Tests', Me = self[myName] =
 	sigchild: function () {}
 }
 
-var Reporter = function (holder)
+function Holder (r)
+{
+	this.buffer = ''
+	this.request = r
+}
+Holder.prototype =
+{
+	buffered: false,
+	
+	puts: function (str)
+	{
+		if (this.buffered)
+		{
+			this.buffer += str
+		}
+		else
+		{
+			this.request.puts(str)
+			this.request.flush()
+		}
+	}
+}
+
+function Reporter (holder)
 {
 	this.holder = holder
 }
@@ -56,7 +81,6 @@ Reporter.prototype =
 	send: function (msg)
 	{
 		this.holder.puts(this.testName + ': ' + msg)
-		this.holder.flush()
 	},
 	
 	name: function (name)
