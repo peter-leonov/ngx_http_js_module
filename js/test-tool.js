@@ -55,6 +55,14 @@ var prototype =
 			this.fail([a, new Label('!≈', 'label middle'), b], d)
 	},
 	
+	match: function (a, b, d)
+	{
+		if (b.test(a))
+			this.pass([a, new Label('matchs', 'label middle'), b], d)
+		else
+			this.fail([a, new Label('does not match', 'label middle'), b], d)
+	},
+	
 	like: function (a, b, d)
 	{
 		var same = false
