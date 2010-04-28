@@ -577,6 +577,30 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	// AFAIK, the socond addition of the timer does not duplicate it
 	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
 	
+	return JS_TRUE;
+}
+
+static JSBool
+method_clearTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	ngx_http_js_ctx_t   *ctx;
+	ngx_event_t         *timer;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
+	
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	timer = &ctx->js_timer;
+	
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
+	
+	if (timer->timer_set)
+	{
+		ngx_del_timer(timer);
+		r->main->count--;
+	}
 	
 	return JS_TRUE;
 }
@@ -620,7 +644,6 @@ method_setTimer_handler(ngx_event_t *timer)
 	// implies count--
 	ngx_http_finalize_request(r, rc);
 }
-
 
 
 static ngx_int_t
@@ -903,6 +926,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"getBody",           method_getBody,              1, 0, 0},
     {"sendfile",          method_sendfile,             1, 0, 0},
     {"setTimer",          method_setTimer,             2, 0, 0},
+    {"clearTimer",        method_clearTimer,           0, 0, 0},
     {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
     {0, NULL, 0, 0, 0}
 };
