@@ -21,11 +21,14 @@ NginxTests.requestBodyFile = function (r)
 		{
 			t.eq(r.body, undefined, 'body')
 			t.ok(r.bodyFilename, 'bodyFilename')
-			t.done()
+			// getBody() may run callback synchronously
+			// if all the body has been got in the first packet
+			// with headers
+			t.async(function (t) { t.done() }, 10)
 		}
 		
 		var rc = r.getBody(body)
-		t.ok(rc, 'getBody()')
+		t.eq(rc, Nginx.OK, 'getBody()')
 		
 		t.wait(10000)
 	})
