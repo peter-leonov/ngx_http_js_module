@@ -3,6 +3,7 @@ require('test.js')
 require('test-tool.js')
 require('tests.js')
 require('url-encode.js')
+require('regexp-escape.js')
 
 var NginxTests = {}
 

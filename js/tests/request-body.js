@@ -14,7 +14,7 @@ NginxTests.requestBody = function (r)
 		
 		function body ()
 		{
-			t.eq(r.body, args.body, 'body')
+			t.match(r.body, new RegExp(RegExp.escape(args.body)), 'body')
 			t.done()
 		}
 		
