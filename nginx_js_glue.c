@@ -31,10 +31,10 @@ reportError(JSContext *cx, const char *message, JSErrorReport *report)
 	ngx_log_error
 	(
 		NGX_LOG_ERR, ngx_http_js_module_log ? ngx_http_js_module_log : ngx_cycle->log, 0,
-		"%s:%i: %s",
+		"%s%s%s at %s:%i",
+		COLOR_RED, message, COLOR_CLEAR,
 		report->filename ? report->filename : "<no filename>",
-		(unsigned int) report->lineno,
-		message
+		(unsigned int) report->lineno
 	);
 }
 
