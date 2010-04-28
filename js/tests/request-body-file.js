@@ -14,6 +14,7 @@ NginxTests.requestBodyFile = function (r)
 		t.eq(r.hasBody, true, 'hasBody')
 		t.eq(r.body, undefined, 'body')
 		t.eq(r.bodyFilename, undefined, 'bodyFilename')
+		t.gt(r.headersIn['Content-Length'], 100000, 'Content-Length')
 		
 		if (!r.hasBody)
 			return
