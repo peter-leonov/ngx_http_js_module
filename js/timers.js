@@ -13,12 +13,14 @@ Me.prototype =
 		{
 			timers = this.__timers = {}
 			callbacks = this.__callbacks = []
+			callbacks.total = 0
 		}
 		else
 			callbacks = this.__callbacks
 		
 		var n = callbacks.length
 		callbacks.push(f)
+		callbacks.total++
 		
 		
 		// TODO: guess why it was needed
@@ -47,6 +49,10 @@ Me.prototype =
 			return
 		
 		delete callbacks[n]
+		callbacks.total--
+		
+		if (callbacks.total == 0)
+			this.clearTimer()
 	},
 	
 	expireTimers: function ()
