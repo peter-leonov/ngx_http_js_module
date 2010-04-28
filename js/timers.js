@@ -90,7 +90,7 @@ Me.prototype =
 				{
 					f.call(this, now - t)
 				}
-				catch (ex) { Nginx.logError(Nginx.LOG_CRIT, ex.message) }
+				catch (ex) { Nginx.error(Nginx.LOG_CRIT, ex.message) }
 			}
 		}
 		
