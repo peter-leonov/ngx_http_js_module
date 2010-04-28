@@ -321,6 +321,7 @@ Me.prototype =
 	level: 0,
 	maxElements: 8,
 	indc: '	',
+	sep: '\n\r',
 	
 	inspect: function (val, deep, hard, maxElements)
 	{
@@ -349,7 +350,7 @@ Me.prototype =
 			else
 				this.deepest = true
 		
-		var res, ind = new Array(this.level).join(this.indc)
+		var res, ind = new Array(this.level).join(this.indc), sep = this.sep
 		switch (typeof val)
 		{
 			case 'string':
@@ -408,7 +409,7 @@ Me.prototype =
 						
 						elements.push(this.walk(val[i]))
 					}
-					res = (this.level > 1 ? '\n\r' : '') + ind + '[\n\r' + ind + this.indc + elements.join(',\n\r' + ind + this.indc) + '\n\r' + ind + ']'
+					res = (this.level > 1 ? sep : '') + ind + '[' + sep + ind + this.indc + elements.join(',' + sep + ind + this.indc) + sep + ind + ']'
 					break
 				}
 				
@@ -444,7 +445,7 @@ Me.prototype =
 							elements.push(this.walk(k) + ': [exception ' + ex.message + ']')
 						}
 					}
-					res = (this.level > 1 ? '\n\r' : '') + ind + '{\n\r' + ind + this.indc + elements.join(',\n\r' + ind + this.indc) + '\n\r' + ind + '}'
+					res = (this.level > 1 ? sep : '') + ind + '{' + sep + ind + this.indc + elements.join(',' + sep + ind + this.indc) + sep + ind + '}'
 					break
 				}
 			
