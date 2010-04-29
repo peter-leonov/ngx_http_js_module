@@ -35,7 +35,7 @@ reportError(JSContext *cx, const char *message, JSErrorReport *report)
 		"%s%s%s at %s:%i",
 		COLOR_RED, message, COLOR_CLEAR,
 		report->filename ? report->filename : "<no filename>",
-		(unsigned int) report->lineno
+		(ngx_uint_t) report->lineno
 	);
 }
 
