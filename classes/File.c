@@ -29,13 +29,23 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
+JSFunctionSpec ngx_http_js__nginx_file__funcs[] = {
+    {0, NULL, 0, 0, 0}
+};
+
 JSPropertySpec ngx_http_js__nginx_file__props[] =
 {
 	{0, 0, 0, NULL, NULL}
 };
 
-JSFunctionSpec ngx_http_js__nginx_file__funcs[] = {
-    {0, NULL, 0, 0, 0}
+
+static JSFunctionSpec static_funcs[] = {
+	{0, NULL, 0, 0, 0}
+};
+
+static JSPropertySpec static_props[] =
+{
+	{0, 0, 0, NULL, NULL}
 };
 
 JSClass ngx_http_js__nginx_file__class =
@@ -57,7 +67,7 @@ ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
 	ngx_http_js__nginx_file__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_file__class,  constructor, 0,
-		ngx_http_js__nginx_file__props, ngx_http_js__nginx_file__funcs,  NULL, NULL);
+		ngx_http_js__nginx_file__props, ngx_http_js__nginx_file__funcs,  static_props, static_funcs);
 	E(ngx_http_js__nginx_file__prototype, "Can`t JS_InitClass(Nginx.File)");
 	
 	return JS_TRUE;
