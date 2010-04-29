@@ -156,7 +156,7 @@ ngx_http_js__nginx_chain__init(JSContext *cx, JSObject *global)
 	
 	ngx_http_js__nginx_chain__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_chain__class,  constructor, 0,
 		ngx_http_js__nginx_chain__props, ngx_http_js__nginx_chain__funcs,  NULL, NULL);
-	E(ngx_http_js__nginx_chain__prototype, "Can`t JS_InitClass(Nginx.HeadersOut)");
+	E(ngx_http_js__nginx_chain__prototype, "Can`t JS_InitClass(Nginx.Chain)");
 	
 	return JS_TRUE;
 }
