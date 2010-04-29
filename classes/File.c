@@ -13,6 +13,14 @@ JSObject *ngx_http_js__nginx_file__prototype;
 JSClass ngx_http_js__nginx_file__class;
 // static JSClass *private_class = &ngx_http_js__nginx_file__class;
 
+static JSBool
+method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	TRACE();
+	
+	
+	return JS_TRUE;
+}
 
 static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -29,17 +37,20 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
-JSFunctionSpec ngx_http_js__nginx_file__funcs[] = {
-    {0, NULL, 0, 0, 0}
+static JSFunctionSpec funcs[] =
+{
+	{0, NULL, 0, 0, 0}
 };
 
-JSPropertySpec ngx_http_js__nginx_file__props[] =
+static JSPropertySpec props[] =
 {
 	{0, 0, 0, NULL, NULL}
 };
 
 
-static JSFunctionSpec static_funcs[] = {
+static JSFunctionSpec static_funcs[] =
+{
+	{"rename",           method_rename,               2, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 
@@ -67,7 +78,7 @@ ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
 	ngx_http_js__nginx_file__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_file__class,  constructor, 0,
-		ngx_http_js__nginx_file__props, ngx_http_js__nginx_file__funcs,  static_props, static_funcs);
+		props, funcs, static_props, static_funcs);
 	E(ngx_http_js__nginx_file__prototype, "Can`t JS_InitClass(Nginx.File)");
 	
 	return JS_TRUE;
