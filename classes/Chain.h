@@ -1,4 +1,3 @@
-
 #ifndef _NGX_HTTP_JS_NGINX_CHAIN_H_INCLUDED_
 #define _NGX_HTTP_JS_NGINX_CHAIN_H_INCLUDED_
 
@@ -16,6 +15,5 @@ ngx_http_js__nginx_chain__wrap(JSContext *cx, ngx_chain_t *ch, JSObject *request
 
 #define NGX_JS_CHAIN_SLOT__REQUEST                  0
 #define NGX_JS_CHAIN_SLOTS_COUNT                    1
-
 
 #endif
