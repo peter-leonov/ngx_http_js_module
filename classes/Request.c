@@ -634,7 +634,7 @@ method_setTimer_handler(ngx_event_t *timer)
 	{
 		// here a new timeout handler may be set
 		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
-			rc = NGX_OK;
+			rc = NGX_DONE;
 		else
 			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
