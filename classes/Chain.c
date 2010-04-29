@@ -151,7 +151,7 @@ ngx_http_js__nginx_chain__init(JSContext *cx, JSObject *global)
 	JSObject    *nginxobj;
 	jsval        vp;
 	
-	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
+	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
 	ngx_http_js__nginx_chain__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_chain__class,  constructor, 0,
