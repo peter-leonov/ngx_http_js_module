@@ -13,6 +13,7 @@
 #include "classes/HeadersIn.h"
 #include "classes/HeadersOut.h"
 #include "classes/Chain.h"
+#include "classes/File.h"
 
 #include "macroses.h"
 
@@ -208,6 +209,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	if (!ngx_http_js__nginx_chain__init(cx, global))
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Chain class initialization failed");
+		return NGX_CONF_ERROR;
+	}
+	
+	// Nginx.File
+	if (!ngx_http_js__nginx_file__init(cx, global))
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.File class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	
