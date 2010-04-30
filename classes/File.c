@@ -75,6 +75,33 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
 	
+	// LOG("Nginx property id = %d\n", JSVAL_TO_INT(id));
+	if (JSVAL_IS_INT(id))
+	{
+		switch (JSVAL_TO_INT(id))
+		{
+			case 1:  *vp = INT_TO_JSVAL(NGX_INVALID_FILE); break;
+			case 2:  *vp = INT_TO_JSVAL(NGX_FILE_ERROR); break;
+			
+#ifdef NGX_HAVE_CASELESS_FILESYSTEM
+			case 3:  *vp = JSVAL_TRUE; break;
+#else
+			case 3:  *vp = JSVAL_FALSE; break;
+#endif
+			
+			case 4:  *vp = INT_TO_JSVAL(NGX_FILE_RDONLY); break;
+			case 5:  *vp = INT_TO_JSVAL(NGX_FILE_WRONLY); break;
+			case 6:  *vp = INT_TO_JSVAL(NGX_FILE_RDWR); break;
+			case 7:  *vp = INT_TO_JSVAL(NGX_FILE_CREATE_OR_OPEN); break;
+			case 8:  *vp = INT_TO_JSVAL(NGX_FILE_OPEN); break;
+			case 9:  *vp = INT_TO_JSVAL(NGX_FILE_TRUNCATE); break;
+			case 10: *vp = INT_TO_JSVAL(NGX_FILE_APPEND); break;
+			case 11: *vp = INT_TO_JSVAL(NGX_FILE_NONBLOCK); break;
+			case 12: *vp = INT_TO_JSVAL(NGX_FILE_DEFAULT_ACCESS); break;
+			case 13: *vp = INT_TO_JSVAL(NGX_FILE_OWNER_ACCESS); break;
+		}
+	}
+	
 	return JS_TRUE;
 }
 
@@ -137,34 +164,6 @@ ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 	ngx_http_js__nginx_file__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_file__class,  constructor, 0,
 		props, funcs, static_props, static_funcs);
 	E(ngx_http_js__nginx_file__prototype, "Can`t JS_InitClass(Nginx.File)");
-	
-	// LOG("Nginx property id = %d\n", JSVAL_TO_INT(id));
-	if (JSVAL_IS_INT(id))
-	{
-		switch (JSVAL_TO_INT(id))
-		{
-			case 1:  *vp = INT_TO_JSVAL(NGX_INVALID_FILE); break;
-			case 2:  *vp = INT_TO_JSVAL(NGX_FILE_ERROR); break;
-			
-#ifdef NGX_HAVE_CASELESS_FILESYSTEM
-			case 3:  *vp = JSVAL_TRUE; break;
-#else
-			case 3:  *vp = JSVAL_FALSE; break;
-#endif
-			
-			case 4:  *vp = INT_TO_JSVAL(NGX_FILE_RDONLY); break;
-			case 5:  *vp = INT_TO_JSVAL(NGX_FILE_WRONLY); break;
-			case 6:  *vp = INT_TO_JSVAL(NGX_FILE_RDWR); break;
-			case 7:  *vp = INT_TO_JSVAL(NGX_FILE_CREATE_OR_OPEN); break;
-			case 8:  *vp = INT_TO_JSVAL(NGX_FILE_OPEN); break;
-			case 9:  *vp = INT_TO_JSVAL(NGX_FILE_TRUNCATE); break;
-			case 10: *vp = INT_TO_JSVAL(NGX_FILE_APPEND); break;
-			case 11: *vp = INT_TO_JSVAL(NGX_FILE_NONBLOCK); break;
-			case 12: *vp = INT_TO_JSVAL(NGX_FILE_DEFAULT_ACCESS); break;
-			case 13: *vp = INT_TO_JSVAL(NGX_FILE_OWNER_ACCESS); break;
-		}
-	}
-	return JS_TRUE;
 	
 	return JS_TRUE;
 }
