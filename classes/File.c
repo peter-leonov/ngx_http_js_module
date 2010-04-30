@@ -16,8 +16,49 @@ JSClass ngx_http_js__nginx_file__class;
 static JSBool
 method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
+	JSString        *jss_from, *jss_to;
+	const char      *from, *to;
+	
 	TRACE();
 	
+	E(argc == 2, "Nginx.File#rename takes 2 mandatory arguments: from:String and to:String");
+	
+	
+	// converting smth. to a string is a very common and rather simple operation,
+	// so on failure it's very likely we have gone out of memory
+	
+	jss_from = JS_ValueToString(cx, argv[0]);
+	if (jss_from == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	from = JS_GetStringBytes(jss_from);
+	if (from[0] == '\0')
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	
+	jss_to = JS_ValueToString(cx, argv[1]);
+	if (jss_to == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	to = JS_GetStringBytes(jss_to);
+	if (to[0] == '\0')
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_rename_file(\"%s\", \"%s\")", from, to);
+	
+	*rval = INT_TO_JSVAL(ngx_rename_file(from, to));
 	
 	return JS_TRUE;
 }
