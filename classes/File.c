@@ -16,11 +16,12 @@
 
 // according to http://nginx.org/pipermail/nginx-devel/2010-April/000200.html
 #define FD_TO_PTR(fd)  ((void *) (uintptr_t) fd)
+#define PTR_TO_FD(p)  ((ngx_fd_t) (uintptr_t) p)
 
 
 JSObject *ngx_http_js__nginx_file__prototype;
 JSClass ngx_http_js__nginx_file__class;
-// static JSClass *private_class = &ngx_http_js__nginx_file__class;
+static JSClass *private_class = &ngx_http_js__nginx_file__class;
 
 JSObject *
 ngx_http_js__nginx_file__wrap(JSContext *cx, ngx_fd_t fd)
@@ -176,6 +177,47 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	return JS_TRUE;
 }
 
+static JSBool
+method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	JSString        *jss_str;
+	char            *str;
+	ngx_fd_t         fd;
+	size_t           len;
+	void            *p;
+	
+	GET_PRIVATE(p);
+	fd = PTR_TO_FD(p);
+	TRACE_METHOD();
+	
+	E(argc == 1, "Nginx.File#write takes 1 mandatory argument: data:String");
+	
+	
+	// converting smth. to a string is a very common and rather simple operation,
+	// so on failure it's very likely we have gone out of memory
+	
+	jss_str = JS_ValueToString(cx, argv[0]);
+	if (jss_str == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	str = JS_GetStringBytes(jss_str);
+	if (str[0] == '\0')
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	len = ngx_strlen(str);
+	
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_write_fd(fd=%d, len=%d)", fd, len);
+	*rval = ngx_write_fd(fd, str, len) == (ssize_t) len ? JSVAL_TRUE : JSVAL_FALSE;
+	
+	return JS_TRUE;
+}
+
 
 static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -221,6 +263,7 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 static JSFunctionSpec funcs[] =
 {
+	{"write",           method_write,               1, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

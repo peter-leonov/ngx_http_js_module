@@ -35,6 +35,18 @@ NginxTests.file = function (r)
 			var rc = File.remove(prefix + 'nginx-file-create.txt')
 			t.eq(rc, File.ERROR, 'second delete')
 		})
+		
+		t.test('write/read', function (t)
+		{
+			var file = File.open(prefix + 'nginx-file-write.txt')
+			t.ok(file, 'create')
+			
+			var rc = file.write('Тра-ля-ля-ля и Тру-ля-ля!')
+			t.ok(rc, 'write')
+			
+			// var rc = File.remove(prefix + 'nginx-file-write.txt')
+			// t.ne(rc, File.ERROR, 'delete')
+		})
 	})
 	Tests.oncomplete = function ()
 	{
