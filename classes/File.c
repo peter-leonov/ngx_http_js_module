@@ -148,6 +148,41 @@ method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	return JS_TRUE;
 }
 
+static JSBool
+method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	JSString        *jss_name;
+	const char      *name;
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 1, "Nginx.File#delete takes 1 mandatory argument: name:String");
+	
+	
+	// converting smth. to a string is a very common and rather simple operation,
+	// so on failure it's very likely we have gone out of memory
+	
+	jss_name = JS_ValueToString(cx, argv[0]);
+	if (jss_name == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	name = JS_GetStringBytes(jss_name);
+	if (name[0] == '\0')
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
+	*rval = INT_TO_JSVAL(ngx_delete_file(name));
+	
+	return JS_TRUE;
+}
+
 
 static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -206,6 +241,7 @@ static JSFunctionSpec static_funcs[] =
 {
 	{"rename",           method_rename,               2, 0, 0},
 	{"open",             method_open,                 1, 0, 0},
+	{"remove",           method_remove,               1, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

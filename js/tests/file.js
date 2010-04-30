@@ -23,11 +23,17 @@ NginxTests.file = function (r)
 			t.ne(rc, File.ERROR, 'rename back')
 		})
 		
-		t.test('open', function (t)
+		t.test('create/delete', function (t)
 		{
 			var file = File.open(prefix + 'nginx-file-create.txt')
 			t.ok(file, 'create')
 			t.instance(file, File, 'file object')
+			
+			var rc = File.remove(prefix + 'nginx-file-create.txt')
+			t.ne(rc, File.ERROR, 'delete')
+			
+			var rc = File.remove(prefix + 'nginx-file-create.txt')
+			t.eq(rc, File.ERROR, 'second delete')
 		})
 	})
 	Tests.oncomplete = function ()
