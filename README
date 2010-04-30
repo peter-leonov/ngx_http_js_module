@@ -4,6 +4,7 @@ Some features:
 * cosy headers management (via Nginx.HeadersIn and Nginx.HeaderOut classes)
 * environment variables handling with the code taken from Mozilla's js interpreter
 * and working require() function that finds js-files walking through JSLIB env variable (like RUBYLIB and PERL5LIB)
+* initial support for files via Nginx.File (rename, create/delete)
 
 The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debugging must not be a pain.
 
