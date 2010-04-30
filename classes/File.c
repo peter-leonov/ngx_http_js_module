@@ -218,6 +218,22 @@ method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	return JS_TRUE;
 }
 
+static JSBool
+method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_fd_t         fd;
+	void            *p;
+	
+	GET_PRIVATE(p);
+	fd = PTR_TO_FD(p);
+	TRACE_METHOD();
+	
+	E(argc == 1, "Nginx.File#read takes 1 mandatory argument: length:Number");
+	
+	
+	return JS_TRUE;
+}
+
 
 static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -264,6 +280,7 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 static JSFunctionSpec funcs[] =
 {
 	{"write",           method_write,               1, 0, 0},
+	{"read",            method_read,                1, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

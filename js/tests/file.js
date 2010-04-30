@@ -38,14 +38,22 @@ NginxTests.file = function (r)
 		
 		t.test('write/read', function (t)
 		{
+			var str = 'Тра-ля-ля-ля и Тру-ля-ля!'
+			
 			var file = File.open(prefix + 'nginx-file-write.txt')
 			t.ok(file, 'create')
 			
-			var rc = file.write('Тра-ля-ля-ля и Тру-ля-ля!')
+			var rc = file.write(str)
 			t.ok(rc, 'write')
 			
-			// var rc = File.remove(prefix + 'nginx-file-write.txt')
-			// t.ne(rc, File.ERROR, 'delete')
+			var file = File.open(prefix + 'nginx-file-write.txt')
+			t.ok(file, 'open')
+			
+			var res = file.read(500)
+			t.eq(res, str, 'read')
+			
+			var rc = File.remove(prefix + 'nginx-file-write.txt')
+			t.ne(rc, File.ERROR, 'delete')
 		})
 	})
 	Tests.oncomplete = function ()
