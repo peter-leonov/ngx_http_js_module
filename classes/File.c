@@ -9,9 +9,94 @@
 
 #include "../macroses.h"
 
+#define TRACE_METHOD() \
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "File#%s" COLOR_CLEAR "(fd=%p)", __FUNCTION__ + 7, fd);
+#define TRACE_STATIC_METHOD() \
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "File.%s" COLOR_CLEAR "()", __FUNCTION__ + 7);
+
+// FIXME: check for legality of this type conversion at the configure time
+#if (NGX_PTR_SIZE == 8)
+#define FD_TO_PTR(fd)  ((void *) (uint64_t) fd)
+#elif (NGX_PTR_SIZE == 4)
+#define FD_TO_PTR(fd)  ((void *) (uint32_t) fd)
+#else
+#warning can't determine the proper fd to pointer conversion
+#define FD_TO_PTR(fd)  ((void *) fd)
+#endif
+
+
 JSObject *ngx_http_js__nginx_file__prototype;
 JSClass ngx_http_js__nginx_file__class;
 // static JSClass *private_class = &ngx_http_js__nginx_file__class;
+
+JSObject *
+ngx_http_js__nginx_file__wrap(JSContext *cx, ngx_fd_t fd)
+{
+	JSObject     *file;
+	
+	TRACE();
+	
+	file = JS_NewObject(cx, &ngx_http_js__nginx_file__class, ngx_http_js__nginx_file__prototype, NULL);
+	if (!file)
+	{
+		ngx_log_error(NGX_LOG_CRIT, ngx_cycle->log, 0, "could not create a wrapper object for fd (%l)", (long) fd);
+		return NULL;
+	}
+	
+	JS_SetPrivate(cx, file, FD_TO_PTR(fd));
+	
+	return file;
+}
+
+static JSBool
+method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_fd_t         fd;
+	JSString        *jss_name;
+	JSObject        *file;
+	const char      *name;
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 1, "Nginx.File#rename takes 1 mandatory argument: name:String");
+	
+	
+	// converting smth. to a string is a very common and rather simple operation,
+	// so on failure it's very likely we have gone out of memory
+	
+	jss_name = JS_ValueToString(cx, argv[0]);
+	if (jss_name == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	name = JS_GetStringBytes(jss_name);
+	if (name[0] == '\0')
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_open_file(\"%s\")", name);
+	fd = ngx_open_file(name, NGX_FILE_RDWR, NGX_FILE_CREATE_OR_OPEN, NGX_FILE_DEFAULT_ACCESS);
+	
+	if (fd == NGX_INVALID_FILE)
+	{
+		*rval = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	file = ngx_http_js__nginx_file__wrap(cx, fd);
+	if (file == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	*rval = OBJECT_TO_JSVAL(file);
+	return JS_TRUE;
+}
 
 static JSBool
 method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -19,7 +104,7 @@ method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	JSString        *jss_from, *jss_to;
 	const char      *from, *to;
 	
-	TRACE();
+	TRACE_STATIC_METHOD();
 	
 	E(argc == 2, "Nginx.File#rename takes 2 mandatory arguments: from:String and to:String");
 	
@@ -62,6 +147,7 @@ method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	return JS_TRUE;
 }
+
 
 static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -119,6 +205,7 @@ static JSPropertySpec props[] =
 static JSFunctionSpec static_funcs[] =
 {
 	{"rename",           method_rename,               2, 0, 0},
+	{"open",             method_open,                 1, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

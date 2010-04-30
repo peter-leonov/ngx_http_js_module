@@ -22,6 +22,13 @@ NginxTests.file = function (r)
 			var rc = File.rename(prefix + 'nginx-file-rename.renamed.txt', prefix + 'nginx-file-rename.txt')
 			t.ne(rc, File.ERROR, 'rename back')
 		})
+		
+		t.test('open', function (t)
+		{
+			var file = File.open(prefix + 'nginx-file-create.txt')
+			t.ok(file, 'create')
+			t.instance(file, File, 'file object')
+		})
 	})
 	Tests.oncomplete = function ()
 	{
