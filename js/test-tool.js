@@ -133,9 +133,9 @@ var prototype =
 	instance: function (a, b, d)
 	{
 		if (a instanceof b)
-			this.pass([a, new Label('instanceof', 'label middle'), b], d)
+			this.pass([a, new Label('is an instance of', 'label middle'), b], d)
 		else
-			this.fail([a, new Label('is not instanceof', 'label middle'), b], d)
+			this.fail([a, new Label('is not an instance of', 'label middle'), b], d)
 	},
 	notinstance: function (a, b, d)
 	{
