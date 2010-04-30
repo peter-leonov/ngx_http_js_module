@@ -14,15 +14,8 @@
 #define TRACE_STATIC_METHOD() \
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "File.%s" COLOR_CLEAR "()", __FUNCTION__ + 7);
 
-// FIXME: check for legality of this type conversion at the configure time
-#if (NGX_PTR_SIZE == 8)
-#define FD_TO_PTR(fd)  ((void *) (uint64_t) fd)
-#elif (NGX_PTR_SIZE == 4)
-#define FD_TO_PTR(fd)  ((void *) (uint32_t) fd)
-#else
-#warning can't determine the proper fd to pointer conversion
-#define FD_TO_PTR(fd)  ((void *) fd)
-#endif
+// according to http://nginx.org/pipermail/nginx-devel/2010-April/000200.html
+#define FD_TO_PTR(fd)  ((void *) (uintptr_t) fd)
 
 
 JSObject *ngx_http_js__nginx_file__prototype;
