@@ -49,7 +49,7 @@ NginxTests.file = function (r)
 			var file = File.open(prefix + 'nginx-file-write.txt')
 			t.ok(file, 'open')
 			
-			var res = file.read(500)
+			var res = file.read(17 * 2 + 8)
 			t.eq(res, str, 'read')
 			
 			var rc = File.remove(prefix + 'nginx-file-write.txt')

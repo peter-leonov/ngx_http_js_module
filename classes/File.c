@@ -223,13 +223,46 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_fd_t         fd;
 	void            *p;
+	size_t           len;
+	char            *buf;
+	JSString        *jss_buf;
 	
 	GET_PRIVATE(p);
 	fd = PTR_TO_FD(p);
 	TRACE_METHOD();
 	
-	E(argc == 1, "Nginx.File#read takes 1 mandatory argument: length:Number");
+	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.File#read takes 1 mandatory argument: length:Number");
 	
+	len = JSVAL_TO_INT(argv[0]);
+	if (len == 0)
+	{
+		return JS_TRUE;
+	}
+	
+	buf = ngx_pnalloc(ngx_cycle->pool, len);
+	if (buf == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	if (ngx_read_fd(fd, buf, len) != (ssize_t) len)
+	{
+		*rval = JSVAL_NULL;
+		return JS_TRUE;
+	}
+	
+	jss_buf = JS_NewStringCopyN(cx, buf, len);
+	if (jss_buf == NULL)
+	{
+		// may be a broken UTF-8, but we can't know it for sure
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	ngx_cycle->pool->d.last -= len;
+	
+	*rval = STRING_TO_JSVAL(jss_buf);
 	
 	return JS_TRUE;
 }
