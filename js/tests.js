@@ -116,13 +116,17 @@ Reporter.prototype =
 		
 		for (var i = 0; i < m.length; i++)
 		{
-			var v = m[i]
+			var v = m[i], text
 			
 			if (v instanceof Label)
-				row += v.text
+				text = v.text
 			else
-				row += this.inspect(m[i])
-			row += ' '
+				text = this.inspect(m[i])
+			
+			if (text.length > 50)
+				text = text.substr(0, 20) + '…[' + (text.length - 40) + ']…' + text.substr(text.length - 20, 20)
+			
+			row += text + ' '
 		}
 		
 		this.send(this.colors[cn] + row + this.colors.clear)
