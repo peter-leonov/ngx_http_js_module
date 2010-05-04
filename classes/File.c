@@ -23,6 +23,8 @@ JSObject *ngx_http_js__nginx_file__prototype;
 JSClass ngx_http_js__nginx_file__class;
 static JSClass *private_class = &ngx_http_js__nginx_file__class;
 
+static ngx_pool_t   *static_pool;
+
 JSObject *
 ngx_http_js__nginx_file__wrap(JSContext *cx, ngx_fd_t fd)
 {
@@ -366,6 +368,13 @@ ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 {
 	JSObject    *nginxobj;
 	jsval        vp;
+	
+	static_pool = ngx_create_pool(NGX_DEFAULT_POOL_SIZE, ngx_cycle->log);
+	if (static_pool == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined");
 	nginxobj = JSVAL_TO_OBJECT(vp);
