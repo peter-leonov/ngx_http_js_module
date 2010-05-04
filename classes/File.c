@@ -24,6 +24,7 @@ JSClass ngx_http_js__nginx_file__class;
 static JSClass *private_class = &ngx_http_js__nginx_file__class;
 
 static ngx_pool_t   *static_pool;
+static size_t        read_leaks;
 
 JSObject *
 ngx_http_js__nginx_file__wrap(JSContext *cx, ngx_fd_t fd)
@@ -274,6 +275,7 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	}
 	else
 	{
+		read_leaks++;
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf hasn't been freed");
 	}
 	
@@ -352,6 +354,8 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case 11:  *vp = INT_TO_JSVAL(NGX_FILE_NONBLOCK); break;
 			case 12:  *vp = INT_TO_JSVAL(NGX_FILE_DEFAULT_ACCESS); break;
 			case 13:  *vp = INT_TO_JSVAL(NGX_FILE_OWNER_ACCESS); break;
+			
+			case 100: *vp = INT_TO_JSVAL(read_leaks); break;
 		}
 	}
 	
@@ -397,6 +401,8 @@ static JSPropertySpec static_props[] =
 	{"NONBLOCK",                 11,  JSPROP_READONLY, static_getProperty, NULL},
 	{"DEFAULT_ACCESS",           12,  JSPROP_READONLY, static_getProperty, NULL},
 	{"OWNER_ACCESS",             13,  JSPROP_READONLY, static_getProperty, NULL},
+	
+	{"readLeaks",                100, JSPROP_READONLY, static_getProperty, NULL},
 	  
 	{0, 0, 0, NULL, NULL}
 };

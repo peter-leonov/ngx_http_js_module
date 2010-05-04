@@ -57,6 +57,8 @@ NginxTests.file = function (r)
 			
 			var rc = File.remove(prefix + 'nginx-file-write.txt')
 			t.ne(rc, File.ERROR, 'delete')
+			
+			t.eq(File.readLeaks, 0, 'read leaks')
 		})
 	})
 	Tests.oncomplete = function ()
