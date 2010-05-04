@@ -139,7 +139,6 @@ method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_rename_file(\"%s\", \"%s\")", from, to);
-	
 	*rval = INT_TO_JSVAL(ngx_rename_file(from, to));
 	
 	return JS_TRUE;
@@ -172,7 +171,6 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
-	
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
 	*rval = INT_TO_JSVAL(ngx_delete_file(name));
