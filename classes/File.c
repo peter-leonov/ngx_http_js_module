@@ -241,7 +241,7 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_TRUE;
 	}
 	
-	buf = ngx_pnalloc(ngx_cycle->pool, len);
+	buf = ngx_pnalloc(static_pool, len);
 	if (buf == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
@@ -262,7 +262,20 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_FALSE;
 	}
 	
-	ngx_cycle->pool->d.last -= len;
+	if (static_pool->d.last == (u_char *) buf + len)
+	{
+		// reflects p->d.last = m + size; at ngx_palloc.c:159
+		static_pool->d.last -= len;
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf has been freed by d.last");
+	}
+	else if (ngx_pfree(static_pool, buf) == NGX_OK)
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf has been freed by ngx_pfree()");
+	}
+	else
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf hasn't been freed");
+	}
 	
 	*rval = STRING_TO_JSVAL(jss_buf);
 	
