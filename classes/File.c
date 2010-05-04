@@ -464,7 +464,7 @@ static JSPropertySpec static_props[] =
 JSClass ngx_http_js__nginx_file__class =
 {
 	"File",
-	0,
+	JSCLASS_HAS_PRIVATE,
 	JS_PropertyStub, JS_PropertyStub, getProperty, JS_PropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, finalizer,
 	JSCLASS_NO_OPTIONAL_MEMBERS
