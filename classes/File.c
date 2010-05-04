@@ -366,8 +366,15 @@ JSClass ngx_http_js__nginx_file__class =
 JSBool
 ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 {
+	static int  inited = 0;
 	JSObject    *nginxobj;
 	jsval        vp;
+	
+	if (inited)
+	{
+		JS_ReportError(cx, "Nginx.File is already inited");
+		return JS_FALSE;
+	}
 	
 	static_pool = ngx_create_pool(NGX_DEFAULT_POOL_SIZE, ngx_cycle->log);
 	if (static_pool == NULL)
@@ -382,6 +389,8 @@ ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 	ngx_http_js__nginx_file__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_file__class,  constructor, 0,
 		props, funcs, static_props, static_funcs);
 	E(ngx_http_js__nginx_file__prototype, "Can`t JS_InitClass(Nginx.File)");
+	
+	inited = 1;
 	
 	return JS_TRUE;
 }
