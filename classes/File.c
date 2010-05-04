@@ -282,6 +282,31 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	return JS_TRUE;
 }
 
+static JSBool
+method_close(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_fd_t         fd;
+	void            *p;
+	
+	GET_PRIVATE(p);
+	fd = PTR_TO_FD(p);
+	TRACE_METHOD();
+	
+	if (ngx_close_file(fd) == NGX_FILE_ERROR)
+	{
+		ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno, ngx_close_file_n " Nginx.File (fd=%d, self=%p) failed", fd, self);
+		*rval = JSVAL_FALSE;
+		return JS_TRUE;
+	}
+	
+	JS_SetPrivate(cx, self, NULL);
+	
+	open_files--;
+	
+	*rval = JSVAL_TRUE;
+	return JS_TRUE;
+}
+
 
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
@@ -389,6 +414,7 @@ static JSFunctionSpec funcs[] =
 {
 	{"write",           method_write,               1, 0, 0},
 	{"read",            method_read,                1, 0, 0},
+	{"close",           method_close,               0, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 
