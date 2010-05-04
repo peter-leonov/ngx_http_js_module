@@ -333,25 +333,25 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	{
 		switch (JSVAL_TO_INT(id))
 		{
-			case 1:  *vp = INT_TO_JSVAL(NGX_INVALID_FILE); break;
-			case 2:  *vp = INT_TO_JSVAL(NGX_FILE_ERROR); break;
+			case 1:   *vp = INT_TO_JSVAL(NGX_INVALID_FILE); break;
+			case 2:   *vp = INT_TO_JSVAL(NGX_FILE_ERROR); break;
 			
 #ifdef NGX_HAVE_CASELESS_FILESYSTEM
-			case 3:  *vp = JSVAL_TRUE; break;
+			case 3:   *vp = JSVAL_TRUE; break;
 #else
-			case 3:  *vp = JSVAL_FALSE; break;
+			case 3:   *vp = JSVAL_FALSE; break;
 #endif
 			
-			case 4:  *vp = INT_TO_JSVAL(NGX_FILE_RDONLY); break;
-			case 5:  *vp = INT_TO_JSVAL(NGX_FILE_WRONLY); break;
-			case 6:  *vp = INT_TO_JSVAL(NGX_FILE_RDWR); break;
-			case 7:  *vp = INT_TO_JSVAL(NGX_FILE_CREATE_OR_OPEN); break;
-			case 8:  *vp = INT_TO_JSVAL(NGX_FILE_OPEN); break;
-			case 9:  *vp = INT_TO_JSVAL(NGX_FILE_TRUNCATE); break;
-			case 10: *vp = INT_TO_JSVAL(NGX_FILE_APPEND); break;
-			case 11: *vp = INT_TO_JSVAL(NGX_FILE_NONBLOCK); break;
-			case 12: *vp = INT_TO_JSVAL(NGX_FILE_DEFAULT_ACCESS); break;
-			case 13: *vp = INT_TO_JSVAL(NGX_FILE_OWNER_ACCESS); break;
+			case 4:   *vp = INT_TO_JSVAL(NGX_FILE_RDONLY); break;
+			case 5:   *vp = INT_TO_JSVAL(NGX_FILE_WRONLY); break;
+			case 6:   *vp = INT_TO_JSVAL(NGX_FILE_RDWR); break;
+			case 7:   *vp = INT_TO_JSVAL(NGX_FILE_CREATE_OR_OPEN); break;
+			case 8:   *vp = INT_TO_JSVAL(NGX_FILE_OPEN); break;
+			case 9:   *vp = INT_TO_JSVAL(NGX_FILE_TRUNCATE); break;
+			case 10:  *vp = INT_TO_JSVAL(NGX_FILE_APPEND); break;
+			case 11:  *vp = INT_TO_JSVAL(NGX_FILE_NONBLOCK); break;
+			case 12:  *vp = INT_TO_JSVAL(NGX_FILE_DEFAULT_ACCESS); break;
+			case 13:  *vp = INT_TO_JSVAL(NGX_FILE_OWNER_ACCESS); break;
 		}
 	}
 	
@@ -382,21 +382,21 @@ static JSFunctionSpec static_funcs[] =
 
 static JSPropertySpec static_props[] =
 {
-	{"INVALID",                  1,  JSPROP_READONLY, static_getProperty, NULL},
-	{"ERROR",                    2,  JSPROP_READONLY, static_getProperty, NULL},
+	{"INVALID",                  1,   JSPROP_READONLY, static_getProperty, NULL},
+	{"ERROR",                    2,   JSPROP_READONLY, static_getProperty, NULL},
 	
-	{"HAVE_CASELESS_FILESYSTEM", 3,  JSPROP_READONLY, static_getProperty, NULL},
+	{"HAVE_CASELESS_FILESYSTEM", 3,   JSPROP_READONLY, static_getProperty, NULL},
 	
-	{"RDONLY",                   4,  JSPROP_READONLY, static_getProperty, NULL},
-	{"WRONLY",                   5,  JSPROP_READONLY, static_getProperty, NULL},
-	{"RDWR",                     6,  JSPROP_READONLY, static_getProperty, NULL},
-	{"CREATE_OR_OPEN",           7,  JSPROP_READONLY, static_getProperty, NULL},
-	{"OPEN",                     8,  JSPROP_READONLY, static_getProperty, NULL},
-	{"TRUNCATE",                 9,  JSPROP_READONLY, static_getProperty, NULL},
-	{"APPEND",                   10, JSPROP_READONLY, static_getProperty, NULL},
-	{"NONBLOCK",                 11, JSPROP_READONLY, static_getProperty, NULL},
-	{"DEFAULT_ACCESS",           12, JSPROP_READONLY, static_getProperty, NULL},
-	{"OWNER_ACCESS",             13, JSPROP_READONLY, static_getProperty, NULL},
+	{"RDONLY",                   4,   JSPROP_READONLY, static_getProperty, NULL},
+	{"WRONLY",                   5,   JSPROP_READONLY, static_getProperty, NULL},
+	{"RDWR",                     6,   JSPROP_READONLY, static_getProperty, NULL},
+	{"CREATE_OR_OPEN",           7,   JSPROP_READONLY, static_getProperty, NULL},
+	{"OPEN",                     8,   JSPROP_READONLY, static_getProperty, NULL},
+	{"TRUNCATE",                 9,   JSPROP_READONLY, static_getProperty, NULL},
+	{"APPEND",                   10,  JSPROP_READONLY, static_getProperty, NULL},
+	{"NONBLOCK",                 11,  JSPROP_READONLY, static_getProperty, NULL},
+	{"DEFAULT_ACCESS",           12,  JSPROP_READONLY, static_getProperty, NULL},
+	{"OWNER_ACCESS",             13,  JSPROP_READONLY, static_getProperty, NULL},
 	  
 	{0, 0, 0, NULL, NULL}
 };
