@@ -36,17 +36,18 @@ NginxTests.file = function (r)
 			t.eq(rc, File.ERROR, 'second delete')
 		})
 		
-		t.test('write/read', function (t)
+		t.test('unicode read/write', function (t)
 		{
-			var str = 'Тра-ля-ля-ля и Тру-ля-ля!'
+			var fname = prefix + 'nginx-file-write.txt',
+				str = 'Тра-ля-ля-ля и Тру-ля-ля!'
 			
-			var file = File.open(prefix + 'nginx-file-write.txt')
+			var file = File.open(fname)
 			t.ok(file, 'create')
 			
 			var rc = file.write(str)
 			t.ok(rc, 'write')
 			
-			var file = File.open(prefix + 'nginx-file-write.txt')
+			var file = File.open(fname)
 			t.ok(file, 'open')
 			
 			var size = file.size
@@ -55,7 +56,34 @@ NginxTests.file = function (r)
 			var res = file.read(size)
 			t.eq(res, str, 'read')
 			
-			var rc = File.remove(prefix + 'nginx-file-write.txt')
+			var rc = File.remove(fname)
+			t.ne(rc, File.ERROR, 'delete')
+			
+			t.eq(File.readLeaks, 0, 'read leaks')
+		})
+		
+		t.test('large read/write', function (t)
+		{
+			// 50 * 2000 = 100'000
+			var str = new Array(2000).join('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+				fname = prefix + 'nginx-file-write.txt'
+			
+			var file = File.open(fname)
+			t.ok(file, 'create')
+			
+			var rc = file.write(str)
+			t.ok(rc, 'write')
+			
+			var file = File.open(fname)
+			t.ok(file, 'open')
+			
+			var size = file.size
+			t.gte(size, str.length, 'size')
+			
+			var res = file.read(size)
+			t.eq(res, str, 'read')
+			
+			var rc = File.remove(fname)
 			t.ne(rc, File.ERROR, 'delete')
 			
 			t.eq(File.readLeaks, 0, 'read leaks')
