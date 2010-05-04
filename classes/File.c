@@ -25,6 +25,7 @@ static JSClass *private_class = &ngx_http_js__nginx_file__class;
 
 static ngx_pool_t   *static_pool;
 static size_t        read_leaks;
+static size_t        open_files;
 
 JSObject *
 ngx_http_js__nginx_file__wrap(JSContext *cx, ngx_fd_t fd)
@@ -90,6 +91,8 @@ method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	
+	open_files++;
 	
 	*rval = OBJECT_TO_JSVAL(file);
 	return JS_TRUE;
@@ -404,6 +407,7 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case 13:  *vp = INT_TO_JSVAL(NGX_FILE_OWNER_ACCESS); break;
 			
 			case 100: *vp = INT_TO_JSVAL(read_leaks); break;
+			case 101: *vp = INT_TO_JSVAL(open_files); break;
 		}
 	}
 	
@@ -452,7 +456,8 @@ static JSPropertySpec static_props[] =
 	{"OWNER_ACCESS",             13,  JSPROP_READONLY, static_getProperty, NULL},
 	
 	{"readLeaks",                100, JSPROP_READONLY, static_getProperty, NULL},
-	  
+	{"openFiles",                101, JSPROP_READONLY, static_getProperty, NULL},
+	
 	{0, 0, 0, NULL, NULL}
 };
 
