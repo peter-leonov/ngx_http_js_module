@@ -89,6 +89,32 @@ NginxTests.file = function (r)
 			t.eq(File.readLeaks, 0, 'read leaks')
 		})
 		
+		t.test('close and openFiles', function (t)
+		{
+			var fname = prefix + 'nginx-file-close.txt',
+				start = File.openFiles
+			
+			t.gte(start, 0, 'zero or more open files')
+			
+			var file = File.open(fname)
+			t.eq(File.openFiles, start + 1, '+1 open')
+			
+			file.close()
+			t.eq(File.openFiles, start, '+0 open')
+			
+			function closure ()
+			{
+				var file = File.open(fname)
+				t.eq(File.openFiles, start + 1, '+1 open')
+			}
+			
+			closure()
+			t.eq(File.openFiles, start, '+0 open')
+			
+			File.remove(fname)
+		})
+		
+		
 		t.test('private protection', function (t)
 		{
 			var file = new File()
