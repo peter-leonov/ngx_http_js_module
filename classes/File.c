@@ -322,6 +322,7 @@ static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	TRACE();
+	JS_SetPrivate(cx, self, NULL);
 	return JS_TRUE;
 }
 

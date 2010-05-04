@@ -88,6 +88,32 @@ NginxTests.file = function (r)
 			
 			t.eq(File.readLeaks, 0, 'read leaks')
 		})
+		
+		t.test('private protection', function (t)
+		{
+			var file = new File()
+			
+			t.exception(function (t)
+			{
+				file.size
+			}, 'size')
+			
+			t.exception(function (t)
+			{
+				file.read()
+			}, 'read()')
+			
+			t.exception(function (t)
+			{
+				File.prototype.read.call({}, 123)
+			}, 'call({})')
+			
+			t.exception(function (t)
+			{
+				File.prototype.read.call(r, 123)
+			}, 'call(request)')
+		})
+		
 	})
 	Tests.oncomplete = function ()
 	{
