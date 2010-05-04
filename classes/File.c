@@ -324,6 +324,30 @@ constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	return JS_TRUE;
 }
 
+void
+finalizer(JSContext *cx, JSObject *self)
+{
+	ngx_fd_t         fd;
+	void            *p;
+	
+	p = JS_GetInstancePrivate(cx, self, private_class, NULL);
+	if (p == NULL)
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "finalizing File object with NULL private pointer");
+		return;
+	}
+	
+	fd = PTR_TO_FD(p);
+	TRACE();
+	
+	if (ngx_close_file(fd) == NGX_FILE_ERROR)
+	{
+		ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno, ngx_close_file_n " Nginx.File (fd=%d, self=%p) failed", fd, self);
+	}
+	
+	JS_SetPrivate(cx, self, NULL);
+}
+
 static JSBool
 static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
@@ -411,7 +435,7 @@ JSClass ngx_http_js__nginx_file__class =
 	"File",
 	0,
 	JS_PropertyStub, JS_PropertyStub, getProperty, JS_PropertyStub,
-	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, finalizer,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
