@@ -284,6 +284,39 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 
 
 static JSBool
+getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_fd_t         fd;
+	void            *p;
+	
+	GET_PRIVATE(p);
+	fd = PTR_TO_FD(p);
+	TRACE();
+	
+	if (JSVAL_IS_INT(id))
+	{
+		switch (JSVAL_TO_INT(id))
+		{
+			case 1:
+			{
+				ngx_file_info_t   fi;
+				off_t             size;
+				
+				if (ngx_fd_info(fd, &fi) != NGX_FILE_ERROR)
+				{
+					size = ngx_file_size(&fi);
+					JS_NewNumberValue(cx, size, vp);
+				}
+			}
+			break;
+		}
+	}
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	TRACE();
@@ -334,6 +367,7 @@ static JSFunctionSpec funcs[] =
 
 static JSPropertySpec props[] =
 {
+	{"size",                     1,  JSPROP_READONLY, NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
@@ -371,7 +405,7 @@ JSClass ngx_http_js__nginx_file__class =
 {
 	"File",
 	0,
-	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+	JS_PropertyStub, JS_PropertyStub, getProperty, JS_PropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
