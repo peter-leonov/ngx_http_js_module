@@ -63,6 +63,7 @@ function Reporter (holder)
 }
 Reporter.prototype =
 {
+	truncateSlice: 30,
 	colors:
 	{
 		fail: '\x1B[31m',
@@ -123,8 +124,9 @@ Reporter.prototype =
 			else
 				text = this.inspect(m[i])
 			
-			if (text.length > 50)
-				text = text.substr(0, 20) + '…[' + (text.length - 40) + ']…' + text.substr(text.length - 20, 20)
+			var slice = this.truncateSlice
+			if (text.length > slice * 2.5)
+				text = text.substr(0, slice) + '…[' + (text.length - slice * 2) + ']…' + text.substr(text.length - slice, slice)
 			
 			row += text + ' '
 		}
