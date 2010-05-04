@@ -172,7 +172,7 @@ var prototype =
 		}
 		catch (ex)
 		{
-			this.pass([new Label('exception was thrown'), ex], d)
+			this.pass([new Label('exception was thrown:'), ex], d)
 			if (c)
 				c(this, ex)
 			return
@@ -188,7 +188,7 @@ var prototype =
 		}
 		catch (ex)
 		{
-			this.fail([new Label('exception was thrown'), ex], d)
+			this.fail([new Label('exception was thrown:'), ex], d)
 			return
 		}
 		
