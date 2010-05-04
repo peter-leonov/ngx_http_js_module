@@ -109,6 +109,8 @@ NginxTests.file = function (r)
 			}
 			
 			closure()
+			GC()
+			
 			t.eq(File.openFiles, start, '+0 open')
 			
 			File.remove(fname)

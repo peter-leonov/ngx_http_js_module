@@ -368,7 +368,11 @@ finalizer(JSContext *cx, JSObject *self)
 	fd = PTR_TO_FD(p);
 	TRACE();
 	
-	if (ngx_close_file(fd) == NGX_FILE_ERROR)
+	if (ngx_close_file(fd) != NGX_FILE_ERROR)
+	{
+		open_files--;
+	}
+	else
 	{
 		ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno, ngx_close_file_n " Nginx.File (fd=%d, self=%p) failed", fd, self);
 	}
