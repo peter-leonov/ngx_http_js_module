@@ -6,7 +6,7 @@ NginxTests.processCycle = function (r)
 	
 	var args = UrlEncode.parse(r.args)
 	
-	Tests.test('tests for Nginx object', function (t)
+	Tests.test('tests for process cycle', function (t)
 	{
 		t.ok(self.workerInited, 'initWorker()')
 		
