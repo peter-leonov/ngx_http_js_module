@@ -73,7 +73,9 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 static JSBool
 method_GC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "GC begin");
 	JS_GC(cx);
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "GC end");
 	
 	return JS_TRUE;
 }
