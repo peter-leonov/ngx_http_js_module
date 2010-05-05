@@ -25,7 +25,7 @@ kill_process
 $NGINX -p $MODULE_ROOT -c nginx.conf &
 sleep 1
 
-OPTS="-i -m 10" # --http1.0
+OPTS="-i -m 10 --connect-timeout 1" # --http1.0
 
 curl $OPTS "http://127.0.0.1:19090/run/nginx-object?prefix=$MODULE_ROOT&pid=$(cat $PIDFILE)"
 curl $OPTS "http://127.0.0.1:19090/run/request-object?nginx=yes&uri=/run/request-object&method=GET"
