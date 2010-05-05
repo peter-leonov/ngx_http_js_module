@@ -52,11 +52,11 @@ else
 	echo "exitWorker() failed"
 fi
 
-if [ -f "$MODULE_ROOT/process-cycle-master-exited-$MASTER_PID.txt" ]; then
-	echo "exitMaster() worked"
-	rm "$MODULE_ROOT/process-cycle-master-exited-$MASTER_PID.txt"
-else
-	echo "exitMaster() failed"
-fi
+# if [ -f "$MODULE_ROOT/process-cycle-master-exited-$MASTER_PID.txt" ]; then
+# 	echo "exitMaster() worked"
+# 	rm "$MODULE_ROOT/process-cycle-master-exited-$MASTER_PID.txt"
+# else
+# 	echo "exitMaster() failed"
+# fi
 
 echo
