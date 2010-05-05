@@ -73,9 +73,19 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 static JSBool
 method_GC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "GC begin");
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "JS_GC() begin");
 	JS_GC(cx);
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "GC end");
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "JS_GC() end");
+	
+	return JS_TRUE;
+}
+
+static JSBool
+method_maybeGC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "JS_MaybeGC() begin");
+	JS_MaybeGC(cx);
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "JS_MaybeGC() end");
 	
 	return JS_TRUE;
 }
@@ -110,6 +120,7 @@ ngx_http_js__global__init(JSContext *cx)
 	E(JS_DefineProperty(cx, global, "global", OBJECT_TO_JSVAL(global), NULL, NULL, 0), "Can`t define property global.global");
 	E(JS_DefineFunction(cx, global, "load", method_load, 0, 0), "Can`t define function global.load");
 	E(JS_DefineFunction(cx, global, "GC", method_GC, 0, 0), "Can`t define function global.GC");
+	E(JS_DefineFunction(cx, global, "maybeGC", method_maybeGC, 0, 0), "Can`t define function global.maybeGC");
 	
 	envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
 	E(envobj && JS_SetPrivate(cx, envobj, environ), "Can`t define object global.environment");
