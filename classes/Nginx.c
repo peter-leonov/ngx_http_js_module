@@ -203,22 +203,22 @@ static JSPropertySpec nginx_class_props[] =
 	{"time",                              100, JSPROP_READONLY, NULL, NULL},
 	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
 	
-	
-    {0, 0, 0, NULL, NULL}
+	{0, 0, 0, NULL, NULL}
 };
 
 static JSClass nginx_class =
 {
-    "Nginx",
-    0,
-    JS_PropertyStub, JS_PropertyStub, js_nginx_class_getProperty, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-    JSCLASS_NO_OPTIONAL_MEMBERS
+	"Nginx",
+	0,
+	JS_PropertyStub, JS_PropertyStub, js_nginx_class_getProperty, JS_PropertyStub,
+	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+	JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
-static JSFunctionSpec nginx_class_funcs[] = {
-    {"logError",    method_logError,         1, 0, 0},
-    {0, NULL, 0, 0, 0}
+static JSFunctionSpec nginx_class_funcs[] =
+{
+	{"logError",    method_logError,         1, 0, 0},
+	{0, NULL, 0, 0, 0}
 };
 
 JSBool
