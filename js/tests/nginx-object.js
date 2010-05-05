@@ -11,6 +11,7 @@ NginxTests.nginxObject = function (r)
 		t.type(Nginx, 'object', 'Nginx object')
 		t.type(Nginx.logError, 'function', 'Nginx.logError')
 		t.eq(Nginx.prefix, args.prefix, 'compare Nginx.prefix and args.prefix')
+		t.eq(Nginx.pid, +args.pid, 'Nginx.pid')
 		
 		t.test('Nginx.time', function (t)
 		{

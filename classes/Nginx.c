@@ -134,6 +134,8 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				*vp = STRING_TO_JSVAL(prefix);
 			}
 			break;
+			
+			case 102: *vp = INT_TO_JSVAL(ngx_pid); break;
 		}
 	}
 	return JS_TRUE;
@@ -202,6 +204,7 @@ static JSPropertySpec nginx_class_props[] =
 	
 	{"time",                              100, JSPROP_READONLY, NULL, NULL},
 	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
+	{"pid",                               102, JSPROP_READONLY, NULL, NULL},
 	
 	{0, 0, 0, NULL, NULL}
 };
