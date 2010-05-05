@@ -287,7 +287,7 @@ ngx_http_js__glue__exit_worker(ngx_cycle_t *cycle)
 	JSObject       *global;
 	JSContext      *cx;
 	
-	if (js_cx == NULL || js_global == NULL)
+	if (js_cx == NULL || js_global == NULL || ngx_http_js_module_js_runtime == NULL)
 	{
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "exiting worker without interpreter has been inited");
 		return;
@@ -302,9 +302,10 @@ ngx_http_js__glue__exit_worker(ngx_cycle_t *cycle)
 		if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
 		{
 			JS_ReportError(cx, "error calling global.exitWorker() from nginx");
-			return;
 		}
 	}
+	
+	ngx_http_js__glue__destroy_interpreter();
 }
 
 
