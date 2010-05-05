@@ -36,6 +36,8 @@ curl $OPTS http://127.0.0.1:19090/run/file
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests
 # curl $OPTS http://127.0.0.1:19090/run/subrequest-quick
 
+# ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
+
 kill_process
 
 echo
