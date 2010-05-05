@@ -217,6 +217,12 @@ ngx_http_js_create_loc_conf(ngx_conf_t *cf)
 	return jslcf;
 }
 
+static ngx_int_t
+ngx_http_js_init_worker(ngx_cycle_t *cycle)
+{
+	TRACE();
+	return ngx_http_js__glue__init_worker(cycle);
+}
 
 static char *
 ngx_http_js_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
@@ -551,7 +557,7 @@ ngx_module_t  ngx_http_js_module =
 	NGX_HTTP_MODULE,                       /* module type */
 	NULL,                                  /* init master */
 	NULL,                                  /* init module */
-	NULL,                                  /* init process */
+	ngx_http_js_init_worker,               /* init process */
 	NULL,                                  /* init thread */
 	NULL,                                  /* exit thread */
 	NULL,                                  /* exit process */

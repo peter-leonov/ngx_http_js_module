@@ -236,6 +236,36 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	return NGX_CONF_OK;
 }
 
+ngx_int_t
+ngx_http_js__glue__init_worker(ngx_cycle_t *cycle)
+{
+	jsval           fval, rval;
+	JSObject       *global;
+	JSContext      *cx;
+	
+	if (js_cx == NULL || js_global == NULL)
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "initiating worker without interpreter has been inited");
+	}
+	else
+	{
+		global = js_global;
+		cx = js_cx;
+		
+		if (JS_GetProperty(cx, global, "initWorker", &fval) && JSVAL_IS_OBJECT(fval) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fval)))
+		{
+			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.initWorker() found");
+			if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
+			{
+				JS_ReportError(cx, "error calling global.initWorker from nginx");
+				return NGX_ERROR;
+			}
+		}
+	}
+	
+	return NGX_OK;
+}
+
 
 char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
