@@ -11,6 +11,13 @@
 #include "../ngx_http_js_module.h"
 #include "../macroses.h"
 
+// see the http://nginx.org/pipermail/nginx-devel/2010-May/000220.html
+#if (NGX_PTR_SIZE == 4)
+#define JS_GET_NGINX_FULL_MSECS() ((uint64_t) ngx_cached_time->sec * 1000 + ngx_cached_time->msec)
+#else
+#define JS_GET_NGINX_FULL_MSECS() ngx_current_msec
+#endif
+
 static JSBool
 method_logError(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
@@ -108,7 +115,7 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				// ngx_time_t *tp;
 				// tp = ngx_timeofday();
 				// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "%L", tp->sec * 1000 + tp->msec);
-				if (!JS_NewNumberValue(cx, ngx_current_msec, vp))
+				if (!JS_NewNumberValue(cx, JS_GET_NGINX_FULL_MSECS(), vp))
 				{
 					JS_ReportOutOfMemory(cx);
 					return JS_FALSE;
