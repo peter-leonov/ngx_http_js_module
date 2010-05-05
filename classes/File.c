@@ -175,7 +175,7 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 		return JS_FALSE;
 	}
 	
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
 	*rval = INT_TO_JSVAL(ngx_delete_file(name));
 	
 	return JS_TRUE;

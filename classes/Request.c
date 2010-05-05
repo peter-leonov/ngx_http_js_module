@@ -561,7 +561,7 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMER, argv[0]),
 		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMER(%d)", NGX_JS_REQUEST_SLOT__SET_TIMER);
 	
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
 	
 	if (!timer->timer_set)
 	{
@@ -594,7 +594,7 @@ method_clearTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_assert(ctx);
 	timer = &ctx->js_timer;
 	
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
 	
 	if (timer->timer_set)
 	{
