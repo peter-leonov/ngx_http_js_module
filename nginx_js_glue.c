@@ -236,6 +236,20 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	return NGX_CONF_OK;
 }
 
+static ngx_int_t
+ngx_http_js__glue__destroy_interpreter()
+{
+	JS_DestroyContext(js_cx);
+	JS_DestroyRuntime(ngx_http_js_module_js_runtime);
+	JS_ShutDown();
+	
+	js_cx = NULL;
+	js_global = NULL;
+	ngx_http_js_module_js_runtime = NULL;
+	
+	return NGX_OK;
+}
+
 ngx_int_t
 ngx_http_js__glue__init_worker(ngx_cycle_t *cycle)
 {
