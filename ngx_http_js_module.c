@@ -231,6 +231,13 @@ ngx_http_js_exit_worker(ngx_cycle_t *cycle)
 	ngx_http_js__glue__exit_worker(cycle);
 }
 
+static void
+ngx_http_js_exit_master(ngx_cycle_t *cycle)
+{
+	TRACE();
+	ngx_http_js__glue__exit_master(cycle);
+}
+
 static char *
 ngx_http_js_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
@@ -568,6 +575,6 @@ ngx_module_t  ngx_http_js_module =
 	NULL,                                  /* init thread */
 	NULL,                                  /* exit thread */
 	ngx_http_js_exit_worker,               /* exit process */
-	NULL,                                  /* exit master */
+	ngx_http_js_exit_master,               /* exit master */
 	NGX_MODULE_V1_PADDING
 };

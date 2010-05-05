@@ -40,6 +40,9 @@ curl $OPTS http://127.0.0.1:19090/run/processCycle?fname=process-cycle-worker-ex
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 
+
+MASTER_PID=$(cat $PIDFILE)
+
 kill_process
 
 if [ -f "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt" ]; then
@@ -47,6 +50,13 @@ if [ -f "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt" ]; then
 	rm "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt"
 else
 	echo "exitWorker() failed"
+fi
+
+if [ -f "$MODULE_ROOT/process-cycle-master-exited-$MASTER_PID.txt" ]; then
+	echo "exitMaster() worked"
+	rm "$MODULE_ROOT/process-cycle-master-exited-$MASTER_PID.txt"
+else
+	echo "exitMaster() failed"
 fi
 
 echo

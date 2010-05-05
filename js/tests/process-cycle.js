@@ -40,4 +40,9 @@ self.exitWorker = function ()
 	}
 }
 
+self.exitMaster = function ()
+{
+	Nginx.File.open(Nginx.prefix + 'process-cycle-master-exited-' + Nginx.pid + '.txt')
+}
+
 })();

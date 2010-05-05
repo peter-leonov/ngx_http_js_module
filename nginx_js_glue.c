@@ -308,6 +308,34 @@ ngx_http_js__glue__exit_worker(ngx_cycle_t *cycle)
 	ngx_http_js__glue__destroy_interpreter();
 }
 
+void
+ngx_http_js__glue__exit_master(ngx_cycle_t *cycle)
+{
+	jsval           fval, rval;
+	JSObject       *global;
+	JSContext      *cx;
+	
+	if (js_cx == NULL || js_global == NULL || ngx_http_js_module_js_runtime == NULL)
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "exiting master without interpreter has been inited");
+		return;
+	}
+	
+	global = js_global;
+	cx = js_cx;
+	
+	if (JS_GetProperty(cx, global, "exitMaster", &fval) && JSVAL_IS_OBJECT(fval) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fval)))
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.exitMaster() found");
+		if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
+		{
+			JS_ReportError(cx, "error calling global.exitMaster() from nginx");
+		}
+	}
+	
+	ngx_http_js__glue__destroy_interpreter();
+}
+
 
 char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
