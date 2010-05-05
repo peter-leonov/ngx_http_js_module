@@ -26,4 +26,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 extern ngx_int_t
 ngx_http_js__glue__init_worker(ngx_cycle_t *cycle);
 
+void
+ngx_http_js__glue__exit_worker(ngx_cycle_t *cycle);
+
 #endif

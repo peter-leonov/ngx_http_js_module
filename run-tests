@@ -4,6 +4,7 @@ MODULE_ROOT="$1"
 NGX_OBJS="$2"
 NGINX="$NGX_OBJS/nginx"
 PIDFILE="/tmp/nginx-js.pid"
+TIME=$(date +%s)
 
 function kill_process {
 	if [ -f $PIDFILE ]; then
@@ -31,7 +32,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-object?nginx=yes&uri=/run/request
 curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body?body=some+text+body,+ля-ля-ля"
 curl $OPTS --http1.0 --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-file?body=some+text+body,+ля-ля-ля"
 curl $OPTS http://127.0.0.1:19090/run/file
-curl $OPTS http://127.0.0.1:19090/run/processCycle
+curl $OPTS http://127.0.0.1:19090/run/processCycle?fname=process-cycle-worker-exited-$TIME.txt
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests
@@ -40,5 +41,12 @@ curl $OPTS http://127.0.0.1:19090/run/processCycle
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 
 kill_process
+
+if [ -f "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt" ]; then
+	echo "exitWorker() worked"
+	rm "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt"
+else
+	echo "exitWorker() failed"
+fi
 
 echo

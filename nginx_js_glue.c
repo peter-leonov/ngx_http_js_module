@@ -257,13 +257,40 @@ ngx_http_js__glue__init_worker(ngx_cycle_t *cycle)
 			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.initWorker() found");
 			if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
 			{
-				JS_ReportError(cx, "error calling global.initWorker from nginx");
+				JS_ReportError(cx, "error calling global.initWorker() from nginx");
 				return NGX_ERROR;
 			}
 		}
 	}
 	
 	return NGX_OK;
+}
+
+void
+ngx_http_js__glue__exit_worker(ngx_cycle_t *cycle)
+{
+	jsval           fval, rval;
+	JSObject       *global;
+	JSContext      *cx;
+	
+	if (js_cx == NULL || js_global == NULL)
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "exiting worker without interpreter has been inited");
+		return;
+	}
+	
+	global = js_global;
+	cx = js_cx;
+	
+	if (JS_GetProperty(cx, global, "exitWorker", &fval) && JSVAL_IS_OBJECT(fval) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fval)))
+	{
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.exitWorker() found");
+		if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
+		{
+			JS_ReportError(cx, "error calling global.exitWorker() from nginx");
+			return;
+		}
+	}
 }
 
 
