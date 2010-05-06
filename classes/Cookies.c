@@ -96,19 +96,43 @@ static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	char                       *name;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
 	if (JSVAL_IS_STRING(id))
 	{
+		char        *name;
+		ngx_int_t    n;
+		ngx_str_t    cookie_name, cookie_value;
+		JSString    *value;
+		
 		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
 		if (name == NULL)
 		{
 			JS_ReportError(cx, "can't get the C string of the property name");
 			return JS_FALSE;
 		}
+		
+		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cookies[\"%s\"]", name);
+		
+		cookie_name.data = (u_char *) name;
+		cookie_name.len = ngx_strlen(name);
+		
+		n = ngx_http_parse_multi_header_lines(&r->headers_in.cookies, &cookie_name, &cookie_value);
+		
+		if (n == NGX_DECLINED)
+		{
+			return JS_TRUE;
+		}
+		
+		value = JS_NewStringCopyN(cx, (char *) cookie_value.data, cookie_value.len);
+		if (value == NULL)
+		{
+			return JS_FALSE;
+		}
+		
+		*vp = STRING_TO_JSVAL(value);
 	}
 	else if (JSVAL_IS_INT(id))
 	{
