@@ -217,8 +217,8 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	ngx_list_part_t            *part;
 	ngx_http_header_t          *hh;
 	ngx_table_elt_t            **ph, *h;
-	u_char                     *lowcase_key;//, *cookie
-	ngx_uint_t                  i, hash; // n, 
+	u_char                     *lowcase_key;
+	ngx_uint_t                  i, hash;
 	
 	TRACE();
 	ngx_assert(r);
@@ -286,70 +286,3 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	
 	return NULL;
 }
-
-
-
-// check this from time to time
-// http://emiller.info/lxr/http/source/http/ngx_http_request.h#L219
-// 
-// typedef struct {
-//     ngx_list_t                        headers;
-// 
-//     ngx_table_elt_t                  *host;
-//     ngx_table_elt_t                  *connection;
-//     ngx_table_elt_t                  *if_modified_since;
-//     ngx_table_elt_t                  *user_agent;
-//     ngx_table_elt_t                  *referer;
-//     ngx_table_elt_t                  *content_length;
-//     ngx_table_elt_t                  *content_type;
-// 
-//     ngx_table_elt_t                  *range;
-//     ngx_table_elt_t                  *if_range;
-// 
-//     ngx_table_elt_t                  *transfer_encoding;
-// 
-// #if (NGX_HTTP_GZIP)
-//     ngx_table_elt_t                  *accept_encoding;
-//     ngx_table_elt_t                  *via;
-// #endif
-// 
-//     ngx_table_elt_t                  *authorization;
-// 
-//     ngx_table_elt_t                  *keep_alive;
-// 
-// #if (NGX_HTTP_PROXY || NGX_HTTP_REALIP)
-//     ngx_table_elt_t                  *x_forwarded_for;
-// #endif
-// 
-// #if (NGX_HTTP_REALIP)
-//     ngx_table_elt_t                  *x_real_ip;
-// #endif
-// 
-// #if (NGX_HTTP_HEADERS)
-//     ngx_table_elt_t                  *accept;
-//     ngx_table_elt_t                  *accept_language;
-// #endif
-// 
-// #if (NGX_HTTP_DAV)
-//     ngx_table_elt_t                  *depth;
-//     ngx_table_elt_t                  *destination;
-//     ngx_table_elt_t                  *overwrite;
-//     ngx_table_elt_t                  *date;
-// #endif
-// 
-//     ngx_str_t                         user;
-//     ngx_str_t                         passwd;
-// 
-//     ngx_array_t                       cookies;
-// 
-//     size_t                            host_name_len;
-//     off_t                             content_length_n;
-//     time_t                            keep_alive_n;
-// 
-//     unsigned                          connection_type:2;
-//     unsigned                          msie:1;
-//     unsigned                          msie4:1;
-//     unsigned                          opera:1;
-//     unsigned                          gecko:1;
-//     unsigned                          konqueror:1;
-// } ngx_http_headers_in_t;

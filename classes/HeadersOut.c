@@ -174,14 +174,12 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 {
-	// {"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
 
 JSFunctionSpec ngx_http_js__nginx_headers_out__funcs[] = {
-    // {"empty",       method_empty,          1, 0, 0},
-    {0, NULL, 0, 0, 0}
+	{0, NULL, 0, 0, 0}
 };
 
 JSClass ngx_http_js__nginx_headers_out__class =
@@ -227,7 +225,7 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 		if (len == 0)
 			return NULL;
 	}
-		
+	
 	// look in all headers
 	
 	part = &r->headers_out.headers.part;
@@ -254,43 +252,3 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 	
 	return NULL;
 }
-
-
-
-// check this from time to time
-// http://emiller.info/lxr/http/source/http/ngx_http_request.h#L252
-// 
-// typedef struct
-// {
-//     ngx_list_t                        headers;
-//     
-//     ngx_uint_t                        status;
-//     ngx_str_t                         status_line;
-//     
-//     ngx_table_elt_t                  *server;
-//     ngx_table_elt_t                  *date;
-//     ngx_table_elt_t                  *content_length;
-//     ngx_table_elt_t                  *content_encoding;
-//     ngx_table_elt_t                  *location;
-//     ngx_table_elt_t                  *refresh;
-//     ngx_table_elt_t                  *last_modified;
-//     ngx_table_elt_t                  *content_range;
-//     ngx_table_elt_t                  *accept_ranges;
-//     ngx_table_elt_t                  *www_authenticate;
-//     ngx_table_elt_t                  *expires;
-//     ngx_table_elt_t                  *etag;
-//     
-//     ngx_str_t                        *override_charset;
-//     
-//     size_t                            content_type_len;
-//     ngx_str_t                         content_type;
-//     ngx_str_t                         charset;
-//     
-//     ngx_array_t                       cache_control;
-//     
-//     off_t                             content_length_n;
-//     time_t                            date_time;
-//     time_t                            last_modified_time;
-// }
-// ngx_http_headers_out_t;
-
