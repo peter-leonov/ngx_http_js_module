@@ -17,15 +17,17 @@ JSClass ngx_http_js__nginx_cookies__class;
 static JSClass* private_class = &ngx_http_js__nginx_cookies__class;
 
 JSObject *
-ngx_http_js__nginx_cookies__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r)
+ngx_http_js__nginx_cookies__wrap(JSContext *cx, ngx_http_request_t *r)
 {
 	JSObject                  *cookies;
 	ngx_http_js_ctx_t         *ctx;
 	
+	TRACE();
+	
 	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
 		return NULL;
 	
-	if (ctx->js_cookies)
+	if (ctx->js_cookies != NULL)
 		return ctx->js_cookies;
 	
 	cookies = JS_NewObject(cx, &ngx_http_js__nginx_cookies__class, ngx_http_js__nginx_cookies__prototype, NULL);
@@ -35,7 +37,7 @@ ngx_http_js__nginx_cookies__wrap(JSContext *cx, JSObject *request, ngx_http_requ
 		return NULL;
 	}
 	
-	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__COOKIES, OBJECT_TO_JSVAL(cookies)))
+	if (!JS_SetReservedSlot(cx, ctx->js_request, NGX_JS_REQUEST_SLOT__COOKIES, OBJECT_TO_JSVAL(cookies)))
 	{
 		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__COOKIES(%d)", NGX_JS_REQUEST_SLOT__COOKIES);
 		return NULL;

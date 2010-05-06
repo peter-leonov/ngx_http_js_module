@@ -8,7 +8,7 @@ extern JSBool
 ngx_http_js__nginx_cookies__init(JSContext *cx, JSObject *global);
 
 extern JSObject *
-ngx_http_js__nginx_cookies__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r);
+ngx_http_js__nginx_cookies__wrap(JSContext *cx, ngx_http_request_t *r);
 
 extern void
 ngx_http_js__nginx_cookies__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);

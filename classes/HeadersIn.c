@@ -8,6 +8,7 @@
 #include "../ngx_http_js_module.h"
 #include "../strings_util.h"
 #include "Request.h"
+#include "classes/Cookies.h"
 
 #include "../macroses.h"
 
@@ -87,7 +88,25 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	TRACE();
 	GET_PRIVATE(r);
 	
-	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
+	if (JSVAL_IS_INT(id))
+	{
+		switch (JSVAL_TO_INT(id))
+		{
+			case 1:
+			{
+				JSObject   *js_cookies;
+				js_cookies = ngx_http_js__nginx_cookies__wrap(cx, r);
+				if (js_cookies == NULL)
+				{
+					// just forward the exception
+					return JS_FALSE;
+				}
+				*vp = OBJECT_TO_JSVAL(js_cookies);
+			}
+			break;
+		}
+	}
+	else if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
 	{
 		// if (!strcmp(member_name, "constructor"))
 		// LOG("getProperty: %s", name);
@@ -174,7 +193,7 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
 {
-	// {"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
+	{"cookies",              1,          JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
