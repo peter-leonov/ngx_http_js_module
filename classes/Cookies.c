@@ -16,6 +16,10 @@ JSObject *ngx_http_js__nginx_cookies__prototype;
 JSClass ngx_http_js__nginx_cookies__class;
 static JSClass* private_class = &ngx_http_js__nginx_cookies__class;
 
+static ngx_int_t
+multi_parts_count(ngx_array_t *headers);
+
+
 JSObject *
 ngx_http_js__nginx_cookies__wrap(JSContext *cx, ngx_http_request_t *r)
 {
@@ -97,9 +101,25 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	TRACE();
 	GET_PRIVATE(r);
 	
-	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
+	if (JSVAL_IS_STRING(id))
 	{
-		
+		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
+		if (name == NULL)
+		{
+			JS_ReportError(cx, "can't get the C string of the property name");
+			return JS_FALSE;
+		}
+	}
+	else if (JSVAL_IS_INT(id))
+	{
+		switch (JSVAL_TO_INT(id))
+		{
+			case 1:
+			{
+				*vp = INT_TO_JSVAL(multi_parts_count(&r->headers_in.cookies));
+			}
+			break;
+		}
 	}
 	
 	return JS_TRUE;
@@ -132,6 +152,7 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 static JSPropertySpec ngx_http_js__nginx_cookies__props[] =
 {
+	{"length",                 1,          JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
@@ -165,4 +186,32 @@ ngx_http_js__nginx_cookies__init(JSContext *cx, JSObject *global)
 	E(ngx_http_js__nginx_cookies__prototype, "Can`t JS_InitClass(Nginx.Cookies)");
 	
 	return JS_TRUE;
+}
+
+
+static ngx_int_t
+multi_parts_count(ngx_array_t *headers)
+{
+	ngx_uint_t         i;
+	size_t             count = 0;
+	u_char            *start, *end;
+	ngx_table_elt_t  **h;
+	
+	h = headers->elts;
+	
+	for (i = 0; i < headers->nelts; i++)
+	{
+		start = h[i]->value.data;
+		end = h[i]->value.data + h[i]->value.len;
+		
+		while (start < end)
+		{
+			if (*start++ == '=')
+			{
+				count++;
+			}
+		}
+	}
+	
+	return count;
 }
