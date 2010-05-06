@@ -19,7 +19,7 @@ static JSClass* private_class = &ngx_http_js__nginx_cookies__class;
 JSObject *
 ngx_http_js__nginx_cookies__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r)
 {
-	JSObject                  *headers;
+	JSObject                  *cookies;
 	ngx_http_js_ctx_t         *ctx;
 	
 	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
@@ -28,24 +28,24 @@ ngx_http_js__nginx_cookies__wrap(JSContext *cx, JSObject *request, ngx_http_requ
 	if (ctx->js_cookies)
 		return ctx->js_cookies;
 	
-	headers = JS_NewObject(cx, &ngx_http_js__nginx_cookies__class, ngx_http_js__nginx_cookies__prototype, NULL);
-	if (!headers)
+	cookies = JS_NewObject(cx, &ngx_http_js__nginx_cookies__class, ngx_http_js__nginx_cookies__prototype, NULL);
+	if (!cookies)
 	{
 		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
 	
-	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__COOKIES, OBJECT_TO_JSVAL(headers)))
+	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__COOKIES, OBJECT_TO_JSVAL(cookies)))
 	{
 		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__COOKIES(%d)", NGX_JS_REQUEST_SLOT__COOKIES);
 		return NULL;
 	}
 	
-	JS_SetPrivate(cx, headers, r);
+	JS_SetPrivate(cx, cookies, r);
 	
-	ctx->js_cookies = headers;
+	ctx->js_cookies = cookies;
 	
-	return headers;
+	return cookies;
 }
 
 
