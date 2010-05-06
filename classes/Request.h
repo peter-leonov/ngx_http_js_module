@@ -9,7 +9,8 @@
 #define NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK      2
 #define NGX_JS_REQUEST_SLOT__HEADERS_IN               3
 #define NGX_JS_REQUEST_SLOT__HEADERS_OUT              4
-#define NGX_JS_REQUEST_SLOTS_COUNT                    5
+#define NGX_JS_REQUEST_SLOT__COOKIES                  5
+#define NGX_JS_REQUEST_SLOTS_COUNT                    6
 
 
 extern JSClass ngx_http_js__nginx_request__class;

@@ -35,9 +35,9 @@ ngx_http_js__nginx_cookies__wrap(JSContext *cx, JSObject *request, ngx_http_requ
 		return NULL;
 	}
 	
-	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__HEADERS_IN, OBJECT_TO_JSVAL(headers)))
+	if (!JS_SetReservedSlot(cx, request, NGX_JS_REQUEST_SLOT__COOKIES, OBJECT_TO_JSVAL(headers)))
 	{
-		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__HEADERS_IN(%d)", NGX_JS_REQUEST_SLOT__HEADERS_IN);
+		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__COOKIES(%d)", NGX_JS_REQUEST_SLOT__COOKIES);
 		return NULL;
 	}
 	
