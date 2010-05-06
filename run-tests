@@ -33,6 +33,7 @@ curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/r
 curl $OPTS --http1.0 --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-file?body=some+text+body,+ля-ля-ля"
 curl $OPTS http://127.0.0.1:19090/run/file
 curl $OPTS http://127.0.0.1:19090/run/process-cycle?fname=process-cycle-worker-exited-$TIME.txt
+curl $OPTS --cookie "foo1=bar1; foo2=bar2" "http://127.0.0.1:19090/run/request-cookies?name1=foo1&value1=bar1&name2=foo2&value2=bar2"
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests
