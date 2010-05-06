@@ -71,6 +71,8 @@ method_empty(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	TRACE();
 	GET_PRIVATE(r);
 	
+	r->headers_in.cookies.nelts = 0;
+	
 	return JS_TRUE;
 }
 
