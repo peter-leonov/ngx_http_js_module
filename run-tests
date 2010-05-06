@@ -41,7 +41,7 @@ curl $OPTS http://127.0.0.1:19090/run/file
 if [ "$WITH_MASTER"  == "yes" ]; then
 curl $OPTS http://127.0.0.1:19090/run/process-cycle?fname=process-cycle-worker-exited-$TIME.txt
 fi
-curl $OPTS --cookie "foo1=bar1; foo2=bar2" "http://127.0.0.1:19090/run/request-cookies?name1=foo1&value1=bar1&name2=foo2&value2=bar2"
+curl $OPTS --cookie "foo1=bar1; foo2=bar2" "http://127.0.0.1:19090/run/request-cookies?count=2&name1=foo1&value1=bar1&name2=foo2&value2=bar2"
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests

@@ -35,10 +35,13 @@ NginxTests.requestCookies = function (r)
 			var cookies = r.headersIn.cookies
 			t.ok(cookies, 'headersIn.cookies')
 			
-			t.eq(cookies.length, 2, 'length')
+			var count = +args.count
 			
-			t.eq(cookies[args.name1], args.value1, 'name1')
-			t.eq(cookies[args.name2], args.value2, 'name2')
+			t.eq(cookies.length, count, 'length')
+			
+			for (var i = 1; i <= count; i++)
+				t.eq(cookies[args['name' + i]], args['value' + i], 'name' + i)
+			
 			t.eq(cookies['lalala'], undefined, 'lalala')
 		})
 	})
