@@ -12,6 +12,7 @@
 #include "classes/Request.h"
 #include "classes/HeadersIn.h"
 #include "classes/HeadersOut.h"
+#include "classes/Cookies.h"
 #include "classes/Chain.h"
 #include "classes/File.h"
 
@@ -202,6 +203,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	if (!ngx_http_js__nginx_headers_out__init(cx, global))
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.HeadersOut class initialization failed");
+		return NGX_CONF_ERROR;
+	}
+	
+	// Nginx.Cookies
+	if (!ngx_http_js__nginx_cookies__init(cx, global))
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Cookies class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	

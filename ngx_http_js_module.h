@@ -10,6 +10,7 @@ typedef struct {
 	JSObject                 *js_request;
 	JSObject                 *js_headers_in;
 	JSObject                 *js_headers_out;
+	JSObject                 *js_cookies;
 	
 	int                       filter_enabled;
 	ngx_chain_t              *chain_first, *chain_last;
