@@ -126,30 +126,6 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 
-static JSBool
-setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	ngx_http_request_t         *r;
-	
-	TRACE();
-	GET_PRIVATE(r);
-	
-	if (JSVAL_IS_STRING(id))
-	{
-		
-	}
-	
-	return JS_TRUE;
-}
-
-static JSBool
-delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	TRACE();
-	return JS_TRUE;
-}
-
-
 static JSPropertySpec ngx_http_js__nginx_cookies__props[] =
 {
 	{"length",                 1,          JSPROP_READONLY,   NULL, NULL},
@@ -167,7 +143,7 @@ JSClass ngx_http_js__nginx_cookies__class =
 {
 	"Cookies",
 	JSCLASS_HAS_PRIVATE,
-	JS_PropertyStub, delProperty, getProperty, setProperty,
+	JS_PropertyStub, JS_PropertyStub, getProperty, JS_PropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
