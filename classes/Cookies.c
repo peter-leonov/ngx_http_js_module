@@ -63,6 +63,16 @@ ngx_http_js__nginx_cookies__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	ctx->js_cookies = NULL;
 }
 
+static JSBool
+method_empty(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	return JS_TRUE;
+}
 
 static JSBool
 constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -126,6 +136,7 @@ static JSPropertySpec ngx_http_js__nginx_cookies__props[] =
 
 static JSFunctionSpec ngx_http_js__nginx_cookies__funcs[] =
 {
+	{"empty",       method_empty,          0, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

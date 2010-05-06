@@ -16,7 +16,16 @@ NginxTests.requestCookies = function (r)
 			{
 				new Cookies()
 			}, 'new Cookies()')
-
+			
+			t.exception(function (t)
+			{
+				Cookies.prototype.empty.call({})
+			}, 'call({})')
+			
+			t.exception(function (t)
+			{
+				Cookies.prototype.empty.call(r)
+			}, 'call(r)')
 		})
 		
 		t.test('headersIn.cookies', function (t)
