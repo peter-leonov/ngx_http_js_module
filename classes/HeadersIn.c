@@ -111,6 +111,19 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			case 100:
 			{
+				if (r->headers_in.content_length == NULL)
+				{
+					*vp = JSVAL_NULL;
+				}
+				else
+				{
+					*vp = JSVAL_TRUE;
+				}
+			}
+			break;
+			
+			case 101:
+			{
 				if (!JS_NewNumberValue(cx, r->headers_in.content_length_n, vp))
 				{
 					return JS_FALSE;
@@ -244,7 +257,8 @@ JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
 {
 	{"cookies",              1,          JSPROP_READONLY,   NULL, NULL},
 	
-	{"$contentLengthN",      100,        JSPROP_READONLY,   NULL, NULL},
+	{"$contentLength",       100,        JSPROP_READONLY,   NULL, NULL},
+	{"$contentLengthN",      101,        JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
