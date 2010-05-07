@@ -75,9 +75,6 @@ constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 }
 
 
-// enum propid { HEADER_LENGTH };
-
-
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
@@ -108,18 +105,11 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	}
 	else if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
 	{
-		// if (!strcmp(member_name, "constructor"))
-		// LOG("getProperty: %s", name);
-		
 		header = search_headers_in(r, name, 0);
 		
 		if (header)
 			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
-		// else
-		// 	LOG("getProperty: %s was not found", name);
 	}
-	
-	// *vp = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, "not set"));
 	
 	return JS_TRUE;
 }
@@ -137,7 +127,6 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	TRACE();
 	GET_PRIVATE(r);
 	
-	// E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
 	if (JSVAL_IS_STRING(id))
 	{
 		key_jsstr = JSVAL_TO_STRING(id);
@@ -157,15 +146,13 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		}
 		
 		
-		// LOG("setProperty: %s (%u)", key, (int)key_len);
-		
 		header = search_headers_in(r, key, key_len);
 		if (header)
 		{
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
 			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
-			// LOG("by hash");
+			
 			return JS_TRUE;
 		}
 		
@@ -184,7 +171,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
 				r->headers_in.content_length_n = (off_t) JSVAL_TO_INT(*vp);
 				r->headers_in.content_length = header;
-				// LOG("by list");
+				
 				return JS_TRUE;
 			}
 		}
