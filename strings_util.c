@@ -56,7 +56,6 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 	p = (u_char*) JS_GetStringBytes(str);
 	if (p == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -67,7 +66,6 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 	s->data = ngx_palloc(pool, len+1);
 	if (s->data == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -95,7 +93,6 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len)
 	p = JS_GetStringBytes(str);
 	if (p == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
 	
@@ -104,7 +101,6 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len)
 	np = ngx_palloc(pool, len+1);
 	if (np == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
 	
