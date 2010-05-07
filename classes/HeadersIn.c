@@ -322,16 +322,16 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 		hash = ngx_hash(hash, lowcase_key[i]);
 	}
 	
-	// the layout of hashed headers is stored in ngx_http_core_module main config
-	// all hashes, its offsets and handlers are precalculated at the configuration time
+	// The layout of hashed headers is stored in ngx_http_core_module main config.
+	// All the hashes, its offsets and handlers are precalculated at the configuration time
 	// in the ngx_http_init_headers_in_hash() at ngx_http.c:432
-	// with data from ngx_http_headers_in at ngx_http_request.c:80
+	// with data from ngx_http_headers_in at ngx_http_request.c:80.
 	cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
 	
 	// find the currents header description (ngx_http_header_t) by its hash
 	hh = ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
 	
-	// true hh means we know the header name
+	// present hh means we know the header name
 	if (hh != NULL)
 	{
 		// and this means its value was already cached in some field
