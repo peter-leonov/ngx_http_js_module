@@ -210,9 +210,18 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			if (NCASE_COMPARE(header->key, "Content-Length") != 0)
 			{
-				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
-				r->headers_in.content_length_n = (off_t) JSVAL_TO_INT(*vp);
+				jsdouble  dp;
+				
+				// it may call GC or do other comlicated things like vp.toString()
+				if (!JS_ValueToNumber(cx, *vp, &dp))
+				{
+					// forward exception if any
+					return JS_FALSE;
+				}
+				
+				r->headers_in.content_length_n = (off_t) dp;
 				r->headers_in.content_length = header;
+				ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "headers_in.content_length_n = %O", r->headers_in.content_length_n);
 				
 				return JS_TRUE;
 			}
