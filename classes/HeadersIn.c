@@ -141,8 +141,21 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	if (JSVAL_IS_STRING(id))
 	{
 		key_jsstr = JSVAL_TO_STRING(id);
-		E(key = js_str2c_str(cx, key_jsstr, r->pool, &key_len), "Can`t js_str2c_str(key_jsstr)");
-		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
+		key = js_str2c_str(cx, key_jsstr, r->pool, &key_len);
+		if (key == NULL)
+		{
+			// forward exception if any
+			return JS_FALSE;
+		}
+		
+		// it may call GC or do other comlicated things like vp.toString()
+		value_jsstr = JS_ValueToString(cx, *vp);
+		if (value_jsstr == NULL)
+		{
+			// forward exception if any
+			return JS_FALSE;
+		}
+		
 		
 		// LOG("setProperty: %s (%u)", key, (int)key_len);
 		
