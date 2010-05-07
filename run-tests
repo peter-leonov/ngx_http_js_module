@@ -50,6 +50,7 @@ curl $OPTS -H "Big: $BIG_STRING" "http://127.0.0.1:19090/run/request-headers-in?
 curl $OPTS -A "Tester/1.0" "http://127.0.0.1:19090/run/request-headers-in?\{\"Host\":\"127.0.0.1:19090\",\"User-Agent\":\"Tester/1.0\"\}"
 curl $OPTS --data "12345" "http://127.0.0.1:19090/run/request-headers-in?\{\"Content-Length\":5,\"Content-Type\":\"application/x-www-form-urlencoded\"\}"
 curl $OPTS -r 3-55 "http://127.0.0.1:19090/run/request-headers-in?\{\"Range\":\"bytes=3-55\"\}"
+curl $OPTS "http://127.0.0.1:19090/run/request-headers-in-set-get"
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 
