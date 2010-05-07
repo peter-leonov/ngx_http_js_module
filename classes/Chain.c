@@ -53,7 +53,7 @@ method_toString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	if (ch->buf && !ch->next)
 	{
-		*rval = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) ch->buf->pos, ch->buf->last - ch->buf->pos));
+		DATA_LEN_to_JS_STRING_to_JSVAL(cx, ch->buf->pos, ch->buf->last - ch->buf->pos, *rval);
 	}
 	else
 	{
@@ -77,7 +77,7 @@ method_toString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 			}
 		}
 		
-		*rval = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char*) buff, len));
+		DATA_LEN_to_JS_STRING_to_JSVAL(cx, buff, len, *rval);
 		
 		JS_free(cx, buff);
 	}

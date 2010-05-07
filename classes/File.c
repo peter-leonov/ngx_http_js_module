@@ -229,7 +229,6 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	void            *p;
 	size_t           len;
 	char            *buf;
-	JSString        *jss_buf;
 	
 	GET_PRIVATE(p);
 	fd = PTR_TO_FD(p);
@@ -256,14 +255,6 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_TRUE;
 	}
 	
-	jss_buf = JS_NewStringCopyN(cx, buf, len);
-	if (jss_buf == NULL)
-	{
-		// may be a broken UTF-8, but we can't know it for sure
-		JS_ReportOutOfMemory(cx);
-		return JS_FALSE;
-	}
-	
 	if (static_pool->d.last == (u_char *) buf + len)
 	{
 		// reflects p->d.last = m + size; at ngx_palloc.c:159
@@ -280,7 +271,7 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf hasn't been freed");
 	}
 	
-	*rval = STRING_TO_JSVAL(jss_buf);
+	DATA_LEN_to_JS_STRING_to_JSVAL(cx, buf, len, *rval);
 	
 	return JS_TRUE;
 }

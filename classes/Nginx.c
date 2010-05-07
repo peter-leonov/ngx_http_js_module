@@ -125,20 +125,13 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			case 101:
 			{
-				JSString *prefix;
 				if (!ngx_cycle->conf_prefix.len)
 				{
 					JS_ReportError(cx, "conf_prefix is an empty string");
 					return JS_FALSE;
 				}
-				prefix = JS_NewStringCopyN(cx, (char *) ngx_cycle->conf_prefix.data, ngx_cycle->conf_prefix.len);
-				if (!prefix)
-				{
-					JS_ReportOutOfMemory(cx);
-					return JS_FALSE;
-				}
 				
-				*vp = STRING_TO_JSVAL(prefix);
+				NGX_STRING_to_JS_STRING_to_JSVAL(cx, ngx_cycle->conf_prefix, *vp);
 			}
 			break;
 			

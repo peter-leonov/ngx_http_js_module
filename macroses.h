@@ -95,5 +95,18 @@ if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) 
 #define CASE_COMPARE(ngxstring, cstring) ((ngxstring).len == sizeof(cstring) - 1 \
 	&& ngx_strcasecmp((ngxstring).data, (u_char *)(cstring), sizeof(cstring) - 1) == 0)
 
+#define DATA_LEN_to_JS_STRING_to_JSVAL(cx, data, len, v) \
+{ \
+	JSString  *value; \
+	value = JS_NewStringCopyN(cx, (char *) (data), (len)); \
+	if (value == NULL) \
+	{ \
+		return JS_FALSE; \
+	} \
+	v = STRING_TO_JSVAL(value); \
+}
+
+#define NGX_STRING_to_JS_STRING_to_JSVAL(cx, str, v) DATA_LEN_to_JS_STRING_to_JSVAL(cx, (str).data, (str).len, v);
+
 
 #endif

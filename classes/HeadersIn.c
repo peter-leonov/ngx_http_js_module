@@ -118,15 +118,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				}
 				else
 				{
-					JSString  *value;
-					value = JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len);
-					if (value == NULL)
-					{
-						// just forward the exception
-						return JS_FALSE;
-					}
-					
-					*vp = STRING_TO_JSVAL(value);
+					NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
 				}
 			}
 			break;
@@ -152,7 +144,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		header = search_headers_in(r, name, 0);
 		if (header != NULL)
 		{
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
 		}
 		
 		// here we assume that all those headers like Content-Length

@@ -105,7 +105,6 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		char        *name;
 		ngx_int_t    n;
 		ngx_str_t    cookie_name, cookie_value;
-		JSString    *value;
 		
 		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
 		if (name == NULL)
@@ -126,13 +125,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_TRUE;
 		}
 		
-		value = JS_NewStringCopyN(cx, (char *) cookie_value.data, cookie_value.len);
-		if (value == NULL)
-		{
-			return JS_FALSE;
-		}
-		
-		*vp = STRING_TO_JSVAL(value);
+		NGX_STRING_to_JS_STRING_to_JSVAL(cx, cookie_value, *vp);
 	}
 	else if (JSVAL_IS_INT(id))
 	{

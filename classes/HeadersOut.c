@@ -94,8 +94,10 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		
 		header = search_headers_out(r, name, 0);
 		
-		if (header)
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
+		if (header != NULL)
+		{
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
+		}
 		// else
 		// 	LOG("getProperty: %s was not found", name);
 	}
