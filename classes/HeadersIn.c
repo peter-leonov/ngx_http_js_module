@@ -81,6 +81,16 @@ constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	return JS_TRUE;
 }
 
+#define NGX_HEADER_to_JSVAL(header, v) \
+if (header == NULL) \
+{ \
+	v = JSVAL_NULL; \
+} \
+else \
+{ \
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, v); \
+}
+
 
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
@@ -110,17 +120,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			break;
 			
 			case 100:
-			{
-				header = r->headers_in.content_length;
-				if (header == NULL)
-				{
-					*vp = JSVAL_NULL;
-				}
-				else
-				{
-					NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
-				}
-			}
+			NGX_HEADER_to_JSVAL(r->headers_in.content_length, *vp);
 			break;
 			
 			case 101:
