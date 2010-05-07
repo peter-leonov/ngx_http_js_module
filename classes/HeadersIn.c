@@ -332,7 +332,7 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	hh = ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
 	
 	// true hh means we know the header name
-	if (hh)
+	if (hh != NULL)
 	{
 		// and this means its value was already cached in some field
 		// of the r->headers_in stuct (hh->offset tells which)
