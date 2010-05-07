@@ -111,13 +111,22 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			case 100:
 			{
-				if (r->headers_in.content_length == NULL)
+				header = r->headers_in.content_length;
+				if (header == NULL)
 				{
 					*vp = JSVAL_NULL;
 				}
 				else
 				{
-					*vp = JSVAL_TRUE;
+					JSString  *value;
+					value = JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len);
+					if (value == NULL)
+					{
+						// just forward the exception
+						return JS_FALSE;
+					}
+					
+					*vp = STRING_TO_JSVAL(value);
 				}
 			}
 			break;
