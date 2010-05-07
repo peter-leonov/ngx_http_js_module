@@ -11,9 +11,11 @@ NginxTests.requestHeadersInSetGet = function (r)
 		t.ok(h, 'headersIn')
 		
 		t.eq(h['Content-Length'], undefined, 'Content-Length')
+		t.eq(h.$contentLength, null, '$contentLength')
 		t.eq(h.$contentLengthN, -1, '$contentLengthN')
 		h['Content-Length'] = 5555555555555555
 		t.eq(h['Content-Length'], '5555555555555555', 'Content-Length')
+		t.eq(h.$contentLength, '5555555555555555', '$contentLength')
 		t.eq(h.$contentLengthN, 5555555555555555, '$contentLengthN')
 		
 		t.eq(h['Range'], undefined, 'Range')
