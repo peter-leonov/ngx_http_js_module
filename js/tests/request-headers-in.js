@@ -4,7 +4,7 @@ NginxTests.requestHeadersIn = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
-	var args = JSON.parse(r.args)
+	var args = JSON.parse(r.args.replace(/\+/g, ' '))
 	
 	Tests.test('tests for request headers processing', function (t)
 	{

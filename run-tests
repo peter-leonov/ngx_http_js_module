@@ -45,6 +45,7 @@ curl $OPTS --cookie "foo1=bar1; foo2=bar2" "http://127.0.0.1:19090/run/request-c
 BIG_STRING="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" # 100
 curl $OPTS --cookie "foo1=$BIG_STRING" "http://127.0.0.1:19090/run/request-cookies?count=1&name1=foo1&value1=$BIG_STRING"
 curl $OPTS -H "Foo1: bar1" -H "Foo2: bar2" 'http://127.0.0.1:19090/run/request-headers-in?\{"Foo1":"bar1","Foo2":"bar2"\}'
+curl $OPTS -H "Cookie: foo1=bar1; foo2=bar2" 'http://127.0.0.1:19090/run/request-headers-in?\{"Cookie":"foo1=bar1;+foo2=bar2"\}'
 # curl $OPTS http://127.0.0.1:19090/run/timer-cascade
 # curl $OPTS http://127.0.0.1:19090/run/timer-parallel
 # curl $OPTS http://127.0.0.1:19090/run/cascade-tests
