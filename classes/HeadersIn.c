@@ -239,6 +239,17 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				// without brute forcing through all headers names
 				phh = (ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset);
 				header = *phh;
+				
+				if (header == NULL)
+				{
+					header = ngx_list_push(&r->headers_in.headers);
+					if (header == NULL)
+					{
+						JS_ReportOutOfMemory(cx);
+						return JS_FALSE;
+					}
+					*phh = header;
+				}
 			}
 		}
 		
