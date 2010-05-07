@@ -198,10 +198,12 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 static JSBool
 setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	ngx_http_request_t         *r;
-	ngx_table_elt_t            *header;
 	char                       *key;
 	size_t                      key_len;
+	ngx_http_request_t         *r;
+	ngx_table_elt_t            *header;
+	ngx_http_header_t          *hh;
+	ngx_table_elt_t           **phh;
 	JSString                   *key_jsstr, *value_jsstr;
 	
 	TRACE();
@@ -217,6 +219,45 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_FALSE;
 		}
 		
+		
+		if (key_len == 0)
+		{
+			// just return an undefined value
+			return JS_TRUE;
+		}
+		
+		header = NULL;
+		
+		hh = search_hashed_headers_in(r, key, key_len);
+		if (hh != NULL)
+		{
+			// and this means its value was already cached in some field
+			// of the r->headers_in stuct (hh->offset tells which)
+			if (hh->offset)
+			{
+				// we got the element of the r->headers_in.headers
+				// without brute forcing through all headers names
+				phh = (ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset);
+				header = *phh;
+			}
+		}
+		
+		if (header == NULL)
+		{
+			header = search_headers_in(r, key, key_len);
+		}
+		
+		if (header == NULL)
+		{
+			header = ngx_list_push(&r->headers_in.headers);
+			if (header == NULL)
+			{
+				JS_ReportOutOfMemory(cx);
+				return JS_FALSE;
+			}
+		}
+		
+		
 		// it may call GC or do other comlicated things like vp.toString()
 		value_jsstr = JS_ValueToString(cx, *vp);
 		if (value_jsstr == NULL)
@@ -226,56 +267,30 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		}
 		
 		
-		header = search_headers_in(r, key, key_len);
-		if (header != NULL)
-		{
-			header->key.data = (u_char*)key;
-			header->key.len = key_len;
-			if (!js_str2ngx_str(cx, value_jsstr, r->pool, &header->value))
-			{
-				// forward exception if any
-				return JS_FALSE;
-			}
-			
-			return JS_TRUE;
-		}
+		header->hash = 1;
 		
-		
-		header = ngx_list_push(&r->headers_in.headers);
-		if (header == NULL)
+		header->key.data = (u_char*)key;
+		header->key.len = key_len;
+		if (!js_str2ngx_str(cx, value_jsstr, r->pool, &header->value))
 		{
-			JS_ReportOutOfMemory(cx);
+			// forward exception if any
 			return JS_FALSE;
 		}
-		else
+		
+		if (NCASE_COMPARE(header->key, "Content-Length") != 0)
 		{
-			header->hash = 1;
+			jsdouble  dp;
 			
-			header->key.data = (u_char*)key;
-			header->key.len = key_len;
-			if (!js_str2ngx_str(cx, value_jsstr, r->pool, &header->value))
+			// it may call GC or do other comlicated things like vp.toString()
+			if (!JS_ValueToNumber(cx, *vp, &dp))
 			{
 				// forward exception if any
 				return JS_FALSE;
 			}
 			
-			if (NCASE_COMPARE(header->key, "Content-Length") != 0)
-			{
-				jsdouble  dp;
-				
-				// it may call GC or do other comlicated things like vp.toString()
-				if (!JS_ValueToNumber(cx, *vp, &dp))
-				{
-					// forward exception if any
-					return JS_FALSE;
-				}
-				
-				r->headers_in.content_length_n = (off_t) dp;
-				r->headers_in.content_length = header;
-				ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "headers_in.content_length_n = %O", r->headers_in.content_length_n);
-				
-				return JS_TRUE;
-			}
+			r->headers_in.content_length_n = (off_t) dp;
+			r->headers_in.content_length = header;
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "headers_in.content_length_n = %O", r->headers_in.content_length_n);
 		}
 	}
 	
