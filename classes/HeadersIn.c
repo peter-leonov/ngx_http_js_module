@@ -311,7 +311,7 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 			i = 0;
 		}
 		
-		// just compare lowercased names
+		// just compare exact names
 		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
 			continue;
 		
