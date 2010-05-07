@@ -244,6 +244,7 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	ngx_assert(r);
 	ngx_assert(name);
 	
+	// there is no headers with zero length
 	if (len == 0)
 	{
 		len = strlen(name);
@@ -253,10 +254,12 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 		
 	// look in hashed headers
 	
+	// header names are case-insensitive
 	lowcase_key = ngx_palloc(r->pool, len);
 	if (lowcase_key == NULL)
 		return NULL;
 	
+	// calculate a hash of header name
 	hash = 0;
 	for (i = 0; i < len; i++)
 	{
@@ -264,27 +267,38 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 		hash = ngx_hash(hash, lowcase_key[i]);
 	}
 	
-	
+	// the layout of hashed headers is stored in ngx_http_core_module main config
+	// all hashes, its offsets and handlers are precalculated at the configuration time
+	// in the ngx_http_init_headers_in_hash() at ngx_http.c:432
+	// with data from ngx_http_headers_in at ngx_http_request.c:80
 	cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
 	
+	// find the currents header description (ngx_http_header_t) by its hash
 	hh = ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
-		
+	
+	// true hh means we know the header name
 	if (hh)
 	{
+		// and this means its value was already cached in some field
+		// of the r->headers_in stuct (hh->offset tells which)
 		if (hh->offset)
 		{
 			ph = (ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset);
 			
+			// we got the element of the r->headers_in.headers
+			// without brute forcing through all headers names
 			return *ph;
 		}
 	}
 	
-	
-	// look in all headers
+	// as far as we didn't find the headers in heashed ones
+	// we have to perform the brute force lookup in all headers
 	
 	part = &r->headers_in.headers.part;
 	h = part->elts;
 	
+	// headers array may consist of more than one part
+	// so loop throgh all of it
 	for (i = 0; /* void */ ; i++)
 	{
 		if (i >= part->nelts)
@@ -297,12 +311,14 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 			i = 0;
 		}
 		
-		// LOG("%s", h[i].key.data);
+		// just compare lowercased names
 		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
 			continue;
 		
+		// ta-da, we got one
 		return &h[i];
 	}
 	
+	// nor the hashed nor the plain header was found
 	return NULL;
 }
