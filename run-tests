@@ -49,10 +49,6 @@ curl $OPTS -H "Cookie: foo1=bar1; foo2=bar2" 'http://127.0.0.1:19090/run/request
 curl $OPTS -H "Big: $BIG_STRING" "http://127.0.0.1:19090/run/request-headers-in?\{\"Big\":\"$BIG_STRING\"\}"
 curl $OPTS -A "Tester/1.0" "http://127.0.0.1:19090/run/request-headers-in?\{\"Host\":\"127.0.0.1:19090\",\"User-Agent\":\"Tester/1.0\"\}"
 curl $OPTS --data "12345" "http://127.0.0.1:19090/run/request-headers-in?\{\"Content-Length\":5,\"Content-Type\":\"application/x-www-form-urlencoded\"\}"
-# curl $OPTS http://127.0.0.1:19090/run/timer-cascade
-# curl $OPTS http://127.0.0.1:19090/run/timer-parallel
-# curl $OPTS http://127.0.0.1:19090/run/cascade-tests
-# curl $OPTS http://127.0.0.1:19090/run/subrequest-quick
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 
