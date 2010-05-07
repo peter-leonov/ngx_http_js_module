@@ -98,7 +98,7 @@ else \
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	char                       *name;
+	char                       *key;
 	u_int                       len;
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
@@ -145,15 +145,15 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	}
 	else if (JSVAL_IS_STRING(id))
 	{
-		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
-		if (name == NULL)
+		key = JS_GetStringBytes(JSVAL_TO_STRING(id));
+		if (key == NULL)
 		{
 			return JS_FALSE;
 		}
 		
-		len = ngx_strlen(name);
+		len = ngx_strlen(key);
 		
-		hh = search_hashed_headers_in(r, name, len);
+		hh = search_hashed_headers_in(r, key, len);
 		if (hh != NULL)
 		{
 			// and this means its value was already cached in some field
@@ -171,7 +171,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		}
 		else
 		{
-			header = search_headers_in(r, name, len);
+			header = search_headers_in(r, key, len);
 		}
 		
 		if (header != NULL)
