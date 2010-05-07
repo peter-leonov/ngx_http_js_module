@@ -776,7 +776,18 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
 	
 	if (sr->upstream)
-		args[0] = STRING_TO_JSVAL(JS_NewStringCopyN(js_cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos));
+	{
+		JSString  *js_buf;
+		js_buf = JS_NewStringCopyN(js_cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos);
+		if (js_buf == NULL)
+		{
+			rc = NGX_ERROR;
+		}
+		else
+		{
+			args[0] = STRING_TO_JSVAL(js_buf);
+		}
+	}
 	else if (ctx->chain_first != NULL)
 		args[0] = OBJECT_TO_JSVAL(ngx_http_js__nginx_chain__wrap(js_cx, ctx->chain_first, subrequest));
 	else
