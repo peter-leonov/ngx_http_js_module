@@ -123,6 +123,12 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		{
 			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
 		}
+		
+		// here we assume that all those headers like Content-Length
+		// are represented identically in both the text form:
+		//  r->headers_in.content_length
+		// and the digital:
+		//  r->headers_in.content_length_n
 	}
 	
 	return JS_TRUE;
