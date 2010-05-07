@@ -17,6 +17,9 @@ JSObject *ngx_http_js__nginx_headers_in__prototype;
 JSClass ngx_http_js__nginx_headers_in__class;
 static JSClass* private_class = &ngx_http_js__nginx_headers_in__class;
 
+static ngx_http_header_t *
+search_hashed_headers_in(ngx_http_request_t *r, char *name, u_int len);
+
 static ngx_table_elt_t *
 search_headers_in(ngx_http_request_t *r, char *name, u_int len);
 
@@ -302,13 +305,10 @@ ngx_http_js__nginx_headers_in__init(JSContext *cx, JSObject *global)
 }
 
 
-static ngx_table_elt_t *
-search_headers_in(ngx_http_request_t *r, char *name, u_int len)
+static ngx_http_header_t *
+search_hashed_headers_in(ngx_http_request_t *r, char *name, u_int len)
 {
 	ngx_http_core_main_conf_t  *cmcf;
-	ngx_list_part_t            *part;
-	ngx_http_header_t          *hh;
-	ngx_table_elt_t            **ph, *h;
 	u_char                     *lowcase_key;
 	ngx_uint_t                  i, hash;
 	
@@ -316,16 +316,12 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	ngx_assert(r);
 	ngx_assert(name);
 	
-	// there is no headers with zero length
+	// there are no headers with zero length
 	if (len == 0)
 	{
-		len = strlen(name);
-		if (len == 0)
-		{
-			return NULL;
-		}
+		return NULL;
 	}
-		
+	
 	// look in hashed headers
 	
 	// header names are case-insensitive
@@ -350,25 +346,25 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
 	
 	// find the currents header description (ngx_http_header_t) by its hash
-	hh = ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
+	return ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
+}
+
+static ngx_table_elt_t *
+search_headers_in(ngx_http_request_t *r, char *name, u_int len)
+{
+	ngx_list_part_t            *part;
+	ngx_table_elt_t            *h;
+	ngx_uint_t                  i;
 	
-	// present hh means we know the header name
-	if (hh != NULL)
+	TRACE();
+	ngx_assert(r);
+	ngx_assert(name);
+	
+	// there are no headers with zero length
+	if (len == 0)
 	{
-		// and this means its value was already cached in some field
-		// of the r->headers_in stuct (hh->offset tells which)
-		if (hh->offset)
-		{
-			ph = (ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset);
-			
-			// we got the element of the r->headers_in.headers
-			// without brute forcing through all headers names
-			return *ph;
-		}
+		return NULL;
 	}
-	
-	// as far as we didn't find the headers in heashed ones
-	// we have to perform the brute force lookup in all headers
 	
 	part = &r->headers_in.headers.part;
 	h = part->elts;
@@ -399,6 +395,6 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 		return &h[i];
 	}
 	
-	// nor the hashed nor the plain header was found
+	// no plain header was found
 	return NULL;
 }
