@@ -131,6 +131,11 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				}
 			}
 			break;
+			
+			case 102:
+			NGX_HEADER_to_JSVAL(r->headers_in.range, *vp);
+			break;
+			
 		}
 	}
 	else if (JSVAL_IS_STRING(id))
@@ -260,6 +265,7 @@ JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
 	
 	{"$contentLength",       100,        JSPROP_READONLY,   NULL, NULL},
 	{"$contentLengthN",      101,        JSPROP_READONLY,   NULL, NULL},
+	{"$range",               102,        JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
