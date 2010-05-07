@@ -19,8 +19,10 @@ NginxTests.requestHeadersInSetGet = function (r)
 		t.eq(h.$contentLengthN, 5555555555555555, '$contentLengthN')
 		
 		t.eq(h['Range'], undefined, 'Range')
+		t.eq(h.$range, null, '$range')
 		h['Range'] = 'bytes=1-2'
 		t.eq(h['Range'], 'bytes=1-2', 'Range')
+		t.eq(h.$range, 'bytes=1-2', '$range')
 		
 		t.ok(h['Host'], 'Host')
 		h['Host'] = 'nginx.org:80'
