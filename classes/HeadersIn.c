@@ -98,9 +98,11 @@ else \
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	ngx_http_request_t         *r;
 	char                       *name;
+	u_int                       len;
+	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
+	ngx_http_header_t          *hh;
 	
 	TRACE();
 	GET_PRIVATE(r);
@@ -149,7 +151,29 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		header = search_headers_in(r, name, 0);
+		len = ngx_strlen(name);
+		
+		hh = search_hashed_headers_in(r, name, len);
+		if (hh != NULL)
+		{
+			// and this means its value was already cached in some field
+			// of the r->headers_in stuct (hh->offset tells which)
+			if (!hh->offset)
+			{
+				header = NULL;
+			}
+			else
+			{
+				// we got the element of the r->headers_in.headers
+				// without brute forcing through all headers names
+				header = *((ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset));
+			}
+		}
+		else
+		{
+			header = search_headers_in(r, name, len);
+		}
+		
 		if (header != NULL)
 		{
 			NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
