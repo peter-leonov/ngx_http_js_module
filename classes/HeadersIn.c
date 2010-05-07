@@ -153,6 +153,12 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		
 		len = ngx_strlen(key);
 		
+		if (len == 0)
+		{
+			// just return an undefined value
+			return JS_TRUE;
+		}
+		
 		hh = search_hashed_headers_in(r, key, len);
 		if (hh != NULL)
 		{
@@ -340,12 +346,6 @@ search_hashed_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	ngx_assert(r);
 	ngx_assert(name);
 	
-	// there are no headers with zero length
-	if (len == 0)
-	{
-		return NULL;
-	}
-	
 	// look in hashed headers
 	
 	// header names are case-insensitive
@@ -383,12 +383,6 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	TRACE();
 	ngx_assert(r);
 	ngx_assert(name);
-	
-	// there are no headers with zero length
-	if (len == 0)
-	{
-		return NULL;
-	}
 	
 	part = &r->headers_in.headers.part;
 	h = part->elts;
