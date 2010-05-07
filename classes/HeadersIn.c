@@ -27,14 +27,19 @@ ngx_http_js__nginx_headers_in__wrap(JSContext *cx, JSObject *request, ngx_http_r
 	JSObject                  *headers;
 	ngx_http_js_ctx_t         *ctx;
 	
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
 		return NULL;
+	}
 	
-	if (ctx->js_headers_in)
+	if (ctx->js_headers_in != NULL)
+	{
 		return ctx->js_headers_in;
+	}
 	
 	headers = JS_NewObject(cx, &ngx_http_js__nginx_headers_in__class, ngx_http_js__nginx_headers_in__prototype, NULL);
-	if (!headers)
+	if (headers == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return NULL;
@@ -59,8 +64,10 @@ ngx_http_js__nginx_headers_in__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_
 {
 	ngx_assert(ctx);
 	
-	if (!ctx->js_headers_in)
+	if (ctx->js_headers_in == NULL)
+	{
 		return;
+	}
 	
 	JS_SetPrivate(cx, ctx->js_headers_in, NULL);
 	ctx->js_headers_in = NULL;
@@ -103,12 +110,19 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			break;
 		}
 	}
-	else if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
+	else if (JSVAL_IS_STRING(id))
 	{
-		header = search_headers_in(r, name, 0);
+		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
+		if (name == NULL)
+		{
+			return JS_FALSE;
+		}
 		
-		if (header)
+		header = search_headers_in(r, name, 0);
+		if (header != NULL)
+		{
 			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) header->value.data, header->value.len));
+		}
 	}
 	
 	return JS_TRUE;
@@ -147,26 +161,34 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		
 		
 		header = search_headers_in(r, key, key_len);
-		if (header)
+		if (header != NULL)
 		{
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
+			if (!js_str2ngx_str(cx, value_jsstr, r->pool, &header->value))
+			{
+				// forward exception if any
+				return JS_FALSE;
+			}
 			
 			return JS_TRUE;
 		}
 		
 		
 		header = ngx_list_push(&r->headers_in.headers);
-		if (header)
+		if (header != NULL)
 		{
 			header->hash = 1;
 			
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
+			if (!js_str2ngx_str(cx, value_jsstr, r->pool, &header->value))
+			{
+				// forward exception if any
+				return JS_FALSE;
+			}
 			
-			if (NCASE_COMPARE(header->key, "Content-Length"))
+			if (NCASE_COMPARE(header->key, "Content-Length") != 0)
 			{
 				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
 				r->headers_in.content_length_n = (off_t) JSVAL_TO_INT(*vp);
@@ -176,7 +198,9 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			}
 		}
 		else
+		{
 			THROW("Can`t ngx_list_push()");
+		}
 	}
 	
 	
@@ -249,7 +273,9 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	{
 		len = strlen(name);
 		if (len == 0)
+		{
 			return NULL;
+		}
 	}
 		
 	// look in hashed headers
@@ -257,7 +283,9 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 	// header names are case-insensitive
 	lowcase_key = ngx_palloc(r->pool, len);
 	if (lowcase_key == NULL)
+	{
 		return NULL;
+	}
 	
 	// calculate a hash of header name
 	hash = 0;
@@ -304,7 +332,9 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 		if (i >= part->nelts)
 		{
 			if (part->next == NULL)
+			{
 				break;
+			}
 			
 			part = part->next;
 			h = part->elts;
@@ -313,7 +343,9 @@ search_headers_in(ngx_http_request_t *r, char *name, u_int len)
 		
 		// just compare exact names
 		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
+		{
 			continue;
+		}
 		
 		// ta-da, we got one
 		return &h[i];
