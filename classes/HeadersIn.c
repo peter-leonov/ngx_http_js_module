@@ -159,23 +159,22 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_TRUE;
 		}
 		
+		header = NULL;
+		
 		hh = search_hashed_headers_in(r, key, len);
 		if (hh != NULL)
 		{
 			// and this means its value was already cached in some field
 			// of the r->headers_in stuct (hh->offset tells which)
-			if (!hh->offset)
-			{
-				header = NULL;
-			}
-			else
+			if (hh->offset)
 			{
 				// we got the element of the r->headers_in.headers
 				// without brute forcing through all headers names
 				header = *((ngx_table_elt_t **) ((char *) &r->headers_in + hh->offset));
 			}
 		}
-		else
+		
+		if (header == NULL)
 		{
 			header = search_headers_in(r, key, len);
 		}
