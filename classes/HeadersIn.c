@@ -191,7 +191,12 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		
 		
 		header = ngx_list_push(&r->headers_in.headers);
-		if (header != NULL)
+		if (header == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		else
 		{
 			header->hash = 1;
 			
@@ -211,10 +216,6 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				
 				return JS_TRUE;
 			}
-		}
-		else
-		{
-			THROW("Can`t ngx_list_push()");
 		}
 	}
 	
