@@ -333,7 +333,10 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				if (ngx_fd_info(fd, &fi) != NGX_FILE_ERROR)
 				{
 					size = ngx_file_size(&fi);
-					JS_NewNumberValue(cx, size, vp);
+					if (!JS_NewNumberValue(cx, size, vp))
+					{
+						return JS_FALSE;
+					}
 				}
 			}
 			break;
