@@ -108,6 +108,15 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				*vp = OBJECT_TO_JSVAL(js_cookies);
 			}
 			break;
+			
+			case 100:
+			{
+				if (!JS_NewNumberValue(cx, r->headers_in.content_length_n, vp))
+				{
+					return JS_FALSE;
+				}
+			}
+			break;
 		}
 	}
 	else if (JSVAL_IS_STRING(id))
@@ -224,6 +233,8 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
 {
 	{"cookies",              1,          JSPROP_READONLY,   NULL, NULL},
+	
+	{"$contentLengthN",      100,        JSPROP_READONLY,   NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
