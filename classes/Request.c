@@ -829,11 +829,11 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		switch (JSVAL_TO_INT(id))
 		{
 			case REQUEST_URI:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->uri.data, r->uri.len));
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->uri, *vp);
 			break;
 			
 			case REQUEST_METHOD:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->method_name.data, r->method_name.len));
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->method_name, *vp);
 			break;
 			
 			case REQUEST_FILENAME:
@@ -845,16 +845,16 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 					break;
 				filename.len--;
 				
-				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) filename.data, filename.len));
+				NGX_STRING_to_JS_STRING_to_JSVAL(cx, filename, *vp);
 			}
 			break;
 			
 			case REQUEST_REMOTE_ADDR:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->connection->addr_text.data, r->connection->addr_text.len));
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->connection->addr_text, *vp);
 			break;
 			
 			case REQUEST_ARGS:
-			*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->args.data, r->args.len));
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->args, *vp);
 			break;
 			
 			case REQUEST_HEADER_ONLY:
@@ -879,8 +879,7 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			
 			case REQUEST_BODY_FILENAME:
 			if (r->request_body != NULL && r->request_body->temp_file != NULL)
-				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->temp_file->file.name.data,
-					r->request_body->temp_file->file.name.len));
+			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->request_body->temp_file->file.name, *vp);
 			break;
 			
 			case REQUEST_HAS_BODY:
@@ -894,8 +893,7 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			}
 			else
 			{
-				size_t len = r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos;
-				*vp = STRING_TO_JSVAL(JS_NewStringCopyN(cx, (char *) r->request_body->bufs->buf->pos, len));
+				DATA_LEN_to_JS_STRING_to_JSVAL(cx, r->request_body->bufs->buf->pos, r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos, *vp);
 			}
 			break;
 		}
