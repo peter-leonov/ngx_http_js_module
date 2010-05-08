@@ -5,6 +5,7 @@ NGX_OBJS="$2"
 NGINX="$NGX_OBJS/nginx"
 PIDFILE="/tmp/nginx-js.pid"
 TIME=$(date +%s)
+PADDING="$MODULE_ROOT/padding.txt"
 
 if [ "$WITH_MASTER"  == "yes" ]; then
 	NGINX_OPTS=""
@@ -24,6 +25,7 @@ function kill_process {
 }
 
 mkdir -p $MODULE_ROOT/logs
+cat $PADDING >> $MODULE_ROOT/logs/error.log
 
 kill_process
 
