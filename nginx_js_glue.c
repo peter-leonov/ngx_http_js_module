@@ -515,18 +515,12 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 	return NGX_CONF_OK;
 }
 
-
 ngx_int_t
 ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
 	ngx_int_t                    rc;
-	ngx_log_t                   *last_log;
-	JSObject                    *request, *function;
-	jsval                        req;
 	jsval                        rval;
-	ngx_http_js_loc_conf_t      *jslcf;
-	ngx_http_js_ctx_t           *ctx;
-	
+	ngx_http_js_loc_conf_t      *jslcf;	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler");
 	
 	ngx_assert(js_cx);
@@ -534,50 +528,23 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	// location configuration for current request
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
-	// get the callback function, was set in config by ngx_http_js__glue__set_callback()
-	function = jslcf->handler_function;
-	ngx_assert(function);
 	
-	// get a js module context or create a js module context or return an error
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	
+	// the callback function was set in config by ngx_http_js__glue__set_callback()
+	rc = ngx_http_js__glue__call_function(r, jslcf->handler_function, &rval);
+	if (rc != NGX_OK)
 	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		if ((ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t))))
-			ngx_http_set_ctx(r, ctx, ngx_http_js_module) // ; is in the macro
-		else
-			return NGX_ERROR;
+		return rc;
 	}
 	
-	// create a wrapper js object (not yet rooted) for native request struct
-	request = ngx_http_js__nginx_request__wrap(js_cx, r);
-	if (request == NULL)
-		return NGX_ERROR;
-	
-	req = OBJECT_TO_JSVAL(request);
-	last_log = ngx_http_js_module_log;
-	ngx_http_js_module_log = r->connection->log;
-	if (JS_CallFunctionValue(js_cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
+	if (!JSVAL_IS_INT(rval))
 	{
-		if (!JSVAL_IS_INT(rval))
-		{
-			rc = NGX_ERROR;
-			JS_ReportError(js_cx, "Request processor must return an Integer");
-		}
-		else
-			rc = (ngx_int_t)JSVAL_TO_INT(rval);
+		rc = NGX_ERROR;
+		JS_ReportError(js_cx, "content handler must return an Integer");
 	}
 	else
-		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
-	ngx_http_js_module_log = last_log;
-	
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i (main->count = %i)", rc, r->main->count);
-	
-	// if timer was set, or subrequest performed, or body is awaited
-	if (r->main->count > 2)
 	{
-		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
-		if (ngx_http_js__nginx_request__root_in(ctx, r, js_cx, request) != NGX_OK)
-			return NGX_ERROR;
+		rc = (ngx_int_t) JSVAL_TO_INT(rval);
 	}
 	
 	// JS_MaybeGC(js_cx);
@@ -593,6 +560,71 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	return rc;
 }
+
+
+ngx_int_t
+ngx_http_js__glue__call_function(ngx_http_request_t *r, JSObject *function, jsval *rval)
+{
+	ngx_http_js_ctx_t       *ctx;
+	ngx_log_t               *last_log;
+	JSObject                *request;
+	jsval                    req;
+	
+	TRACE();
+	
+	ngx_assert(function);
+	
+	// get a js module context or create a js module context or return an error
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+		{
+			return NGX_ERROR;
+		}
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	
+	// create a wrapper object (not yet rooted) for native request struct
+	request = ngx_http_js__nginx_request__wrap(js_cx, r);
+	if (request == NULL)
+	{
+		return NGX_ERROR;
+	}
+	
+	req = OBJECT_TO_JSVAL(request);
+	last_log = ngx_http_js_module_log;
+	ngx_http_js_module_log = r->connection->log;
+	if (!JS_CallFunctionValue(js_cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
+	{
+		ngx_http_js_module_log = last_log;
+		return NGX_ERROR;
+	}
+	ngx_http_js_module_log = last_log;
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
+	
+	// if a timer was set, or a subrequest issued, or the request body is awaited
+	if (r->main->count > 2)
+	{
+		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
+		if (ngx_http_js__nginx_request__root_in(ctx, r, js_cx, request) != NGX_OK)
+			return NGX_ERROR;
+	}
+	// if the request wrapper is no more needed to nginx
+	else
+	{
+		// mark the request wrapper as inactive
+		JS_SetPrivate(js_cx, request, NULL);
+	}
+	
+	return NGX_OK;
+}
+
 
 /*
 ngx_int_t
