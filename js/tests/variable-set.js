@@ -8,7 +8,10 @@ NginxTests.variableSet = function (r)
 	
 	Tests.test('tests for js_set', function (t)
 	{
-		t.eq(args.foo, 'bar', 'args.foo')
+		t.eq(args.foo1, 'bar1', 'args.foo1')
+		t.eq(args.foo2, 'null', 'args.foo2')
+		t.eq(args.foo3, '', 'args.foo3')
+		t.eq(args.foo4, '123', 'args.foo4')
 	})
 	Tests.oncomplete = function ()
 	{
