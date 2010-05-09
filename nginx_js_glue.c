@@ -385,6 +385,25 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 static ngx_int_t
 ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
 {
+	ngx_http_js_variable_t *jv;
+	
+	jv = (ngx_http_js_variable_t *) data;
+	
+	// if (value defined)
+	{
+		v->data = (u_char *) "xxx";
+		v->len = sizeof("xxx") - 1;
+		v->valid = 1;
+		v->no_cacheable = 0;
+		v->not_found = 0;
+	}
+	// else
+	// {
+	// 	v->not_found = 1;
+	// }
+	
+	TRACE();
+	
 	return NGX_OK;
 }
 
