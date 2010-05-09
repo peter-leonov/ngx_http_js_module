@@ -174,6 +174,21 @@ method_cleanup(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 
 
 static JSBool
+method_rootMe(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
+	
+	// force the “self” to be rooted in the “r”
+	if (ngx_http_js__nginx_request__root_in(cx, r, self) != NGX_OK)
+		return JS_FALSE;
+	
+	return JS_TRUE;
+}
+
+static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
@@ -943,6 +958,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
     {"setTimer",          method_setTimer,             2, 0, 0},
     {"clearTimer",        method_clearTimer,           0, 0, 0},
     {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
+    {"rootMe",            method_rootMe,               0, 0, 0},
     {0, NULL, 0, 0, 0}
 };
 
