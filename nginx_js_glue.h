@@ -24,7 +24,7 @@ extern ngx_int_t
 ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
 extern char *
-ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf);
+ngx_http_js__glue__init_interpreter(ngx_conf_t *cf);
 
 extern ngx_int_t
 ngx_http_js__glue__init_worker(ngx_cycle_t *cycle);

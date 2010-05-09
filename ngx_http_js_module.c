@@ -194,7 +194,7 @@ static char *
 ngx_http_js_init_main_conf(ngx_conf_t *cf, void *conf)
 {
 	TRACE();
-	return ngx_http_js__glue__init_interpreter(cf, (ngx_http_js_main_conf_t*)conf);
+	return ngx_http_js__glue__init_interpreter(cf);
 }
 
 

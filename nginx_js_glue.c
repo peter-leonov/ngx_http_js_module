@@ -143,20 +143,26 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 
 
 char *
-ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
+ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 {
-	if (ngx_http_js_module_js_runtime != NULL)
-		return NGX_CONF_OK;
-	
-	JSContext   *cx;
-	JSRuntime   *rt;
-	JSObject    *global;
+	ngx_http_js_main_conf_t    *jsmcf;
+	JSContext                  *cx;
+	JSRuntime                  *rt;
+	JSObject                   *global;
 	
 	ngx_log_debug0(NGX_LOG_DEBUG, cf->log, 0, "init interpreter");
+	
+	if (ngx_http_js_module_js_runtime != NULL)
+	{
+		// interpreter is already initiated
+		return NGX_CONF_OK;
+	}
 	
 	if (ngx_set_environment(cf->cycle, NULL) == NULL)
 		return NGX_CONF_ERROR;
 	
+	
+	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
 	
 	rt = JS_NewRuntime(jsmcf->maxmem == NGX_CONF_UNSET_SIZE ? 2L * 1024L * 1024L : jsmcf->maxmem);
 	if (rt == NULL)
@@ -351,11 +357,9 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
+	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
 	{
-		ngx_http_js_main_conf_t    *jsmcf;
-		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
-			return NGX_CONF_ERROR;
+		return NGX_CONF_ERROR;
 	}
 	
 	value = cf->args->elts;
@@ -423,13 +427,9 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return NGX_CONF_ERROR;
 	}
 	
+	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
 	{
-		ngx_http_js_main_conf_t    *jsmcf;
-		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
-		{
-			return NGX_CONF_ERROR;
-		}
+		return NGX_CONF_ERROR;
 	}
 	
 	jv->handler = value[2];
@@ -447,11 +447,9 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js filter instance";
 	
+	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
 	{
-		ngx_http_js_main_conf_t    *jsmcf;
-		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
-			return NGX_CONF_ERROR;
+		return NGX_CONF_ERROR;
 	}
 	
 	value = cf->args->elts;
