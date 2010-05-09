@@ -590,7 +590,7 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	
 	
 	// create a wrapper object (not yet rooted) for native request struct
-	request = ngx_http_js__nginx_request__wrap(js_cx, r);
+	request = ngx_http_js__nginx_request__wrap(cx, r);
 	if (request == NULL)
 	{
 		return NGX_ERROR;
@@ -599,7 +599,7 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	req = OBJECT_TO_JSVAL(request);
 	last_log = ngx_http_js_module_log;
 	ngx_http_js_module_log = r->connection->log;
-	if (!JS_CallFunctionValue(js_cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
 	{
 		ngx_http_js_module_log = last_log;
 		return NGX_ERROR;
@@ -612,14 +612,14 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	if (r->main->count > 2)
 	{
 		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
-		if (ngx_http_js__nginx_request__root_in(ctx, r, js_cx, request) != NGX_OK)
+		if (ngx_http_js__nginx_request__root_in(ctx, r, cx, request) != NGX_OK)
 			return NGX_ERROR;
 	}
 	// if the request wrapper is no more needed to nginx
 	else
 	{
 		// mark the request wrapper as inactive
-		JS_SetPrivate(js_cx, request, NULL);
+		JS_SetPrivate(cx, request, NULL);
 	}
 	
 	return NGX_OK;
