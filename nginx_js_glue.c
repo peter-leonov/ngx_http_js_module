@@ -531,7 +531,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	
 	// the callback function was set in config by ngx_http_js__glue__set_callback()
-	rc = ngx_http_js__glue__call_function(r, jslcf->handler_function, &rval);
+	rc = ngx_http_js__glue__call_function(js_cx, r, jslcf->handler_function, &rval);
 	if (rc != NGX_OK)
 	{
 		return rc;
@@ -563,7 +563,7 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 
 
 ngx_int_t
-ngx_http_js__glue__call_function(ngx_http_request_t *r, JSObject *function, jsval *rval)
+ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval)
 {
 	ngx_http_js_ctx_t       *ctx;
 	ngx_log_t               *last_log;
