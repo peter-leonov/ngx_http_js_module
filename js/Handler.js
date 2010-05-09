@@ -33,11 +33,6 @@ var myName = 'Handler', Me =
 			r.sendString('error in uri')
 		
 		return Nginx.OK
-	},
-	
-	variable: function (r)
-	{
-		return 123
 	}
 }
 
