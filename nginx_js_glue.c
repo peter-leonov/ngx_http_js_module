@@ -16,6 +16,8 @@
 #include "classes/Chain.h"
 #include "classes/File.h"
 
+#include "strings_util.h"
+
 #include "macroses.h"
 
 JSRuntime *ngx_http_js_module_js_runtime = NULL;
@@ -385,24 +387,50 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 static ngx_int_t
 ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
 {
-	ngx_http_js_variable_t *jv;
-	
-	jv = (ngx_http_js_variable_t *) data;
-	
-	// if (value defined)
-	{
-		v->data = (u_char *) "xxx";
-		v->len = sizeof("xxx") - 1;
-		v->valid = 1;
-		v->no_cacheable = 0;
-		v->not_found = 0;
-	}
-	// else
-	// {
-	// 	v->not_found = 1;
-	// }
+	ngx_http_js_variable_t      *jv;
+	ngx_int_t                    rc;
+	ngx_str_t                    value;
+	jsval                        rval;
+	JSString                    *js_value;
+	JSContext                   *cx;
 	
 	TRACE();
+	
+	jv = (ngx_http_js_variable_t *) data;
+	cx = js_cx;
+	
+	rc = ngx_http_js__glue__call_function(cx, r, jv->function, &rval);
+	if (rc != NGX_OK)
+	{
+		return rc;
+	}
+	
+	// if the callback returns undefined we mark the variable as not_found
+	if (JSVAL_IS_VOID(rval))
+	{
+		v->not_found = 1;
+		return NGX_OK;
+	}
+	
+	// otherwise, convert whatever returned to the string
+	js_value = JS_ValueToString(cx, rval);
+	if (js_value == NULL)
+	{
+		return NGX_ERROR;
+	}
+	
+	// allocate the C-string data on the request pool
+	if (!js_str2ngx_str(cx, js_value, r->pool, &value))
+	{
+		// likely OOM
+		return NGX_ERROR;
+	}
+	
+	v->data = value.data;
+	v->len = value.len;
+	v->valid = 1;
+	v->no_cacheable = 0;
+	v->not_found = 0;
 	
 	return NGX_OK;
 }
