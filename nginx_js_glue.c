@@ -636,18 +636,23 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
 	
-	// if a timer was set, or a subrequest issued, or the request body is awaited
-	if (r->main->count > 2)
+	// check if the request has been rooted already
+	if (ctx->js_request == NULL)
 	{
-		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
-		if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
-			return NGX_ERROR;
-	}
-	// if the request wrapper is no more needed to nginx
-	else
-	{
-		// mark the request wrapper as inactive
-		JS_SetPrivate(cx, request, NULL);
+		// if a timer was set, or a subrequest issued, or the request body is awaited
+		// the request wrapper will be of help
+		if (r->main->count > 2)
+		{
+			ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
+			if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
+				return NGX_ERROR;
+		}
+		// the request wrapper is no more needed to nginx
+		else
+		{
+			// mark the request wrapper as inactive
+			JS_SetPrivate(cx, request, NULL);
+		}
 	}
 	
 	return NGX_OK;
