@@ -94,6 +94,10 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 		return NGX_ERROR;
 	}
 	
+	// we must store the wrapper in the request context
+	// and use this and only this wrapper for the all the rest of the request life
+	// and use the js_request_rooted to check if the request is already GC rooted
+	
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
 	{

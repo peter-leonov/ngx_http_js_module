@@ -8,6 +8,7 @@ typedef struct {
 	ngx_str_t                 redirect_args;
 	
 	JSObject                 *js_request;
+	int                       js_request_rooted;
 	JSObject                 *js_headers_in;
 	JSObject                 *js_headers_out;
 	JSObject                 *js_cookies;
