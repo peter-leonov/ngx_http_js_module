@@ -22,7 +22,6 @@ JSRuntime *ngx_http_js_module_js_runtime = NULL;
 JSContext *ngx_http_js_module_js_context = NULL;
 JSObject  *ngx_http_js_module_js_global  = NULL;
 
-
 ngx_log_t *ngx_http_js_module_log = NULL;
 
 static void
@@ -379,6 +378,67 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	return NGX_CONF_OK;
 }
 
+static ngx_int_t
+ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
+{
+	return NGX_OK;
+}
+
+char *
+ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	ngx_int_t                   index;
+	ngx_str_t                  *value;
+	ngx_http_variable_t        *v;
+	ngx_http_js_variable_t     *jv;
+	
+	TRACE();
+	
+	value = cf->args->elts;
+	
+	if (value[1].data[0] != '$')
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "invalid variable name \"%V\"", &value[1]);
+		return NGX_CONF_ERROR;
+	}
+	
+	value[1].len--;
+	value[1].data++;
+	
+	v = ngx_http_add_variable(cf, &value[1], NGX_HTTP_VAR_CHANGEABLE);
+	if (v == NULL)
+	{
+		return NGX_CONF_ERROR;
+	}
+	
+	jv = ngx_palloc(cf->pool, sizeof(ngx_http_js_variable_t));
+	if (jv == NULL)
+	{
+		return NGX_CONF_ERROR;
+	}
+	
+	index = ngx_http_get_variable_index(cf, &value[1]);
+	if (index == NGX_ERROR)
+	{
+		return NGX_CONF_ERROR;
+	}
+	
+	{
+		ngx_http_js_main_conf_t    *jsmcf;
+		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
+		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
+		{
+			return NGX_CONF_ERROR;
+		}
+	}
+	
+	jv->handler = value[2];
+	
+	v->get_handler = ngx_http_js__glue__variable;
+	v->data = (uintptr_t) jv;
+	
+	return NGX_CONF_OK;
+}
 
 char *
 ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)

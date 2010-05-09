@@ -12,6 +12,9 @@ extern char *
 ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf);
 
 extern char *
+ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+
+extern char *
 ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf);
 
 extern ngx_int_t

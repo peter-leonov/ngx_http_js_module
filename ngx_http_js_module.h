@@ -19,7 +19,6 @@ typedef struct {
 } ngx_http_js_ctx_t;
 
 
-
 typedef struct {
 	JSObject                  *handler_function;
 	ngx_str_t                  handler_name;
@@ -29,12 +28,17 @@ typedef struct {
 } ngx_http_js_loc_conf_t;
 
 
-
 typedef struct{
 	size_t                     maxmem;
 	ngx_array_t                requires, loads;
 } ngx_http_js_main_conf_t;
 
+
+typedef struct
+{
+	JSObject                  *function;
+	ngx_str_t                  handler;
+} ngx_http_js_variable_t;
 
 
 extern ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter;
