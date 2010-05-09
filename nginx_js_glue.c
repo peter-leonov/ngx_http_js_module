@@ -427,12 +427,35 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return NGX_CONF_ERROR;
 	}
 	
-	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
-	{
-		return NGX_CONF_ERROR;
-	}
-	
 	jv->handler = value[2];
+	
+	{
+		jsval                       function;
+		static char                *JS_VARIABLE_CALLBACK_ROOT_NAME = "js_set callback instance";
+		
+		if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
+		{
+			return NGX_CONF_ERROR;
+		}
+		
+		if (!JS_EvaluateScript(js_cx, js_global, (char *) value[2].data, value[2].len, (char *) cf->conf_file->file.name.data, cf->conf_file->line, &function))
+		{
+			return NGX_CONF_ERROR;
+		}
+		
+		if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
+		{
+			ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of \"%*s\" is not a function", value[2].len, (char *) value[2].data);
+			return NGX_CONF_ERROR;
+		}
+		
+		jv->function = JSVAL_TO_OBJECT(function);
+		if (!JS_AddNamedRoot(js_cx, &jv->function, JS_VARIABLE_CALLBACK_ROOT_NAME))
+		{
+			JS_ReportError(js_cx, "Can`t add new root %s", JS_VARIABLE_CALLBACK_ROOT_NAME);
+			return NGX_CONF_ERROR;
+		}
+	}
 	
 	v->get_handler = ngx_http_js__glue__variable;
 	v->data = (uintptr_t) jv;
