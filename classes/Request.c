@@ -49,23 +49,39 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 }
 
 ngx_int_t
-ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx, JSObject *request)
+ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request)
 {
+	ngx_http_js_ctx_t         *ctx;
 	ngx_http_cleanup_t        *cln;
 	
 	TRACE_REQUEST("request_root");
 	
-	if (ctx->js_request)
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
 	{
-		if (ctx->js_request == request)
+		// or create a js module context;
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
 		{
-			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more than one time", request, ctx);
+			// or return an error
+			return NGX_ERROR;
 		}
-		else
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	if (ctx->js_request != NULL)
+	{
+		if (ctx->js_request != request)
 		{
 			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root JS request %p in ctx %p in place of JS request %p", request, ctx, ctx->js_request);
+			return NGX_ERROR;
 		}
-		return NGX_ERROR;
+		
+		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more than once", request, ctx);
+		return NGX_OK;
 	}
 	
 	
@@ -654,7 +670,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 {
 	ngx_int_t                    rc;
 	ngx_http_request_t          *r, *sr;
-	ngx_http_js_ctx_t           *ctx;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
@@ -702,28 +717,13 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
 	
-	// get a js module context or create a js module context or return an error
-	if (!(ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module)))
-	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		if ((ctx = ngx_pcalloc(sr->pool, sizeof(ngx_http_js_ctx_t))))
-		{
-			ngx_http_set_ctx(sr, ctx, ngx_http_js_module);
-		}
-		else
-		{
-			JS_ReportError(cx, "could not create modlue ctx");
-			return JS_FALSE;
-		}
-	}
-	
 	if (subrequest)
 	{
 		E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
 			"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
-		if (ngx_http_js__nginx_request__root_in(ctx, sr, js_cx, subrequest) != NGX_OK)
+		if (ngx_http_js__nginx_request__root_in(js_cx, sr, subrequest) != NGX_OK)
 		{
-			JS_ReportError(cx, "could not root subrequest in it's native request ctx");
+			// forward the exception
 			return JS_FALSE;
 		}
 	}

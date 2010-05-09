@@ -29,7 +29,7 @@ extern void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
 
 extern ngx_int_t
-ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx, JSObject *request);
+ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request);
 
 
 #endif

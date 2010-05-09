@@ -640,7 +640,7 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	if (r->main->count > 2)
 	{
 		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
-		if (ngx_http_js__nginx_request__root_in(ctx, r, cx, request) != NGX_OK)
+		if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
 			return NGX_ERROR;
 	}
 	// if the request wrapper is no more needed to nginx
