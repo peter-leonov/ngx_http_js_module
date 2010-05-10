@@ -18,16 +18,36 @@ env_setProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
 	const char *name, *value;
 	int rv;
 	
+	
 	idstr = JS_ValueToString(cx, id);
-	valstr = JS_ValueToString(cx, *vp);
-	if (!idstr || !valstr)
+	if (idstr == NULL)
+	{
 		return JS_FALSE;
+	}
+	
 	name = JS_GetStringBytes(idstr);
+	if (name[0] == '\0')
+	{
+		return JS_FALSE;
+	}
+	
+	
+	valstr = JS_ValueToString(cx, *vp);
+	if (valstr == NULL)
+	{
+		return JS_FALSE;
+	}
+	
 	value = JS_GetStringBytes(valstr);
+	if (value[0] == '\0')
+	{
+		return JS_FALSE;
+	}
+	
 #if defined XP_WIN || defined HPUX || defined OSF1 || defined IRIX
 	{
 		char *waste = JS_smprintf("%s=%s", name, value);
-		if (!waste)
+		if (waste == NULL)
 		{
 			JS_ReportOutOfMemory(cx);
 			return JS_FALSE;
@@ -49,7 +69,7 @@ env_setProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
 #endif
 	if (rv < 0)
 	{
-		JS_ReportError(cx, "can't set envariable %s to %s", name, value);
+		JS_ReportError(cx, "can't set environment variable \"%s\" to \"%s\"", name, value);
 		return JS_FALSE;
 	}
 	*vp = STRING_TO_JSVAL(valstr);
@@ -63,27 +83,34 @@ env_enumerate(JSContext *cx, JSObject *obj)
 	static JSBool reflected;
 	char **evp, *name, *value;
 	JSString *valstr;
-	JSBool ok;
 	
 	TRACE();
 	
 	if (reflected)
 		return JS_TRUE;
 	
-	for (evp = (char **)JS_GetPrivate(cx, obj); (name = *evp) != NULL; evp++)
+	for (evp = (char **) JS_GetPrivate(cx, obj); (name = *evp) != NULL; evp++)
 	{
 		value = strchr(name, '=');
-		if (!value)
+		if (value == NULL)
+		{
 			continue;
+		}
+		
 		*value++ = '\0';
+		
 		valstr = JS_NewStringCopyZ(cx, value);
-		if (!valstr)
-			ok = JS_FALSE;
-		else
-			ok = JS_DefineProperty(cx, obj, name, STRING_TO_JSVAL(valstr), NULL, NULL, JSPROP_ENUMERATE);
-		value[-1] = '=';
-		if (!ok)
+		if (valstr == NULL)
+		{
 			return JS_FALSE;
+		}
+		
+		if (!JS_DefineProperty(cx, obj, name, STRING_TO_JSVAL(valstr), NULL, NULL, JSPROP_ENUMERATE))
+		{
+			return JS_FALSE;
+		}
+		
+		value[-1] = '=';
 	}
 	
 	reflected = JS_TRUE;
@@ -99,24 +126,40 @@ env_resolve(JSContext *cx, JSObject *obj, jsval id, uintN flags, JSObject **objp
 	TRACE();
 	
 	if (flags & JSRESOLVE_ASSIGNING)
+	{
 		return JS_TRUE;
+	}
 	
 	idstr = JS_ValueToString(cx, id);
-	if (!idstr)
+	if (idstr == NULL)
+	{
 		return JS_FALSE;
+	}
 	
 	name = JS_GetStringBytes(idstr);
-	value = getenv(name);
-	if (value)
+	if (name[0] == '\0')
 	{
-		valstr = JS_NewStringCopyZ(cx, value);
-		if (!valstr)
-			return JS_FALSE;
-		if (!JS_DefineProperty(cx, obj, name, STRING_TO_JSVAL(valstr), NULL, NULL, JSPROP_ENUMERATE))
-			return JS_FALSE;
-		
-		*objp = obj;
+		return JS_FALSE;
 	}
+	
+	value = getenv(name);
+	if (value == NULL)
+	{
+		return JS_TRUE;
+	}
+	
+	valstr = JS_NewStringCopyZ(cx, value);
+	if (valstr == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	if (!JS_DefineProperty(cx, obj, name, STRING_TO_JSVAL(valstr), NULL, NULL, JSPROP_ENUMERATE))
+	{
+		return JS_FALSE;
+	}
+	
+	*objp = obj;
 	return JS_TRUE;
 }
 
