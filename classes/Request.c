@@ -32,7 +32,32 @@ method_setTimer_handler(ngx_event_t *ev);
 JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
+	ngx_http_js_ctx_t         *ctx;
 	JSObject                  *request;
+	
+	TRACE_REQUEST("request_root");
+	
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
+		// or create a js module context;
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+		{
+			// or return an error
+			return NULL;
+		}
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	// check if the request is already wrapped
+	if (ctx->js_request != NULL)
+	{
+		return ctx->js_request;
+	}
 	
 	TRACE_REQUEST("request_wrap");
 	
@@ -44,6 +69,13 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	}
 	
 	JS_SetPrivate(cx, request, r);
+	
+	
+	// We can't just store the wrapper in the request context without rooting it,
+	// because the wrapper may be garbage collected out and we got a pointer to nothing
+	// in our ctx->js_request which leads to a crash or worst. So leaving the ctx->js_request
+	// empty.
+	
 	
 	return request;
 }
@@ -93,10 +125,6 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 		ctx->js_request = NULL;
 		return NGX_ERROR;
 	}
-	
-	// we must store the wrapper in the request context
-	// and use this and only this wrapper for the all the rest of the request life
-	// and use the js_request_rooted to check if the request is already GC rooted
 	
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
