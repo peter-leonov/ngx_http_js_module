@@ -6,9 +6,11 @@ NginxTests.requestVariables = function (r)
 	
 	var args = UrlEncode.parse(r.args)
 	
-	Tests.test('tests for js_set', function (t)
+	Tests.test('tests for request.variables', function (t)
 	{
+		var vars = r.variables
 		
+		t.ok(vars, 'r.variables')
 	})
 	Tests.oncomplete = function ()
 	{

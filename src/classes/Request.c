@@ -891,7 +891,8 @@ enum request_propid
 {
 	REQUEST_URI, REQUEST_METHOD, REQUEST_FILENAME, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
 	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
-	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY, REQUEST_BODY
+	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY, REQUEST_BODY,
+	REQUEST_VARIABLES
 };
 
 static JSBool
@@ -972,6 +973,19 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				DATA_LEN_to_JS_STRING_to_JSVAL(cx, r->request_body->bufs->buf->pos, r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos, *vp);
 			}
 			break;
+			
+			case REQUEST_VARIABLES:
+			{
+				JSObject   *js_variables;
+				js_variables = ngx_http_js__nginx_variables__wrap(cx, r);
+				if (js_variables == NULL)
+				{
+					// just forward the exception
+					return JS_FALSE;
+				}
+				*vp = OBJECT_TO_JSVAL(js_variables);
+			}
+			break;
 		}
 	}
 	return JS_TRUE;
@@ -1022,6 +1036,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"hasBody",         REQUEST_HAS_BODY,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
 	
 	// TODO:
