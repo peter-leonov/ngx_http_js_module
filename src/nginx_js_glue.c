@@ -14,6 +14,7 @@
 #include <classes/Request/HeadersIn.h>
 #include <classes/Request/HeadersIn/Cookies.h>
 #include <classes/Request/HeadersOut.h>
+#include <classes/Request/Variables.h>
 #include <classes/Chain.h>
 #include <classes/File.h>
 
@@ -223,6 +224,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 	if (!ngx_http_js__nginx_cookies__init(cx, global))
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Cookies class initialization failed");
+		return NGX_CONF_ERROR;
+	}
+	
+	// Nginx.Variables
+	if (!ngx_http_js__nginx_variables__init(cx, global))
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Request.Variables class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	

@@ -34,6 +34,9 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request/HeadersIn/Coo
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Request/HeadersOut.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request/HeadersOut.h"
 
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Request/Variables.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request/Variables.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Chain.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Chain.h"
 
