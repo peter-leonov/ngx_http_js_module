@@ -2,43 +2,43 @@ ngx_addon_name=ngx_http_js_module
 HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
 HTTP_AUX_FILTER_MODULES="$HTTP_AUX_FILTER_MODULES $ngx_addon_name"
 
-NGX_ADDON_DEPS="$ngx_addon_dir/nginx_js_macroses.h"
+NGX_ADDON_DEPS="$ngx_addon_dir/src/nginx_js_macroses.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_js_module.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/ngx_http_js_module.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/ngx_http_js_module.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/ngx_http_js_module.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/nginx_js_glue.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/nginx_js_glue.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/nginx_js_glue.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/nginx_js_glue.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/strings_util.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/strings_util.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/strings_util.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/strings_util.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/global.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/global.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/global.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/global.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/environment.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/environment.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/environment.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/environment.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Nginx.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Nginx.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Nginx.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Nginx.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Request.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/HeadersIn.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/HeadersIn.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Request/HeadersIn.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request/HeadersIn.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/HeadersIn/Cookies.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/HeadersIn/Cookies.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Request/HeadersIn/Cookies.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request/HeadersIn/Cookies.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/HeadersOut.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/HeadersOut.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Request/HeadersOut.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Request/HeadersOut.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Chain.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Chain.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Chain.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Chain.h"
 
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/File.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/File.h"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/File.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/File.h"
 
 
 echo "checking for JavaScript"
@@ -52,7 +52,7 @@ if [ "$NGX_JS_VER" = "1.9" ]; then
     
     # NGX_JS_CONFIG_CFLAGS=$($NGX_JS_CONFIG --cflags)
     # CFLAGS="$NGX_JS_CONFIG_CFLAGS $CFLAGS"
-    CFLAGS="-I $ngx_addon_dir $CFLAGS"
+    CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
     
     # NGX_JS_CONFIG_LIBS=$($NGX_JS_CONFIG --libs)
     # CORE_LIBS="$CORE_LIBS $NGX_JS_CONFIG_LIBS"
