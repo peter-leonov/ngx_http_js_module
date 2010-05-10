@@ -6,7 +6,7 @@
 #include <js/jsapi.h>
 
 #include <strings_util.h>
-#include <macroses.h>
+#include <nginx_js_macroses.h>
 
 #define MAX_STRLEN NGX_MAX_SIZE_T_VALUE
 

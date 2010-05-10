@@ -19,7 +19,7 @@
 
 #include <strings_util.h>
 
-#include <macroses.h>
+#include <nginx_js_macroses.h>
 
 JSRuntime *ngx_http_js_module_js_runtime = NULL;
 JSContext *ngx_http_js_module_js_context = NULL;

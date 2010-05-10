@@ -4,7 +4,7 @@
 #include <nginx.h>
 #include <js/jsapi.h>
 
-#include <macroses.h>
+#include <nginx_js_macroses.h>
 
 static JSBool
 method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)

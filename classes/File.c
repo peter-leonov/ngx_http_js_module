@@ -7,7 +7,7 @@
 
 #include <classes/File.h>
 
-#include <macroses.h>
+#include <nginx_js_macroses.h>
 
 #define TRACE_METHOD() \
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "File#%s" COLOR_CLEAR "(fd=%p)", __FUNCTION__ + 7, fd);

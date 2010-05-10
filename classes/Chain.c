@@ -12,7 +12,7 @@
 #include <strings_util.h>
 #include <classes/Chain.h>
 
-#include <macroses.h>
+#include <nginx_js_macroses.h>
 
 
 

@@ -16,7 +16,7 @@
 #include <classes/Request/HeadersOut.h>
 #include <classes/Chain.h>
 
-#include <macroses.h>
+#include <nginx_js_macroses.h>
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
