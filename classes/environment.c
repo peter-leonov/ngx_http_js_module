@@ -1,4 +1,4 @@
-#include "../macroses.h"
+#include <macroses.h>
 
 // token from SpiderMonkey 1.7.0 source (js.c:2740)
 

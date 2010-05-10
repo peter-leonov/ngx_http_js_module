@@ -5,10 +5,10 @@
 
 #include <js/jsapi.h>
 
-#include "ngx_http_js_module.h"
-#include "nginx_js_glue.h"
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
 
-#include "macroses.h"
+#include <macroses.h>
 
 static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r);

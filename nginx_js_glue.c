@@ -5,20 +5,20 @@
 
 #include <js/jsapi.h>
 
-#include "ngx_http_js_module.h"
-#include "nginx_js_glue.h"
-#include "classes/global.h"
-#include "classes/Nginx.h"
-#include "classes/Request.h"
-#include "classes/Request/HeadersIn.h"
-#include "classes/Request/HeadersOut.h"
-#include "classes/Chain.h"
-#include "classes/File.h"
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
+#include <classes/global.h>
+#include <classes/Nginx.h>
+#include <classes/Request.h>
+#include <classes/Request/HeadersIn.h>
 #include <classes/Request/HeadersIn/Cookies.h>
+#include <classes/Request/HeadersOut.h>
+#include <classes/Chain.h>
+#include <classes/File.h>
 
-#include "strings_util.h"
+#include <strings_util.h>
 
-#include "macroses.h"
+#include <macroses.h>
 
 JSRuntime *ngx_http_js_module_js_runtime = NULL;
 JSContext *ngx_http_js_module_js_context = NULL;

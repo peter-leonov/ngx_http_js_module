@@ -7,7 +7,7 @@
 #include <nginx.h>
 #include <js/jsapi.h>
 
-#include "../macroses.h"
+#include <macroses.h>
 
 #include "environment.c"
 

@@ -8,15 +8,15 @@
 
 #include <js/jsapi.h>
 
-#include "../ngx_http_js_module.h"
-#include "../nginx_js_glue.h"
-#include "../strings_util.h"
-#include "Request.h"
-#include "Request/HeadersIn.h"
-#include "Request/HeadersOut.h"
-#include "Chain.h"
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
+#include <strings_util.h>
+#include <classes/Request.h>
+#include <classes/Request/HeadersIn.h>
+#include <classes/Request/HeadersOut.h>
+#include <classes/Chain.h>
 
-#include "../macroses.h"
+#include <macroses.h>
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;

@@ -8,8 +8,8 @@
 
 #include <js/jsapi.h>
 
-#include "../ngx_http_js_module.h"
-#include "../macroses.h"
+#include <ngx_http_js_module.h>
+#include <macroses.h>
 
 // see the http://nginx.org/pipermail/nginx-devel/2010-May/000220.html
 #if (NGX_PTR_SIZE == 4)
