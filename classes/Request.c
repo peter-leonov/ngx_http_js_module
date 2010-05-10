@@ -159,13 +159,7 @@ cleanup_handler(void *data)
 void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
-	// jsval                      rval;
-	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
-	
-	// LOG("cleanup");
-	// if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
-	// 	JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
 	
 	// let the Headers modules to deside what to clean up
 	ngx_http_js__nginx_headers_in__cleanup(ctx, r, cx);
@@ -538,7 +532,6 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	ngx_open_file_info_t       of;
 	ngx_http_core_loc_conf_t  *clcf;
 	ngx_chain_t                out;
-	// ngx_int_t            rc;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -683,8 +676,6 @@ method_setTimer_handler(ngx_event_t *timer)
 	jsval                rval, callback;
 	JSObject            *request;
 	
-	// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimer handler");
-	
 	r = timer->data;
 	TRACE_REQUEST_METHOD();
 	
@@ -733,7 +724,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	// LOG("argc = %u", argc);
 	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
 		"Request#subrequest takes 2 mandatory arguments: uri:String and callback:Function");
 	
@@ -803,7 +793,6 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	r = sr->main;
 	TRACE_REQUEST_METHOD();
-	// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 	if (!ctx)
@@ -970,7 +959,6 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"allowRanges",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };

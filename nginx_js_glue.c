@@ -47,10 +47,8 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 {
 	jsval           fval, rval, strval;
 	JSString       *fnstring;
-	// JSObject       *require;
 	
 	TRACE();
-	// LOG("ngx_http_js_load(%s)\n", filename);
 	
 	if (!JS_GetProperty(cx, global, "load", &fval))
 	{

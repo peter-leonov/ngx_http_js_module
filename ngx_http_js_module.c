@@ -10,8 +10,6 @@
 
 #include "macroses.h"
 
-// static ngx_str_t  ngx_null_name = ngx_null_string;
-
 static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r);
 
@@ -19,7 +17,6 @@ ngx_http_js_handler(ngx_http_request_t *r);
 ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter = NULL;
 ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter = NULL;
 
-// callbacks
 
 static char *
 ngx_http_js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
@@ -92,7 +89,7 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	jslcf = conf;
 	value = cf->args->elts;
-	// LOG("js %s\n", value[1].data);
+	
 	if (jslcf->handler_name.data)
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);
@@ -123,7 +120,7 @@ ngx_http_js_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	jslcf = conf;
 	value = cf->args->elts;
-	// LOG("js %s\n", value[1].data);
+	
 	if (jslcf->filter_name.data)
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js filter \"%V\"", &value[1]);
@@ -164,8 +161,6 @@ ngx_http_js_handler(ngx_http_request_t *r)
 	return NGX_DONE;
 }
 
-
-// configuration
 
 static void *
 ngx_http_js_create_main_conf(ngx_conf_t *cf)
