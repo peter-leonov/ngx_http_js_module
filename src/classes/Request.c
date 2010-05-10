@@ -14,6 +14,7 @@
 #include <classes/Request.h>
 #include <classes/Request/HeadersIn.h>
 #include <classes/Request/HeadersOut.h>
+#include <classes/Request/Variables.h>
 #include <classes/Chain.h>
 
 #include <nginx_js_macroses.h>
@@ -170,6 +171,7 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	if (!JS_RemoveRoot(cx, &ctx->js_request))
 		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 	
+	ngx_http_js__nginx_variables__cleanup(ctx, r, cx);
 	
 	if (ctx->js_timer.timer_set)
 	{
