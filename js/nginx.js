@@ -71,7 +71,7 @@ self.require = function (fname)
 			}
 			catch (ex)
 			{
-				if (ex.message.indexOf("can't open") == -1)
+				if (String(ex).indexOf("can't open") == -1)
 					throw ex
 			}
 		}
