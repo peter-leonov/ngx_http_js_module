@@ -8,6 +8,7 @@
 #include <ngx_http_js_module.h>
 #include <nginx_js_glue.h>
 #include <classes/global.h>
+#include <classes/environment.h>
 #include <classes/Nginx.h>
 #include <classes/Request.h>
 #include <classes/Request/HeadersIn.h>
@@ -184,6 +185,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		return NGX_CONF_ERROR;
 	}
 	global = JS_GetGlobalObject(cx);
+	
+	// environment
+	if (!ngx_http_js__environment__init(cx, global))
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "environment object initialization failed");
+		return NGX_CONF_ERROR;
+	}
 	
 	// Nginx
 	if (!ngx_http_js__nginx__init(cx, global))

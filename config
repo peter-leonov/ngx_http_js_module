@@ -16,6 +16,9 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/strings_util.h"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/global.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/global.h"
 
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/environment.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/environment.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Nginx.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Nginx.h"
 

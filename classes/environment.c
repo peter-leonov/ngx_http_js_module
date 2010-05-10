@@ -1,3 +1,9 @@
+#include <ngx_config.h>
+#include <ngx_core.h>
+#include <ngx_http.h>
+#include <nginx.h>
+#include <js/jsapi.h>
+
 #include <macroses.h>
 
 // token from SpiderMonkey 1.7.0 source (js.c:2740)
@@ -123,3 +129,18 @@ static JSClass env_class =
 	JS_ConvertStub,   JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
+
+extern char **environ;
+
+JSBool
+ngx_http_js__environment__init(JSContext *cx, JSObject *global)
+{
+	JSObject *envobj;
+	
+	TRACE();
+	
+	envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
+	E(envobj && JS_SetPrivate(cx, envobj, environ), "Can`t define object global.environment");
+	
+	return JS_TRUE;
+}
