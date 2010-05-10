@@ -1,6 +1,6 @@
 ;(function(){
 
-NginxTests.variableGet = function (r)
+NginxTests.requestVariables = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
