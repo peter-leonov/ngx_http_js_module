@@ -52,6 +52,7 @@ curl $OPTS --data "12345" "http://127.0.0.1:19090/run/request-headers-in?\{\"Con
 curl $OPTS -r 3-55 "http://127.0.0.1:19090/run/request-headers-in?\{\"Range\":\"bytes=3-55\"\}"
 curl $OPTS "http://127.0.0.1:19090/run/request-headers-in-set-get"
 curl $OPTS "http://127.0.0.1:19090/variable-set" # will be rewritten to th /run/variable-set
+curl $OPTS "http://127.0.0.1:19090/run/variable-get"
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 
