@@ -976,6 +976,38 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
+static JSBool
+getter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	*vp = r->allow_ranges ? JSVAL_TRUE : JSVAL_FALSE;
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	JSBool                b;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_SETTER();
+	
+	if (!JS_ValueToBoolean(cx, *vp, &b))
+	{
+		return JS_FALSE;
+	}
+	
+	r->allow_ranges = b == JS_TRUE ? 1 : 0;
+	
+	return JS_TRUE;
+}
+
 JSPropertySpec ngx_http_js__nginx_request__props[] =
 {
 	{"uri",             REQUEST_URI,              JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
@@ -989,6 +1021,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"hasBody",         REQUEST_HAS_BODY,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},

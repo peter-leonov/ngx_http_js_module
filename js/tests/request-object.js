@@ -16,6 +16,10 @@ NginxTests.requestObject = function (r)
 		t.eq(r.remoteAddr, '127.0.0.1', 'remoteAddr')
 		t.eq(r.headerOnly, false, 'headerOnly')
 		t.eq(r.hasBody, false, 'hasBody')
+		r.allowRanges = 1
+		t.eq(r.allowRanges, true, 'allowRanges')
+		r.allowRanges = 0
+		t.eq(r.allowRanges, false, 'allowRanges')
 	})
 	Tests.oncomplete = function ()
 	{
