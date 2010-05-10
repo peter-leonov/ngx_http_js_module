@@ -664,8 +664,8 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 		// the request wrapper is no more needed to nginx
 		else
 		{
-			// mark the request wrapper as inactive
-			JS_SetPrivate(cx, request, NULL);
+			// try to fully cleanup the request
+			ngx_http_js__nginx_request__cleanup(ctx, r, cx);
 		}
 	}
 	
