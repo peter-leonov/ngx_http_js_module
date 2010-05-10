@@ -11,6 +11,12 @@ NginxTests.requestVariables = function (r)
 		var vars = r.variables
 		
 		t.ok(vars, 'r.variables')
+		
+		t.eq(vars.js_request_variables_a, 'abc', 'vars.js_request_variables_a')
+		t.eq(vars.js_request_variables_b, vars.js_request_variables_a + '123', 'vars.js_request_variables_b')
+		
+		vars[0] = '0'
+		t.eq(vars[0], '0', 'vars[0]')
 	})
 	Tests.oncomplete = function ()
 	{
