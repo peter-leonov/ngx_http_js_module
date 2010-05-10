@@ -14,6 +14,8 @@ NginxTests.requestVariables = function (r)
 		
 		t.eq(vars.lalala, undefined, 'vars.lalala')
 		
+		t.eq(vars.js_set_number, '123', 'vars.js_set_number')
+		
 		t.eq(vars.js_request_variables_a, 'abc', 'vars.js_request_variables_a')
 		t.eq(vars.js_request_variables_b, vars.js_request_variables_a + '123', 'vars.js_request_variables_b')
 		t.eq(vars.js_request_variables_j, 'xxbar1xx', 'vars.js_request_variables_j')
