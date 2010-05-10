@@ -25,14 +25,19 @@ ngx_http_js__nginx_variables__wrap(JSContext *cx, ngx_http_request_t *r)
 	
 	TRACE();
 	
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
 		return NULL;
+	}
 	
 	if (ctx->js_variables != NULL)
+	{
 		return ctx->js_variables;
+	}
 	
 	variables = JS_NewObject(cx, &ngx_http_js__nginx_variables__class, ngx_http_js__nginx_variables__prototype, NULL);
-	if (!variables)
+	if (variables == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return NULL;
@@ -58,7 +63,9 @@ ngx_http_js__nginx_variables__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t
 	ngx_assert(ctx);
 	
 	if (ctx->js_variables == NULL)
+	{
 		return;
+	}
 	
 	JS_SetPrivate(cx, ctx->js_variables, NULL);
 	ctx->js_variables = NULL;
