@@ -111,6 +111,9 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	len = ngx_strlen(key);
 	
+	// we have to create the string on the request pool
+	// because the variable name may be cached just after
+	// the first seach for the var
 	lowcase = ngx_pnalloc(r->pool, len);
 	if (lowcase == NULL)
 	{
