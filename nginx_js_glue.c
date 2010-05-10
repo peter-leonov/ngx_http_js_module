@@ -10,9 +10,9 @@
 #include "classes/global.h"
 #include "classes/Nginx.h"
 #include "classes/Request.h"
-#include "classes/HeadersIn.h"
-#include "classes/HeadersOut.h"
-#include "classes/Cookies.h"
+#include "classes/Request/HeadersIn.h"
+#include "classes/Request/HeadersOut.h"
+#include "classes/Request/Cookies.h"
 #include "classes/Chain.h"
 #include "classes/File.h"
 

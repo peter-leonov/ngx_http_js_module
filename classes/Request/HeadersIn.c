@@ -5,12 +5,12 @@
 
 #include <js/jsapi.h>
 
-#include "../ngx_http_js_module.h"
-#include "../strings_util.h"
-#include "Request.h"
-#include "classes/Cookies.h"
+#include <ngx_http_js_module.h>
+#include <strings_util.h>
+#include <classes/Request.h>
+#include <classes/Request/Cookies.h>
 
-#include "../macroses.h"
+#include <macroses.h>
 
 
 JSObject *ngx_http_js__nginx_headers_in__prototype;

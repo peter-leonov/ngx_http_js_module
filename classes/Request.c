@@ -12,8 +12,8 @@
 #include "../nginx_js_glue.h"
 #include "../strings_util.h"
 #include "Request.h"
-#include "HeadersIn.h"
-#include "HeadersOut.h"
+#include "Request/HeadersIn.h"
+#include "Request/HeadersOut.h"
 #include "Chain.h"
 
 #include "../macroses.h"
