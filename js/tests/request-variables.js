@@ -20,6 +20,9 @@ NginxTests.requestVariables = function (r)
 		
 		vars[0] = '0'
 		t.eq(vars[0], '0', 'vars[0]')
+		
+		vars.foo1 = 'bar1'
+		t.eq(vars.foo1, 'bar1', 'vars.foo1')
 	})
 	Tests.oncomplete = function ()
 	{
