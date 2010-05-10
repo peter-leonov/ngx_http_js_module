@@ -12,9 +12,9 @@
 #include "classes/Request.h"
 #include "classes/Request/HeadersIn.h"
 #include "classes/Request/HeadersOut.h"
-#include "classes/Request/Cookies.h"
 #include "classes/Chain.h"
 #include "classes/File.h"
+#include <classes/Request/HeadersIn/Cookies.h>
 
 #include "strings_util.h"
 

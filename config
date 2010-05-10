@@ -25,11 +25,11 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request.h"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/HeadersIn.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/HeadersIn.h"
 
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/HeadersIn/Cookies.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/HeadersIn/Cookies.h"
+
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/HeadersOut.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/HeadersOut.h"
-
-NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Request/Cookies.c"
-NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Request/Cookies.h"
 
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/classes/Chain.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/classes/Chain.h"

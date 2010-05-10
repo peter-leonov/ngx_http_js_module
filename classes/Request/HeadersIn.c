@@ -8,7 +8,7 @@
 #include <ngx_http_js_module.h>
 #include <strings_util.h>
 #include <classes/Request.h>
-#include <classes/Request/Cookies.h>
+#include <classes/Request/HeadersIn/Cookies.h>
 
 #include <macroses.h>
 
