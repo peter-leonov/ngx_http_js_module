@@ -12,8 +12,11 @@ NginxTests.requestVariables = function (r)
 		
 		t.ok(vars, 'r.variables')
 		
+		t.eq(vars.lalala, undefined, 'vars.lalala')
+		
 		t.eq(vars.js_request_variables_a, 'abc', 'vars.js_request_variables_a')
 		t.eq(vars.js_request_variables_b, vars.js_request_variables_a + '123', 'vars.js_request_variables_b')
+		t.eq(vars.js_request_variables_j, 'xxbar1xx', 'vars.js_request_variables_j')
 		
 		vars[0] = '0'
 		t.eq(vars[0], '0', 'vars[0]')
