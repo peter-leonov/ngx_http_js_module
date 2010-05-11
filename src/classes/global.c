@@ -29,7 +29,9 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	{
 		str = JS_ValueToString(cx, argv[i]);
 		if (!str)
+		{
 			return JS_FALSE;
+		}
 		name = argv[i] = STRING_TO_JSVAL(str);
 		filename = JS_GetStringBytes(str);
 		if (filename[0] != '/')
@@ -49,7 +51,9 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		}
 		// if (errno == ENOENT)
 		if (!script)
+		{
 			ok = JS_FALSE;
+		}
 		else
 		{
 			JS_GetProperty(cx, global, filevar_name, &old);
@@ -59,7 +63,9 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		}
 		JS_SetOptions(cx, oldopts);
 		if (!ok)
+		{
 			return JS_FALSE;
+		}
 	}
 	
 	return JS_TRUE;
@@ -88,10 +94,10 @@ method_maybeGC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 
 static JSClass global_class =
 {
-    "global", JSCLASS_GLOBAL_FLAGS,
-    JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
-    JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
-    JSCLASS_NO_OPTIONAL_MEMBERS
+	"global", JSCLASS_GLOBAL_FLAGS,
+	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
+	JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
 
