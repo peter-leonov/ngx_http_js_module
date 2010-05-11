@@ -20,11 +20,15 @@ NginxTests.requestVariables = function (r)
 		t.eq(vars.js_request_variables_b, vars.js_request_variables_a + '123', 'vars.js_request_variables_b')
 		t.eq(vars.js_request_variables_j, 'xxbar1xx', 'vars.js_request_variables_j')
 		
-		vars[0] = '0'
-		t.eq(vars[0], '0', 'vars[0]')
+		t.exception(function (t)
+		{
+			vars.foo1 = 'bar1'
+		})
 		
-		vars.foo1 = 'bar1'
-		t.eq(vars.foo1, 'bar1', 'vars.foo1')
+		t.eq(vars.foo1, undefined, 'vars.foo1')
+		
+		vars.js_request_variables_v = '555'
+		t.eq(vars.js_request_variables_v, '555', 'vars.js_request_variables_v')
 	})
 	Tests.oncomplete = function ()
 	{

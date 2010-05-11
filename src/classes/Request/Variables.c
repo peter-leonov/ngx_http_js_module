@@ -190,6 +190,9 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	var.len = len;
 	var.data = lowcase;
 	
+	// ngx_http_get_variable() calls v->get_handler() and
+	// checks for *special* variables kinda $http_*, $cookie_* and others,
+	// so we can rely on it – all job will done for us
 	vv = ngx_http_get_variable(r, &var, hash);
 	if (vv == NULL)
 	{
@@ -199,18 +202,29 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	if (vv->not_found)
 	{
-		vv->data = (u_char *) "123";
-		vv->len = 3;
+		JS_ReportError(cx, "can't find variable \"%s\"", key);
+		return JS_FALSE;
+	}
+	else
+	{
+		// ignore v->set_handler for now
+		JSString       *value_jss;
+		ngx_str_t       value_ns;
+		
+		value_jss = JS_ValueToString(cx, *vp);
+		if (value_jss == NULL)
+		{
+			return JS_FALSE;
+		}
+		
+		js_str2ngx_str(cx, value_jss, r->pool, &value_ns);
+		
+		vv->data = value_ns.data;
+		vv->len = value_ns.len;
 		vv->valid = 1;
 		vv->no_cacheable = 0;
 		vv->not_found = 0;
 	}
-	else
-	{
-		// TODO
-	}
-	
-	NGX_STRING_to_JS_STRING_to_JSVAL(cx, *vv, *vp);
 	
 	return JS_TRUE;
 }
