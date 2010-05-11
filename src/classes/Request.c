@@ -188,7 +188,7 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	}
 	else
 	{
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_RED "trying to cleanup the request with an empty wrapper" COLOR_CLEAR);
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cleaning up the request with an empty wrapper");
 	}
 }
 
