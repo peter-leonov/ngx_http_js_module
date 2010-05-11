@@ -5,6 +5,7 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <nginx.h>
+#include <ngx_md5.h>
 
 #include <js/jsapi.h>
 
@@ -36,6 +37,47 @@ method_logError(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	jsstr = JSVAL_TO_STRING(argv[1]);
 	
 	ngx_log_error(level, ngx_cycle->log, 0, "%s", JS_GetStringBytes(jsstr));
+	
+	return JS_TRUE;
+}
+
+static JSBool
+method_md5(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	JSString                      *jsstr;
+	ngx_md5_t                      md5;
+	u_char                        *str, hash[16], hex[32];
+	size_t                         len;
+	
+	TRACE();
+	
+	if (argc != 1)
+	{
+		JS_ReportError(cx, "Nginx.md5 takes 1 argument");
+		return JS_FALSE;
+	}
+	
+	jsstr = JS_ValueToString(cx, argv[0]);
+	if (jsstr == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	str = (u_char *) JS_GetStringBytes(jsstr);
+	if (str == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	len = ngx_strlen(str);
+	
+	ngx_md5_init(&md5);
+	ngx_md5_update(&md5, str, len);
+	ngx_md5_final(hash, &md5);
+	
+	ngx_hex_dump(hex, hash, 16);
+	
+	DATA_LEN_to_JS_STRING_to_JSVAL(cx, hex, 32, *rval);
 	
 	return JS_TRUE;
 }
@@ -221,6 +263,7 @@ static JSClass nginx_class =
 static JSFunctionSpec nginx_class_funcs[] =
 {
 	{"logError",    method_logError,         1, 0, 0},
+	{"md5",         method_md5,              1, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

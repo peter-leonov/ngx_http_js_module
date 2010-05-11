@@ -32,6 +32,14 @@ NginxTests.nginxObject = function (r)
 			}
 			t.async(later, timerPrecision * 4)
 		})
+		
+		t.test('Nginx.md5', function (t)
+		{
+			t.ok(Nginx.md5, 'Nginx.md5')
+			t.eq(Nginx.md5(''), 'd41d8cd98f00b204e9800998ecf8427e', 'empty string')
+			t.eq(Nginx.md5('abc'), '900150983cd24fb0d6963f7d28e17f72', 'abc')
+		})
+		
 	})
 	Tests.oncomplete = function ()
 	{
