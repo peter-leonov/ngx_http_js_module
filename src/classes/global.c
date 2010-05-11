@@ -1,15 +1,10 @@
-
-// global class
-
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <nginx.h>
 #include <js/jsapi.h>
 
-#include "../macroses.h"
-
-#include "environment.c"
+#include <nginx_js_macroses.h>
 
 static JSBool
 method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -106,7 +101,6 @@ JSBool
 ngx_http_js__global__init(JSContext *cx)
 {
 	JSObject *global;
-	JSObject *envobj;
 	
 	TRACE();
 	
@@ -121,9 +115,6 @@ ngx_http_js__global__init(JSContext *cx)
 	E(JS_DefineFunction(cx, global, "load", method_load, 0, 0), "Can`t define function global.load");
 	E(JS_DefineFunction(cx, global, "GC", method_GC, 0, 0), "Can`t define function global.GC");
 	E(JS_DefineFunction(cx, global, "maybeGC", method_maybeGC, 0, 0), "Can`t define function global.maybeGC");
-	
-	envobj = JS_DefineObject(cx, global, "environment", &env_class, NULL, 0);
-	E(envobj && JS_SetPrivate(cx, envobj, environ), "Can`t define object global.environment");
 	
 	return JS_TRUE;
 }

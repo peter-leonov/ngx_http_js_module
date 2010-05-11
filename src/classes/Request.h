@@ -10,7 +10,8 @@
 #define NGX_JS_REQUEST_SLOT__HEADERS_IN               3
 #define NGX_JS_REQUEST_SLOT__HEADERS_OUT              4
 #define NGX_JS_REQUEST_SLOT__COOKIES                  5
-#define NGX_JS_REQUEST_SLOTS_COUNT                    6
+#define NGX_JS_REQUEST_SLOT__VARIABLES                6
+#define NGX_JS_REQUEST_SLOTS_COUNT                    7
 
 
 extern JSClass ngx_http_js__nginx_request__class;
@@ -29,7 +30,7 @@ extern void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
 
 extern ngx_int_t
-ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx, JSObject *request);
+ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request);
 
 
 #endif

@@ -5,8 +5,8 @@
 
 #include <js/jsapi.h>
 
-#include "strings_util.h"
-#include "macroses.h"
+#include <strings_util.h>
+#include <nginx_js_macroses.h>
 
 #define MAX_STRLEN NGX_MAX_SIZE_T_VALUE
 
@@ -23,8 +23,12 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool)
 	
 	// get bytes with UTF-16 -> UTF-8 conversion
 	p = JS_GetStringBytes(str);
-	if (p == NULL)
+	// JS_GetStringBytes() returns an empty C-string on failure
+	if (p[0] == '\0')
+	{
 		return NULL;
+	}
+	
 	// run through the UTF-8 string again
 	len = ngx_strlen(p);
 	
@@ -53,8 +57,9 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 	ngx_assert(s);
 	
 	// get bytes with UTF-16 -> UTF-8 conversion
-	p = (u_char*) JS_GetStringBytes(str);
-	if (p == NULL)
+	p = (u_char *) JS_GetStringBytes(str);
+	// JS_GetStringBytes() returns an empty C-string on failure
+	if (p[0] == '\0')
 	{
 		return JS_FALSE;
 	}
@@ -91,7 +96,8 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len)
 	ngx_assert(pool);
 	
 	p = JS_GetStringBytes(str);
-	if (p == NULL)
+	// JS_GetStringBytes() returns an empty C-string on failure
+	if (p[0] == '\0')
 	{
 		return NULL;
 	}

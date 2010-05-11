@@ -8,15 +8,16 @@
 
 #include <js/jsapi.h>
 
-#include "../ngx_http_js_module.h"
-#include "../nginx_js_glue.h"
-#include "../strings_util.h"
-#include "Request.h"
-#include "HeadersIn.h"
-#include "HeadersOut.h"
-#include "Chain.h"
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
+#include <strings_util.h>
+#include <classes/Request.h>
+#include <classes/Request/HeadersIn.h>
+#include <classes/Request/HeadersOut.h>
+#include <classes/Request/Variables.h>
+#include <classes/Chain.h>
 
-#include "../macroses.h"
+#include <nginx_js_macroses.h>
 
 JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
@@ -32,7 +33,32 @@ method_setTimer_handler(ngx_event_t *ev);
 JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
+	ngx_http_js_ctx_t         *ctx;
 	JSObject                  *request;
+	
+	TRACE_REQUEST("request_root");
+	
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
+		// or create a js module context;
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+		{
+			// or return an error
+			return NULL;
+		}
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	// check if the request is already wrapped
+	if (ctx->js_request != NULL)
+	{
+		return ctx->js_request;
+	}
 	
 	TRACE_REQUEST("request_wrap");
 	
@@ -45,27 +71,50 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	
 	JS_SetPrivate(cx, request, r);
 	
+	
+	// We can't just store the wrapper in the request context without rooting it,
+	// because the wrapper may be garbage collected out and we got a pointer to nothing
+	// in our ctx->js_request which leads to a crash or worst. So leaving the ctx->js_request
+	// empty.
+	
+	
 	return request;
 }
 
 ngx_int_t
-ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx, JSObject *request)
+ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request)
 {
+	ngx_http_js_ctx_t         *ctx;
 	ngx_http_cleanup_t        *cln;
 	
 	TRACE_REQUEST("request_root");
 	
-	if (ctx->js_request)
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
 	{
-		if (ctx->js_request == request)
+		// or create a js module context;
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
 		{
-			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more than one time", request, ctx);
+			// or return an error
+			return NGX_ERROR;
 		}
-		else
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	if (ctx->js_request != NULL)
+	{
+		if (ctx->js_request != request)
 		{
 			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root JS request %p in ctx %p in place of JS request %p", request, ctx, ctx->js_request);
+			return NGX_ERROR;
 		}
-		return NGX_ERROR;
+		
+		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more than once", request, ctx);
+		return NGX_OK;
 	}
 	
 	
@@ -74,10 +123,16 @@ ngx_http_js__nginx_request__root_in(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not add new root %s", JS_REQUEST_ROOT_NAME);
+		ctx->js_request = NULL;
 		return NGX_ERROR;
 	}
 	
 	cln = ngx_http_cleanup_add(r, 0);
+	if (cln == NULL)
+	{
+		ctx->js_request = NULL;
+		return NGX_ERROR;
+	}
 	cln->data = r;
 	cln->handler = cleanup_handler;
 	
@@ -105,32 +160,26 @@ cleanup_handler(void *data)
 void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
-	// jsval                      rval;
-	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
-	
-	// LOG("cleanup");
-	// if (!JS_CallFunctionName(cx, request, "cleanup", 0, NULL, &rval))
-	// 	JS_ReportError(cx, "Error calling Nginx.Request#cleanup");
 	
 	// let the Headers modules to deside what to clean up
 	ngx_http_js__nginx_headers_in__cleanup(ctx, r, cx);
 	ngx_http_js__nginx_headers_out__cleanup(ctx, r, cx);
-	
-	// second param has to be &ctx->js_request
-	// because JS_AddRoot was used with it's address
-	if (!JS_RemoveRoot(cx, &ctx->js_request))
-		JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
-	
+	ngx_http_js__nginx_variables__cleanup(ctx, r, cx);
 	
 	if (ctx->js_timer.timer_set)
 	{
-		/* implies timer_set = 0 */
+		// implies timer_set = 0
 		ngx_del_timer(&ctx->js_timer);
 	}
 	
 	if (ctx->js_request)
 	{
+		// second param has to be &ctx->js_request
+		// because JS_AddRoot was used with it's address
+		if (!JS_RemoveRoot(cx, &ctx->js_request))
+			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
+		
 		// finaly mark the object as inactive
 		// after that the GET_PRIVATE macros will raise an exception when called
 		JS_SetPrivate(cx, ctx->js_request, NULL);
@@ -139,7 +188,7 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 	}
 	else
 	{
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_RED "trying to cleanup the request with an empty wrapper" COLOR_CLEAR);
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cleaning up the request with an empty wrapper");
 	}
 }
 
@@ -152,6 +201,23 @@ method_cleanup(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 
 
 static JSBool
+method_rootMe(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
+	
+	// force the “self” to be rooted in the “r”
+	if (ngx_http_js__nginx_request__root_in(cx, r, self) != NGX_OK)
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
@@ -160,7 +226,9 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 	TRACE_REQUEST_METHOD();
 	
 	if (r->headers_out.status == 0)
+	{
 		r->headers_out.status = NGX_HTTP_OK;
+	}
 	
 	if (argc == 1)
 	{
@@ -204,7 +272,9 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	}
 	len = b->last - b->pos;
 	if (len == 0)
+	{
 		return JS_TRUE;
+	}
 	
 	// ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js prints string \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
@@ -271,7 +341,9 @@ method_nextBodyFilter(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 		}
 		len = b->last - b->pos;
 		if (len == 0)
+		{
 			return JS_TRUE;
+		}
 		
 		b->last_buf = 1;
 	
@@ -290,9 +362,13 @@ method_nextBodyFilter(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 		rc = ngx_http_js_next_body_filter(r, ch);
 	}
 	else if (argc == 0 || (argc == 1 && JSVAL_IS_VOID(argv[0])))
+	{
 		rc = ngx_http_js_next_body_filter(r, NULL);
+	}
 	else
+	{
 		E(0, "Nginx.Request#nextBodyFilter takes 1 optional argument: str:(String|undefined)");
+	}
 	
 	*rval = INT_TO_JSVAL(rc);
 	
@@ -325,7 +401,9 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	}
 	len = b->last - b->pos;
 	if (len == 0)
+	{
 		return JS_TRUE;
+	}
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js sending string \"%*s\"", len > 25 ? 25 : len , b->last - len);
 	
@@ -333,7 +411,9 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	r->headers_out.content_length_n = len;
 	
 	if (r->headers_out.status == 0)
+	{
 		r->headers_out.status = NGX_HTTP_OK;
+	}
 	
 	if (argc == 2)
 	{
@@ -400,7 +480,9 @@ method_getBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 	r->request_body_in_clean_file = 1;
 	
 	if (r->request_body_in_file_only)
+	{
 		r->request_body_file_log_level = 0;
+	}
 	
 	// ngx_http_read_client_request_body implies count++
 	*rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_getBody_handler));
@@ -429,9 +511,13 @@ method_getBody_handler(ngx_http_request_t *r)
 	if (JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
 	{
 		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
+		{
 			rc = NGX_DONE;
+		}
 		else
+		{
 			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+		}
 	}
 	else
 	{
@@ -469,7 +555,6 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	ngx_open_file_info_t       of;
 	ngx_http_core_loc_conf_t  *clcf;
 	ngx_chain_t                out;
-	// ngx_int_t            rc;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -519,10 +604,14 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	}
 	
 	if (offset == -1)
+	{
 		offset = 0;
+	}
 	
 	if (bytes == 0)
+	{
 		bytes = of.size - offset;
+	}
 	
 	b->in_file = 1;
 	
@@ -614,8 +703,6 @@ method_setTimer_handler(ngx_event_t *timer)
 	jsval                rval, callback;
 	JSObject            *request;
 	
-	// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "setTimer handler");
-	
 	r = timer->data;
 	TRACE_REQUEST_METHOD();
 	
@@ -634,9 +721,13 @@ method_setTimer_handler(ngx_event_t *timer)
 	{
 		// here a new timeout handler may be set
 		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
+		{
 			rc = NGX_DONE;
+		}
 		else
+		{
 			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+		}
 	}
 	
 	// ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
@@ -654,7 +745,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 {
 	ngx_int_t                    rc;
 	ngx_http_request_t          *r, *sr;
-	ngx_http_js_ctx_t           *ctx;
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                   *uri, args;
 	ngx_uint_t                   flags;
@@ -665,7 +755,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	// LOG("argc = %u", argc);
 	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
 		"Request#subrequest takes 2 mandatory arguments: uri:String and callback:Function");
 	
@@ -702,28 +791,13 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
 	
-	// get a js module context or create a js module context or return an error
-	if (!(ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module)))
-	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		if ((ctx = ngx_pcalloc(sr->pool, sizeof(ngx_http_js_ctx_t))))
-		{
-			ngx_http_set_ctx(sr, ctx, ngx_http_js_module);
-		}
-		else
-		{
-			JS_ReportError(cx, "could not create modlue ctx");
-			return JS_FALSE;
-		}
-	}
-	
 	if (subrequest)
 	{
 		E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
 			"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
-		if (ngx_http_js__nginx_request__root_in(ctx, sr, js_cx, subrequest) != NGX_OK)
+		if (ngx_http_js__nginx_request__root_in(js_cx, sr, subrequest) != NGX_OK)
 		{
-			JS_ReportError(cx, "could not root subrequest in it's native request ctx");
+			// forward the exception
 			return JS_FALSE;
 		}
 	}
@@ -737,7 +811,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	return JS_TRUE;
 }
 
-// here we are called form ngx_http_finalize_request() for the subrequest
+// we here are called form ngx_http_finalize_request() for the subrequest
 // via sr->post_subrequest->handler(sr, data, rc)
 // “rc” is the code was passed to the ngx_http_finalize_request()
 static ngx_int_t
@@ -750,7 +824,6 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	r = sr->main;
 	TRACE_REQUEST_METHOD();
-	// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "subrequest handler");
 	
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
 	if (!ctx)
@@ -789,10 +862,13 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		}
 	}
 	else if (ctx->chain_first != NULL)
+	{
 		args[0] = OBJECT_TO_JSVAL(ngx_http_js__nginx_chain__wrap(js_cx, ctx->chain_first, subrequest));
+	}
 	else
+	{
 		args[0] = JSVAL_VOID;
-	
+	}
 	
 	args[1] = INT_TO_JSVAL(rc);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
@@ -815,7 +891,8 @@ enum request_propid
 {
 	REQUEST_URI, REQUEST_METHOD, REQUEST_FILENAME, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
 	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
-	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY, REQUEST_BODY
+	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY, REQUEST_BODY,
+	REQUEST_VARIABLES
 };
 
 static JSBool
@@ -896,8 +973,53 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				DATA_LEN_to_JS_STRING_to_JSVAL(cx, r->request_body->bufs->buf->pos, r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos, *vp);
 			}
 			break;
+			
+			case REQUEST_VARIABLES:
+			{
+				JSObject   *js_variables;
+				js_variables = ngx_http_js__nginx_variables__wrap(cx, r);
+				if (js_variables == NULL)
+				{
+					// just forward the exception
+					return JS_FALSE;
+				}
+				*vp = OBJECT_TO_JSVAL(js_variables);
+			}
+			break;
 		}
 	}
+	return JS_TRUE;
+}
+
+static JSBool
+getter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	*vp = r->allow_ranges ? JSVAL_TRUE : JSVAL_FALSE;
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	JSBool                b;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_SETTER();
+	
+	if (!JS_ValueToBoolean(cx, *vp, &b))
+	{
+		return JS_FALSE;
+	}
+	
+	r->allow_ranges = b == JS_TRUE ? 1 : 0;
+	
 	return JS_TRUE;
 }
 
@@ -914,30 +1036,33 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"hasBody",         REQUEST_HAS_BODY,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
+	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"requestBody",       MY_FUNNY,       JSPROP_ENUMERATE,  NULL, NULL},
 	// {"allowRanges",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
 
-JSFunctionSpec ngx_http_js__nginx_request__funcs[] = {
-    {"sendHttpHeader",    method_sendHttpHeader,       2, 0, 0},
-    {"print",             method_print,                1, 0, 0},
-    {"flush",             method_flush,                0, 0, 0},
-    {"sendString",        method_sendString,           1, 0, 0},
-    {"subrequest",        method_subrequest,           2, 0, 0},
-    {"cleanup",           method_cleanup,              0, 0, 0},
-    {"sendSpecial",       method_sendSpecial,          1, 0, 0},
-    {"discardBody",       method_discardBody,          0, 0, 0},
-    {"getBody",           method_getBody,              1, 0, 0},
-    {"sendfile",          method_sendfile,             1, 0, 0},
-    {"setTimer",          method_setTimer,             2, 0, 0},
-    {"clearTimer",        method_clearTimer,           0, 0, 0},
-    {"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
-    {0, NULL, 0, 0, 0}
+JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
+{
+	{"sendHttpHeader",    method_sendHttpHeader,       2, 0, 0},
+	{"print",             method_print,                1, 0, 0},
+	{"flush",             method_flush,                0, 0, 0},
+	{"sendString",        method_sendString,           1, 0, 0},
+	{"subrequest",        method_subrequest,           2, 0, 0},
+	{"cleanup",           method_cleanup,              0, 0, 0},
+	{"sendSpecial",       method_sendSpecial,          1, 0, 0},
+	{"discardBody",       method_discardBody,          0, 0, 0},
+	{"getBody",           method_getBody,              1, 0, 0},
+	{"sendfile",          method_sendfile,             1, 0, 0},
+	{"setTimer",          method_setTimer,             2, 0, 0},
+	{"clearTimer",        method_clearTimer,           0, 0, 0},
+	{"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
+	{"rootMe",            method_rootMe,               0, 0, 0},
+	{0, NULL, 0, 0, 0}
 };
 
 JSClass ngx_http_js__nginx_request__class =

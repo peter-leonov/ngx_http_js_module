@@ -11,13 +11,13 @@ typedef struct {
 	JSObject                 *js_headers_in;
 	JSObject                 *js_headers_out;
 	JSObject                 *js_cookies;
+	JSObject                 *js_variables;
 	
 	int                       filter_enabled;
 	ngx_chain_t              *chain_first, *chain_last;
 	
 	ngx_event_t               js_timer;
 } ngx_http_js_ctx_t;
-
 
 
 typedef struct {
@@ -29,12 +29,17 @@ typedef struct {
 } ngx_http_js_loc_conf_t;
 
 
-
 typedef struct{
 	size_t                     maxmem;
 	ngx_array_t                requires, loads;
 } ngx_http_js_main_conf_t;
 
+
+typedef struct
+{
+	JSObject                  *function;
+	ngx_str_t                  handler;
+} ngx_http_js_variable_t;
 
 
 extern ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter;

@@ -5,23 +5,26 @@
 
 #include <js/jsapi.h>
 
-#include "ngx_http_js_module.h"
-#include "nginx_js_glue.h"
-#include "classes/global.h"
-#include "classes/Nginx.h"
-#include "classes/Request.h"
-#include "classes/HeadersIn.h"
-#include "classes/HeadersOut.h"
-#include "classes/Cookies.h"
-#include "classes/Chain.h"
-#include "classes/File.h"
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
+#include <classes/global.h>
+#include <classes/environment.h>
+#include <classes/Nginx.h>
+#include <classes/Request.h>
+#include <classes/Request/HeadersIn.h>
+#include <classes/Request/HeadersIn/Cookies.h>
+#include <classes/Request/HeadersOut.h>
+#include <classes/Request/Variables.h>
+#include <classes/Chain.h>
+#include <classes/File.h>
 
-#include "macroses.h"
+#include <strings_util.h>
+
+#include <nginx_js_macroses.h>
 
 JSRuntime *ngx_http_js_module_js_runtime = NULL;
 JSContext *ngx_http_js_module_js_context = NULL;
 JSObject  *ngx_http_js_module_js_global  = NULL;
-
 
 ngx_log_t *ngx_http_js_module_log = NULL;
 
@@ -46,10 +49,8 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 {
 	jsval           fval, rval, strval;
 	JSString       *fnstring;
-	// JSObject       *require;
 	
 	TRACE();
-	// LOG("ngx_http_js_load(%s)\n", filename);
 	
 	if (!JS_GetProperty(cx, global, "load", &fval))
 	{
@@ -144,20 +145,26 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 
 
 char *
-ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsmcf)
+ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 {
-	if (ngx_http_js_module_js_runtime != NULL)
-		return NGX_CONF_OK;
-	
-	JSContext   *cx;
-	JSRuntime   *rt;
-	JSObject    *global;
+	ngx_http_js_main_conf_t    *jsmcf;
+	JSContext                  *cx;
+	JSRuntime                  *rt;
+	JSObject                   *global;
 	
 	ngx_log_debug0(NGX_LOG_DEBUG, cf->log, 0, "init interpreter");
+	
+	if (ngx_http_js_module_js_runtime != NULL)
+	{
+		// interpreter is already initiated
+		return NGX_CONF_OK;
+	}
 	
 	if (ngx_set_environment(cf->cycle, NULL) == NULL)
 		return NGX_CONF_ERROR;
 	
+	
+	jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
 	
 	rt = JS_NewRuntime(jsmcf->maxmem == NGX_CONF_UNSET_SIZE ? 2L * 1024L * 1024L : jsmcf->maxmem);
 	if (rt == NULL)
@@ -179,6 +186,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 		return NGX_CONF_ERROR;
 	}
 	global = JS_GetGlobalObject(cx);
+	
+	// environment
+	if (!ngx_http_js__environment__init(cx, global))
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "environment object initialization failed");
+		return NGX_CONF_ERROR;
+	}
 	
 	// Nginx
 	if (!ngx_http_js__nginx__init(cx, global))
@@ -210,6 +224,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf, ngx_http_js_main_conf_t *jsm
 	if (!ngx_http_js__nginx_cookies__init(cx, global))
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Cookies class initialization failed");
+		return NGX_CONF_ERROR;
+	}
+	
+	// Nginx.Variables
+	if (!ngx_http_js__nginx_variables__init(cx, global))
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Request.Variables class initialization failed");
 		return NGX_CONF_ERROR;
 	}
 	
@@ -352,11 +373,9 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
+	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
 	{
-		ngx_http_js_main_conf_t    *jsmcf;
-		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
-			return NGX_CONF_ERROR;
+		return NGX_CONF_ERROR;
 	}
 	
 	value = cf->args->elts;
@@ -379,6 +398,131 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	return NGX_CONF_OK;
 }
 
+static ngx_int_t
+ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
+{
+	ngx_http_js_variable_t      *jv;
+	ngx_int_t                    rc;
+	ngx_str_t                    value;
+	jsval                        rval;
+	JSString                    *js_value;
+	JSContext                   *cx;
+	
+	TRACE();
+	
+	jv = (ngx_http_js_variable_t *) data;
+	cx = js_cx;
+	
+	rc = ngx_http_js__glue__call_function(cx, r, jv->function, &rval);
+	if (rc != NGX_OK)
+	{
+		return rc;
+	}
+	
+	// if the callback returns undefined we mark the variable as not_found
+	if (JSVAL_IS_VOID(rval))
+	{
+		v->not_found = 1;
+		return NGX_OK;
+	}
+	
+	// otherwise, convert whatever returned to the string
+	js_value = JS_ValueToString(cx, rval);
+	if (js_value == NULL)
+	{
+		return NGX_ERROR;
+	}
+	
+	// allocate the C-string data on the request pool
+	if (!js_str2ngx_str(cx, js_value, r->pool, &value))
+	{
+		// likely OOM
+		return NGX_ERROR;
+	}
+	
+	v->data = value.data;
+	v->len = value.len;
+	v->valid = 1;
+	v->no_cacheable = 0;
+	v->not_found = 0;
+	
+	return NGX_OK;
+}
+
+char *
+ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	ngx_int_t                   index;
+	ngx_str_t                  *value;
+	ngx_http_variable_t        *v;
+	ngx_http_js_variable_t     *jv;
+	
+	TRACE();
+	
+	value = cf->args->elts;
+	
+	if (value[1].data[0] != '$')
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "invalid variable name \"%V\"", &value[1]);
+		return NGX_CONF_ERROR;
+	}
+	
+	value[1].len--;
+	value[1].data++;
+	
+	v = ngx_http_add_variable(cf, &value[1], NGX_HTTP_VAR_CHANGEABLE);
+	if (v == NULL)
+	{
+		return NGX_CONF_ERROR;
+	}
+	
+	jv = ngx_palloc(cf->pool, sizeof(ngx_http_js_variable_t));
+	if (jv == NULL)
+	{
+		return NGX_CONF_ERROR;
+	}
+	
+	index = ngx_http_get_variable_index(cf, &value[1]);
+	if (index == NGX_ERROR)
+	{
+		return NGX_CONF_ERROR;
+	}
+	
+	jv->handler = value[2];
+	
+	{
+		jsval                       function;
+		static char                *JS_VARIABLE_CALLBACK_ROOT_NAME = "js_set callback instance";
+		
+		if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
+		{
+			return NGX_CONF_ERROR;
+		}
+		
+		if (!JS_EvaluateScript(js_cx, js_global, (char *) value[2].data, value[2].len, (char *) cf->conf_file->file.name.data, cf->conf_file->line, &function))
+		{
+			return NGX_CONF_ERROR;
+		}
+		
+		if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
+		{
+			ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of \"%*s\" is not a function", value[2].len, (char *) value[2].data);
+			return NGX_CONF_ERROR;
+		}
+		
+		jv->function = JSVAL_TO_OBJECT(function);
+		if (!JS_AddNamedRoot(js_cx, &jv->function, JS_VARIABLE_CALLBACK_ROOT_NAME))
+		{
+			JS_ReportError(js_cx, "Can`t add new root %s", JS_VARIABLE_CALLBACK_ROOT_NAME);
+			return NGX_CONF_ERROR;
+		}
+	}
+	
+	v->get_handler = ngx_http_js__glue__variable;
+	v->data = (uintptr_t) jv;
+	
+	return NGX_CONF_OK;
+}
 
 char *
 ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
@@ -387,11 +531,9 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 	jsval                       function;
 	static char                *JS_CALLBACK_ROOT_NAME = "js filter instance";
 	
+	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
 	{
-		ngx_http_js_main_conf_t    *jsmcf;
-		jsmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_js_module);
-		if (ngx_http_js__glue__init_interpreter(cf, jsmcf) != NGX_CONF_OK)
-			return NGX_CONF_ERROR;
+		return NGX_CONF_ERROR;
 	}
 	
 	value = cf->args->elts;
@@ -415,18 +557,12 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 	return NGX_CONF_OK;
 }
 
-
 ngx_int_t
 ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 {
 	ngx_int_t                    rc;
-	ngx_log_t                   *last_log;
-	JSObject                    *request, *function;
-	jsval                        req;
 	jsval                        rval;
-	ngx_http_js_loc_conf_t      *jslcf;
-	ngx_http_js_ctx_t           *ctx;
-	
+	ngx_http_js_loc_conf_t      *jslcf;	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler");
 	
 	ngx_assert(js_cx);
@@ -434,50 +570,23 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	// location configuration for current request
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
-	// get the callback function, was set in config by ngx_http_js__glue__set_callback()
-	function = jslcf->handler_function;
-	ngx_assert(function);
 	
-	// get a js module context or create a js module context or return an error
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	
+	// the callback function was set in config by ngx_http_js__glue__set_callback()
+	rc = ngx_http_js__glue__call_function(js_cx, r, jslcf->handler_function, &rval);
+	if (rc != NGX_OK)
 	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		if ((ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t))))
-			ngx_http_set_ctx(r, ctx, ngx_http_js_module) // ; is in the macro
-		else
-			return NGX_ERROR;
+		return rc;
 	}
 	
-	// create a wrapper js object (not yet rooted) for native request struct
-	request = ngx_http_js__nginx_request__wrap(js_cx, r);
-	if (request == NULL)
-		return NGX_ERROR;
-	
-	req = OBJECT_TO_JSVAL(request);
-	last_log = ngx_http_js_module_log;
-	ngx_http_js_module_log = r->connection->log;
-	if (JS_CallFunctionValue(js_cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, &rval))
+	if (!JSVAL_IS_INT(rval))
 	{
-		if (!JSVAL_IS_INT(rval))
-		{
-			rc = NGX_ERROR;
-			JS_ReportError(js_cx, "Request processor must return an Integer");
-		}
-		else
-			rc = (ngx_int_t)JSVAL_TO_INT(rval);
+		rc = NGX_ERROR;
+		JS_ReportError(js_cx, "content handler must return an Integer");
 	}
 	else
-		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
-	ngx_http_js_module_log = last_log;
-	
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: %i (main->count = %i)", rc, r->main->count);
-	
-	// if timer was set, or subrequest performed, or body is awaited
-	if (r->main->count > 2)
 	{
-		ngx_log_debug(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, perform GC-related stuff");
-		if (ngx_http_js__nginx_request__root_in(ctx, r, js_cx, request) != NGX_OK)
-			return NGX_ERROR;
+		rc = (ngx_int_t) JSVAL_TO_INT(rval);
 	}
 	
 	// JS_MaybeGC(js_cx);
@@ -493,6 +602,76 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	return rc;
 }
+
+
+ngx_int_t
+ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval)
+{
+	ngx_http_js_ctx_t       *ctx;
+	ngx_log_t               *last_log;
+	JSObject                *request;
+	jsval                    req;
+	
+	TRACE();
+	
+	ngx_assert(function);
+	
+	// get a js module context or create a js module context or return an error
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+		{
+			return NGX_ERROR;
+		}
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	
+	// create a wrapper object (not yet rooted) for native request struct
+	request = ngx_http_js__nginx_request__wrap(cx, r);
+	if (request == NULL)
+	{
+		return NGX_ERROR;
+	}
+	
+	req = OBJECT_TO_JSVAL(request);
+	last_log = ngx_http_js_module_log;
+	ngx_http_js_module_log = r->connection->log;
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
+	{
+		ngx_http_js_module_log = last_log;
+		return NGX_ERROR;
+	}
+	ngx_http_js_module_log = last_log;
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
+	
+	// check if the request hasn't been rooted already
+	if (ctx->js_request == NULL)
+	{
+		// if a timer was set, or a subrequest issued, or the request body is awaited
+		// the request wrapper must be preserved
+		if (r->main->count > 2)
+		{
+			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, rooting wrapper");
+			if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
+				return NGX_ERROR;
+		}
+		// the request wrapper is no more needed to nginx
+		else
+		{
+			// try to fully cleanup the request
+			ngx_http_js__nginx_request__cleanup(ctx, r, cx);
+		}
+	}
+	
+	return NGX_OK;
+}
+
 
 /*
 ngx_int_t

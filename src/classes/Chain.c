@@ -8,11 +8,11 @@
 
 #include <js/jsapi.h>
 
-#include "../ngx_http_js_module.h"
-#include "../strings_util.h"
-#include "Chain.h"
+#include <ngx_http_js_module.h>
+#include <strings_util.h>
+#include <classes/Chain.h>
 
-#include "../macroses.h"
+#include <nginx_js_macroses.h>
 
 
 

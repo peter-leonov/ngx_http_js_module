@@ -5,11 +5,11 @@
 
 #include <js/jsapi.h>
 
-#include "../ngx_http_js_module.h"
-#include "../strings_util.h"
-#include "Request.h"
+#include <ngx_http_js_module.h>
+#include <strings_util.h>
+#include <classes/Request.h>
 
-#include "../macroses.h"
+#include <nginx_js_macroses.h>
 
 
 JSObject *ngx_http_js__nginx_headers_out__prototype;
