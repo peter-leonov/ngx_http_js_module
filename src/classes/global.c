@@ -91,6 +91,37 @@ method_maybeGC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 	return JS_TRUE;
 }
 
+static JSBool
+getter_utf8length(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	JSString   *value_jss;
+	u_char     *value;
+	size_t      len;
+	
+	TRACE();
+	
+	value_jss = JS_ValueToString(cx, OBJECT_TO_JSVAL(self));
+	if (value_jss == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	value = (u_char *) JS_GetStringBytes(value_jss);
+	if (value == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	len = ngx_strlen(value);
+	
+	if (!JS_NewNumberValue(cx, len, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
 
 static JSClass global_class =
 {
@@ -106,7 +137,8 @@ extern char **environ;
 JSBool
 ngx_http_js__global__init(JSContext *cx)
 {
-	JSObject *global;
+	JSObject   *global, *string;
+	jsval       val;
 	
 	TRACE();
 	
@@ -121,6 +153,35 @@ ngx_http_js__global__init(JSContext *cx)
 	E(JS_DefineFunction(cx, global, "load", method_load, 0, 0), "Can`t define function global.load");
 	E(JS_DefineFunction(cx, global, "GC", method_GC, 0, 0), "Can`t define function global.GC");
 	E(JS_DefineFunction(cx, global, "maybeGC", method_maybeGC, 0, 0), "Can`t define function global.maybeGC");
+	
+	if (!JS_GetProperty(cx, global, "String", &val))
+	{
+		return JS_FALSE;
+	}
+	
+	if (!JSVAL_IS_OBJECT(val))
+	{
+		return JS_FALSE;
+	}
+	
+	string = JSVAL_TO_OBJECT(val);
+	
+	if (!JS_GetProperty(cx, string, "prototype", &val))
+	{
+		return JS_FALSE;
+	}
+	
+	if (!JSVAL_IS_OBJECT(val))
+	{
+		return JS_FALSE;
+	}
+	
+	string = JSVAL_TO_OBJECT(val);
+	
+	if (!JS_DefineProperty(cx, string, "utf8length", JSVAL_VOID, getter_utf8length, NULL, JSPROP_READONLY | JSPROP_ENUMERATE))
+	{
+		THROW("Can`t define property String#method_utf8length");
+	}
 	
 	return JS_TRUE;
 }
