@@ -29,6 +29,10 @@ NginxTests.requestVariables = function (r)
 		
 		vars.js_request_variables_v = '555'
 		t.eq(vars.js_request_variables_v, '555', 'vars.js_request_variables_v')
+		
+		t.eq(vars.http_host, '127.0.0.1:19090', 'vars.http_host')
+		vars.http_host = 'blablabla'
+		t.eq(vars.http_host, '127.0.0.1:19090', 'vars.http_host')
 	})
 	Tests.oncomplete = function ()
 	{

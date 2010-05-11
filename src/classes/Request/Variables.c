@@ -296,7 +296,11 @@ set_variable(ngx_http_request_t *r, ngx_str_t *name, ngx_uint_t key, ngx_http_va
 		return NGX_OK;
 	}
 	
-	ngx_assert(v->set_handler);
+	if (v->set_handler == NULL)
+	{
+		return NGX_ABORT;
+	}
+	
 	v->set_handler(r, value, v->data);
 	
 	return NGX_OK;
