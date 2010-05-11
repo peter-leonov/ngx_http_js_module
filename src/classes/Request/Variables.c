@@ -17,6 +17,10 @@ JSClass ngx_http_js__nginx_variables__class;
 static JSClass* private_class = &ngx_http_js__nginx_variables__class;
 
 
+static ngx_int_t
+set_variable(ngx_http_request_t *r, ngx_str_t *name, ngx_uint_t key, ngx_http_variable_value_t *value);
+
+
 JSObject *
 ngx_http_js__nginx_variables__wrap(JSContext *cx, ngx_http_request_t *r)
 {
@@ -266,4 +270,38 @@ ngx_http_js__nginx_variables__init(JSContext *cx, JSObject *global)
 	E(ngx_http_js__nginx_variables__prototype, "Can`t JS_InitClass(Nginx.Request.Variables)");
 	
 	return JS_TRUE;
+}
+
+
+static ngx_int_t
+set_variable(ngx_http_request_t *r, ngx_str_t *name, ngx_uint_t key, ngx_http_variable_value_t *value)
+{
+	ngx_http_variable_t        *v;
+	ngx_http_variable_value_t  *vv;
+	ngx_http_core_main_conf_t  *cmcf;
+	
+	cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
+	
+	v = ngx_hash_find(&cmcf->variables_hash, key, name->data, name->len);
+	
+	if (v == NULL)
+	{
+		return NGX_DECLINED;
+	}
+	
+	if (v->flags & NGX_HTTP_VAR_INDEXED)
+	{
+		vv = &r->variables[v->index];
+		vv->data = value->data;
+		vv->len = value->len;
+		vv->valid = 1;
+		vv->not_found = 0;
+		
+		return NGX_OK;
+	}
+	
+	ngx_assert(v->set_handler);
+	v->set_handler(r, value, v->data);
+	
+	return NGX_OK;
 }
