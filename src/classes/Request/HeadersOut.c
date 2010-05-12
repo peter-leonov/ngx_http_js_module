@@ -354,7 +354,7 @@ set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_
 		h = ngx_list_push(&r->headers_out.headers);
 		if (h == NULL)
 		{
-			return NGX_ERROR;;
+			return NGX_ERROR;
 		}
 		
 		*hp = h;
