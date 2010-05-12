@@ -32,14 +32,19 @@ ngx_http_js__nginx_headers_out__wrap(JSContext *cx, JSObject *request, ngx_http_
 	JSObject                  *headers;
 	ngx_http_js_ctx_t         *ctx;
 	
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
 		return NULL;
+	}
 	
-	if (ctx->js_headers_out)
+	if (ctx->js_headers_out != NULL)
+	{
 		return ctx->js_headers_out;
+	}
 	
 	headers = JS_NewObject(cx, &ngx_http_js__nginx_headers_out__class, ngx_http_js__nginx_headers_out__prototype, NULL);
-	if (!headers)
+	if (headers == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return NULL;
@@ -65,7 +70,9 @@ ngx_http_js__nginx_headers_out__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request
 	ngx_assert(ctx);
 	
 	if (!ctx->js_headers_out)
+	{
 		return;
+	}
 	
 	JS_SetPrivate(cx, ctx->js_headers_out, NULL);
 	ctx->js_headers_out = NULL;
@@ -95,20 +102,12 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
 	{
-		// if (!strcmp(member_name, "constructor"))
-		// LOG("getProperty: %s", name);
-		
 		header = search_headers_out(r, name, 0);
-		
 		if (header != NULL)
 		{
 			NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
 		}
-		// else
-		// 	LOG("getProperty: %s was not found", name);
 	}
-	
-	// *vp = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, "not set"));
 	
 	return JS_TRUE;
 }
@@ -126,48 +125,46 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	TRACE();
 	GET_PRIVATE(r);
 	
-	// E(JSVAL_IS_STRING(id), "Nginx.Request#[]= takes a key:String and a value of a key relational type");
 	if (JSVAL_IS_STRING(id))
 	{
 		key_jsstr = JSVAL_TO_STRING(id);
 		E(key = js_str2c_str(cx, key_jsstr, r->pool, &key_len), "Can`t js_str2c_str(key_jsstr)");
 		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
 		
-		// LOG("setProperty: %s (%u)", key, (int)key_len);
 		
 		header = search_headers_out(r, key, key_len);
-		if (header)
+		if (header != NULL)
 		{
 			header->key.data = (u_char*)key;
 			header->key.len = key_len;
 			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
-			// LOG("by hash");
+			
 			return JS_TRUE;
 		}
 		
 		
 		header = ngx_list_push(&r->headers_out.headers);
-		if (header)
+		if (header == NULL)
 		{
-			header->hash = 1;
-			
-			header->key.data = (u_char*)key;
-			header->key.len = key_len;
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
-			
-			if (NCASE_COMPARE(header->key, "Content-Length"))
-			{
-				E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
-				r->headers_out.content_length_n = (off_t) JSVAL_TO_INT(*vp);
-				r->headers_out.content_length = header;
-				// LOG("by list");
-				return JS_TRUE;
-			}
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
 		}
-		else
-			THROW("Can`t ngx_list_push()");
+		
+		header->hash = 1;
+		
+		header->key.data = (u_char*)key;
+		header->key.len = key_len;
+		E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
+		
+		if (NCASE_COMPARE(header->key, "Content-Length"))
+		{
+			E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
+			r->headers_out.content_length_n = (off_t) JSVAL_TO_INT(*vp);
+			r->headers_out.content_length = header;
+			
+			return JS_TRUE;
+		}
 	}
-	
 	
 	return JS_TRUE;
 }
@@ -303,7 +300,8 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 };
 
 
-JSFunctionSpec ngx_http_js__nginx_headers_out__funcs[] = {
+JSFunctionSpec ngx_http_js__nginx_headers_out__funcs[] =
+{
 	{0, NULL, 0, 0, 0}
 };
 
@@ -348,7 +346,9 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 	{
 		len = strlen(name);
 		if (len == 0)
+		{
 			return NULL;
+		}
 	}
 	
 	// look in all headers
@@ -361,7 +361,9 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 		if (i >= part->nelts)
 		{
 			if (part->next == NULL)
+			{
 				break;
+			}
 			
 			part = part->next;
 			h = part->elts;
@@ -370,7 +372,9 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 		
 		// LOG("%s", h[i].key.data);
 		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
+		{
 			continue;
+		}
 		
 		return &h[i];
 	}
