@@ -16,6 +16,9 @@ JSObject *ngx_http_js__nginx_headers_out__prototype;
 JSClass ngx_http_js__nginx_headers_out__class;
 static JSClass* private_class = &ngx_http_js__nginx_headers_out__class;
 
+static ngx_str_t server_header_name = ngx_string("Server");
+static ngx_str_t date_header_name   = ngx_string("Date");
+
 static ngx_table_elt_t *
 search_headers_out(ngx_http_request_t *r, char *name, u_int len);
 
@@ -195,34 +198,12 @@ static JSBool
 setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	ngx_str_t                   value_ns, key_ns = ngx_string("Server");
-	JSString                   *value;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	// For now the undefined value leads to header deletion. The “delete” keyword
-	// may be implemented only via Class.delProperty on the tinyId basis.
-	if (JSVAL_IS_VOID(*vp))
+	if (!set_header_from_jsval(cx, r, &r->headers_out.server, &server_header_name, vp))
 	{
-		delete_header(&r->headers_out.server);
-		return JS_TRUE;
-	}
-	
-	value = JS_ValueToString(cx, *vp);
-	if (value == NULL)
-	{
-		return JS_FALSE;
-	}
-	
-	if (!js_str2ngx_str(cx, value, r->pool, &value_ns))
-	{
-		return JS_FALSE;
-	}
-	
-	if (set_header(r, &r->headers_out.server, &key_ns, &value_ns) != NGX_OK)
-	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -253,38 +234,23 @@ static JSBool
 setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	ngx_str_t                   value_ns, key_ns = ngx_string("Date");
-	JSString                   *value;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	// For now the undefined value leads to header deletion. The “delete” keyword
-	// may be implemented only via Class.delProperty on the tinyId basis.
-	if (JSVAL_IS_VOID(*vp))
-	{
-		delete_header(&r->headers_out.date);
-		return JS_TRUE;
-	}
-	
-	value = JS_ValueToString(cx, *vp);
-	if (value == NULL)
+	if (!set_header_from_jsval(cx, r, &r->headers_out.date, &date_header_name, vp))
 	{
 		return JS_FALSE;
 	}
 	
-	if (!js_str2ngx_str(cx, value, r->pool, &value_ns))
+	if (r->headers_out.date == NULL)
 	{
-		return JS_FALSE;
+		r->headers_out.date_time = 0;
 	}
-	
-	if (set_header(r, &r->headers_out.date, &key_ns, &value_ns) != NGX_OK)
+	else
 	{
-		JS_ReportOutOfMemory(cx);
-		return JS_FALSE;
+		r->headers_out.date_time = ngx_http_parse_time(r->headers_out.date->value.data, r->headers_out.date->value.len);
 	}
-	
-	r->headers_out.date_time = ngx_http_parse_time(value_ns.data, value_ns.len);
 	
 	return JS_TRUE;
 }
