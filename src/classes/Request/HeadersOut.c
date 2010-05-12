@@ -167,6 +167,81 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
+getter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.server == NULL || r->headers_out.server->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.server->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_str_t                   value_ns, key_ns = ngx_string("Server");
+	JSString                   *value;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// For now the undefined value leads to header deletion. The “delete” keyword
+	// may be implemented only via Class.delProperty on the tinyId basis.
+	if (JSVAL_IS_VOID(*vp))
+	{
+		if (r->headers_out.server == NULL)
+		{
+			return JS_TRUE;
+		}
+		
+		// this means a “deleted” header for ngx_http_header_filter()
+		// at ngx_http_header_filter_module.c:428
+		r->headers_out.server->hash = 0;
+		
+		return JS_TRUE;
+	}
+	
+	// if the header is not exists yet
+	if (r->headers_out.server == NULL)
+	{
+		// tryin to allocate header element
+		r->headers_out.server = ngx_list_push(&r->headers_out.headers);
+		if (r->headers_out.server == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+	}
+	
+	value = JS_ValueToString(cx, *vp);
+	if (value == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	if (!js_str2ngx_str(cx, value, r->pool, &value_ns))
+	{
+		return JS_FALSE;
+	}
+	
+	r->headers_out.server->hash = 1;
+	r->headers_out.server->key = key_ns;
+	r->headers_out.server->value = value_ns;
+	
+	return JS_TRUE;
+}
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -176,6 +251,7 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 {
+	{"Server",                       0,  JSPROP_ENUMERATE,   getter_server, setter_server},
 	{0, 0, 0, NULL, NULL}
 };
 
