@@ -229,6 +229,64 @@ setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
+
+static JSBool
+getter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.date == NULL || r->headers_out.date->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.date->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_str_t                   value_ns, key_ns = ngx_string("Date");
+	JSString                   *value;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// For now the undefined value leads to header deletion. The “delete” keyword
+	// may be implemented only via Class.delProperty on the tinyId basis.
+	if (JSVAL_IS_VOID(*vp))
+	{
+		delete_header(&r->headers_out.date);
+		return JS_TRUE;
+	}
+	
+	value = JS_ValueToString(cx, *vp);
+	if (value == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	if (!js_str2ngx_str(cx, value, r->pool, &value_ns))
+	{
+		return JS_FALSE;
+	}
+	
+	if (set_header(r, &r->headers_out.date, &key_ns, &value_ns) != NGX_OK)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
 static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
@@ -240,6 +298,7 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 {
 	{"Server",                       0,  JSPROP_ENUMERATE,   getter_server, setter_server},
+	{"Date",                         0,  JSPROP_ENUMERATE,   getter_date,   setter_date},
 	{0, 0, 0, NULL, NULL}
 };
 
