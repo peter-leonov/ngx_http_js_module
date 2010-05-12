@@ -12,27 +12,42 @@ NginxTests.requestHeadersOutSetGet = function (r)
 		
 		t.ok(h, 'headersOut')
 		
-		function testHeader (t, h, name)
+		function testHeader (t, h, header)
 		{
+			var name = header.name,
+				value = header.value
+			
 			t.eq(h[name], undefined, 'initial')
-			h[name] = 'abc'
-			t.eq(h[name], 'abc', 'first set')
+			
+			h[name] = value
+			t.eq(h[name], value, 'first set')
+			
+			var nameN = header.nameN
+			if (nameN)
+				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
+			
 			h[name] = undefined
 			t.eq(h[name], undefined, 'first delete')
-			h[name] = 'def'
-			t.eq(h[name], 'def', 'second set')
 			
+			h[name] = value
+			t.eq(h[name], value, 'second set')
 		}
 		
-		var headers = ['Server']
+		var headers =
+		[
+			{name: 'Server', value: 'nginxy'},
+			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752}
+		]
 		
 		for (var i = 0; i < headers.length; i++)
 		{
-			var header = headers[i]
-			t.test(header, function (t)
+			(function (header)
 			{
-				testHeader(t, h, header)
-			})
+				t.test(header.name, function (t)
+				{
+					testHeader(t, h, header)
+				})
+			})(headers[i])
 		}
 	})
 	Tests.oncomplete = function ()
