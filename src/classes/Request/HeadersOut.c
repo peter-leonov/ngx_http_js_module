@@ -19,6 +19,12 @@ static JSClass* private_class = &ngx_http_js__nginx_headers_out__class;
 static ngx_table_elt_t *
 search_headers_out(ngx_http_request_t *r, char *name, u_int len);
 
+static void
+delete_header(ngx_table_elt_t **hp);
+
+static ngx_int_t
+set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_t *value);
+
 
 JSObject *
 ngx_http_js__nginx_headers_out__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r)
@@ -199,28 +205,8 @@ setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	// may be implemented only via Class.delProperty on the tinyId basis.
 	if (JSVAL_IS_VOID(*vp))
 	{
-		if (r->headers_out.server == NULL)
-		{
-			return JS_TRUE;
-		}
-		
-		// this means a “deleted” header for ngx_http_header_filter()
-		// at ngx_http_header_filter_module.c:428
-		r->headers_out.server->hash = 0;
-		
+		delete_header(&r->headers_out.server);
 		return JS_TRUE;
-	}
-	
-	// if the header is not exists yet
-	if (r->headers_out.server == NULL)
-	{
-		// tryin to allocate header element
-		r->headers_out.server = ngx_list_push(&r->headers_out.headers);
-		if (r->headers_out.server == NULL)
-		{
-			JS_ReportOutOfMemory(cx);
-			return JS_FALSE;
-		}
 	}
 	
 	value = JS_ValueToString(cx, *vp);
@@ -234,9 +220,11 @@ setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	r->headers_out.server->hash = 1;
-	r->headers_out.server->key = key_ns;
-	r->headers_out.server->value = value_ns;
+	if (set_header(r, &r->headers_out.server, &key_ns, &value_ns) != NGX_OK)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
 	return JS_TRUE;
 }
@@ -329,4 +317,52 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 	}
 	
 	return NULL;
+}
+
+static void
+delete_header(ngx_table_elt_t **hp)
+{
+	ngx_table_elt_t   *h;
+	
+	h = *hp;
+	if (h == NULL)
+	{
+		// header is not exists
+		return;
+	}
+	
+	// This means a “deleted” header for ngx_http_header_filter()
+	// at ngx_http_header_filter_module.c:428. So we do not have to delete
+	// the header from r->headers_out.headers.
+	h->hash = 0;
+	
+	// Mark the headers as unexisted for ngx_http_header_filter()
+	// at ngx_http_header_filter_module.c:453.
+	*hp = NULL;
+}
+
+static ngx_int_t
+set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_t *value)
+{
+	ngx_table_elt_t   *h;
+	
+	h = *hp;
+	// if the header is not exists yet
+	if (h == NULL)
+	{
+		// tryin to allocate header element
+		h = ngx_list_push(&r->headers_out.headers);
+		if (h == NULL)
+		{
+			return NGX_ERROR;;
+		}
+		
+		*hp = h;
+	}
+	
+	h->hash = 1;
+	h->key = *key;
+	h->value = *value;
+	
+	return NGX_OK;
 }
