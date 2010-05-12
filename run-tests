@@ -51,6 +51,7 @@ curl $OPTS -A "Tester/1.0" "http://127.0.0.1:19090/run/request-headers-in?\{\"Ho
 curl $OPTS --data "12345" "http://127.0.0.1:19090/run/request-headers-in?\{\"Content-Length\":5,\"Content-Type\":\"application/x-www-form-urlencoded\"\}"
 curl $OPTS -r 3-55 "http://127.0.0.1:19090/run/request-headers-in?\{\"Range\":\"bytes=3-55\"\}"
 curl $OPTS "http://127.0.0.1:19090/run/request-headers-in-set-get"
+curl $OPTS "http://127.0.0.1:19090/run/request-headers-out-set-get"
 curl $OPTS "http://127.0.0.1:19090/variable-set" # will be rewritten to th /run/variable-set
 curl $OPTS "http://127.0.0.1:19090/run/request-variables"
 
