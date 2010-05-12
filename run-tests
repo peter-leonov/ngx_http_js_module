@@ -5,6 +5,7 @@ NGX_OBJS="$2"
 NGINX="$NGX_OBJS/nginx"
 PIDFILE="/tmp/nginx-js.pid"
 TIME=$(date +%s)
+PADDING="$MODULE_ROOT/padding.txt"
 
 if [ "$WITH_MASTER"  == "yes" ]; then
 	NGINX_OPTS=""
@@ -24,6 +25,7 @@ function kill_process {
 }
 
 mkdir -p $MODULE_ROOT/logs
+cat $PADDING >> $MODULE_ROOT/logs/error.log
 
 kill_process
 
@@ -54,6 +56,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-headers-in-set-get"
 curl $OPTS "http://127.0.0.1:19090/run/request-headers-out-set-get"
 curl $OPTS "http://127.0.0.1:19090/variable-set" # will be rewritten to th /run/variable-set
 curl $OPTS "http://127.0.0.1:19090/run/request-variables"
+curl $OPTS "http://127.0.0.1:19090/run/standart-classes"
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 

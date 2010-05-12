@@ -11,7 +11,7 @@ END
 
 cat << END                                                >> Makefile
 
-test-js:
+test-js: build
 	\$(MAKE) -f objs/Makefile test-js
 
 END
