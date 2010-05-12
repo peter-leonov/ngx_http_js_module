@@ -25,6 +25,9 @@ delete_header(ngx_table_elt_t **hp);
 static ngx_int_t
 set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_t *value);
 
+static JSBool
+set_header_from_jsval(JSContext *cx, ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key_ns, jsval *vp);
+
 
 JSObject *
 ngx_http_js__nginx_headers_out__wrap(JSContext *cx, JSObject *request, ngx_http_request_t *r)
@@ -449,4 +452,38 @@ set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_
 	h->value = *value;
 	
 	return NGX_OK;
+}
+
+static JSBool
+set_header_from_jsval(JSContext *cx, ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key_ns, jsval *vp)
+{
+	ngx_str_t                   value_ns;
+	JSString                   *value;
+	
+	// For now the undefined value leads to header deletion. The “delete” keyword
+	// may be implemented only via Class.delProperty on the tinyId basis.
+	if (JSVAL_IS_VOID(*vp))
+	{
+		delete_header(hp);
+		return JS_TRUE;
+	}
+	
+	value = JS_ValueToString(cx, *vp);
+	if (value == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	if (!js_str2ngx_str(cx, value, r->pool, &value_ns))
+	{
+		return JS_FALSE;
+	}
+	
+	if (set_header(r, hp, key_ns, &value_ns) != NGX_OK)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
 }
