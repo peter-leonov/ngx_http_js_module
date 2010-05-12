@@ -281,8 +281,28 @@ setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		return JS_FALSE;
 	}
 	
+	r->headers_out.date_time = ngx_http_parse_time(value_ns.data, value_ns.len);
+	
 	return JS_TRUE;
 }
+
+
+static JSBool
+getter_dateTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!JS_NewNumberValue(cx, r->headers_out.date_time, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
 
 static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
@@ -294,8 +314,9 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 {
-	{"Server",                       0,  JSPROP_ENUMERATE,   getter_server, setter_server},
-	{"Date",                         0,  JSPROP_ENUMERATE,   getter_date,   setter_date},
+	{"Server",                       0,  JSPROP_ENUMERATE,                       getter_server,    setter_server},
+	{"Date",                         0,  JSPROP_ENUMERATE,                       getter_date,      setter_date},
+	{"$dateTime",                    0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_dateTime,      NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
