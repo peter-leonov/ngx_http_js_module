@@ -28,7 +28,7 @@ delete_header(ngx_table_elt_t **hp);
 static ngx_int_t
 set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_t *value);
 
-static JSBool
+static ngx_inline JSBool
 set_header_from_jsval(JSContext *cx, ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key_ns, jsval *vp);
 
 
@@ -420,7 +420,7 @@ set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_
 	return NGX_OK;
 }
 
-static JSBool
+static ngx_inline JSBool
 set_header_from_jsval(JSContext *cx, ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key_ns, jsval *vp)
 {
 	ngx_str_t                   value_ns;
