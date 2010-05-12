@@ -12,13 +12,28 @@ NginxTests.requestHeadersOutSetGet = function (r)
 		
 		t.ok(h, 'headersOut')
 		
-		t.eq(h.Server, undefined, 'headersOut.Server')
-		h.Server = 'first set'
-		t.eq(h.Server, 'first set', 'headersOut.Server')
-		h.Server = undefined
-		t.eq(h.Server, undefined, 'headersOut.Server')
-		h.Server = 'second set'
-		t.eq(h.Server, 'second set', 'headersOut.Server')
+		function testHeader (t, h, name)
+		{
+			t.eq(h[name], undefined, 'initial')
+			h[name] = 'abc'
+			t.eq(h[name], 'abc', 'first set')
+			h[name] = undefined
+			t.eq(h[name], undefined, 'first delete')
+			h[name] = 'def'
+			t.eq(h[name], 'def', 'second set')
+			
+		}
+		
+		var headers = ['Server']
+		
+		for (var i = 0; i < headers.length; i++)
+		{
+			var header = headers[i]
+			t.test(header, function (t)
+			{
+				testHeader(t, h, header)
+			})
+		}
 	})
 	Tests.oncomplete = function ()
 	{
