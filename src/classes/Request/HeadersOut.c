@@ -413,7 +413,7 @@ set_header(ngx_http_request_t *r, ngx_table_elt_t **hp, ngx_str_t *key, ngx_str_
 		*hp = h;
 	}
 	
-	h->hash = 1;
+	h->hash = value->len == 0 ? 0 : 1;
 	h->key = *key;
 	h->value = *value;
 	
