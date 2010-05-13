@@ -246,7 +246,7 @@ setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	if (r->headers_out.date == NULL || r->headers_out.date->value.len == 0)
 	{
-		r->headers_out.date_time = 0;
+		r->headers_out.date_time = -1;
 		return JS_TRUE;
 	}
 	
@@ -484,7 +484,7 @@ setter_lastModified(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	if (r->headers_out.last_modified == NULL || r->headers_out.last_modified->value.len == 0)
 	{
-		r->headers_out.last_modified_time = 0;
+		r->headers_out.last_modified_time = -1;
 		return JS_TRUE;
 	}
 	

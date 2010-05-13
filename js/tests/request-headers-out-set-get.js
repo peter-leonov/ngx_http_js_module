@@ -57,7 +57,7 @@ NginxTests.requestHeadersOutSetGet = function (r)
 		var headers =
 		[
 			{name: 'Server', value: 'nginxy'},
-			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752, deletedN: 0},
+			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752, deletedN: -1},
 			{name: 'Content-Length', value: '123456', nameN: '$contentLength', valueN: 123456, deletedN: 0},
 			{name: 'Content-Length', value: '1099511627776', nameN: '$contentLength', valueN: 1099511627776, deletedN: 0},
 			{name: 'Content-Encoding', value: 'gzip'},
@@ -65,7 +65,7 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'Location', value: '/local-redirect'},
 			{name: 'Refresh', value: '0'},
 			{name: 'Refresh', value: '0; url=http://nginx.org/'},
-			{name: 'Last-Modified', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$lastModified', valueN: 1273691752, deletedN: 0},
+			{name: 'Last-Modified', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$lastModified', valueN: 1273691752, deletedN: -1},
 		]
 		
 		for (var i = 0; i < headers.length; i++)
