@@ -9,6 +9,7 @@ Test.Inspector.prototype.sep = ' '
 Test.Inspector.prototype.indc = ''
 
 var NginxTests = {}
+var NginxDemos = {}
 
 ;(function(){
 
@@ -26,6 +27,25 @@ var myName = 'Handler', Me =
 			
 			if (NginxTests[method])
 				return NginxTests[method](r)
+			else
+				r.sendString('no such method')
+		}
+		else
+			r.sendString('error in uri')
+		
+		return Nginx.OK
+	},
+	
+	demo: function (r)
+	{
+		var m = /([^\/]+)$/.exec(r.uri)
+		
+		if (m)
+		{
+			var method = m[1].replace(/-(\w)/g, function (m) { return m[1].toUpperCase() })
+			
+			if (NginxDemos[method])
+				return NginxDemos[method](r)
 			else
 				r.sendString('no such method')
 		}
@@ -59,3 +79,5 @@ require('tests/standart-classes.js')
 // require('tests/timer-order.js')
 // require('tests/timer-cascade.js')
 // require('tests/subrequest-quick.js')
+
+require('demos/request-headers-out.js')
