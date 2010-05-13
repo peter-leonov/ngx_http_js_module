@@ -60,7 +60,9 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752, deletedN: 0},
 			{name: 'Content-Length', value: '123456', nameN: '$contentLength', valueN: 123456, deletedN: 0},
 			{name: 'Content-Length', value: '1099511627776', nameN: '$contentLength', valueN: 1099511627776, deletedN: 0},
-			{name: 'Content-Encoding', value: 'gzip'}
+			{name: 'Content-Encoding', value: 'gzip'},
+			{name: 'Location', value: 'http://nginx.org/'},
+			{name: 'Location', value: '/local-redirect'}
 		]
 		
 		for (var i = 0; i < headers.length; i++)
