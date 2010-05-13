@@ -15,34 +15,46 @@ NginxTests.requestHeadersOutSetGet = function (r)
 		function testHeader (t, h, header)
 		{
 			var name = header.name,
-				value = header.value
+				value = header.value,
+				nameN = header.nameN
 			
 			t.eq(h[name], undefined, 'initial')
 			
 			h[name] = value
 			t.eq(h[name], value, 'first set')
 			
-			var nameN = header.nameN
 			if (nameN)
 				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
 			
 			h[name] = undefined
 			t.eq(h[name], undefined, 'first delete')
 			
+			if (nameN)
+				t.eq(h[nameN], header.deletedN, 'deleted number value (' + nameN + ')')
+			
 			h[name] = value
 			t.eq(h[name], value, 'second set')
+			
+			if (nameN)
+				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
 			
 			h[name] = ''
 			t.eq(h[name], undefined, 'disabled')
 			
+			if (nameN)
+				t.eq(h[nameN], header.deletedN, 'disabled number value (' + nameN + ')')
+			
 			h[name] = value
 			t.eq(h[name], value, 'third set')
+			
+			if (nameN)
+				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
 		}
 		
 		var headers =
 		[
 			{name: 'Server', value: 'nginxy'},
-			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752}
+			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752, deletedN: 0}
 		]
 		
 		for (var i = 0; i < headers.length; i++)
