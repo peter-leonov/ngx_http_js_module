@@ -1039,15 +1039,19 @@ JSClass ngx_http_js__nginx_headers_out__class =
 JSBool
 ngx_http_js__nginx_headers_out__init(JSContext *cx, JSObject *global)
 {
-	JSObject    *nginxobj;
+	JSObject    *nginxobj, *proto;
 	jsval        vp;
 	
 	E(JS_GetProperty(cx, global, "Nginx", &vp), "global.Nginx is undefined or is not a function");
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
-	ngx_http_js__nginx_headers_out__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers_out__class,  constructor, 0,
-		props, funcs,  NULL, NULL);
-	E(ngx_http_js__nginx_headers_out__prototype, "Can`t JS_InitClass(Nginx.HeadersOut)");
+	proto = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers_out__class,  constructor, 0, props, funcs,  NULL, NULL);
+	if (proto == NULL)
+	{
+		THROW("Can`t JS_InitClass(Nginx.HeadersOut)");
+	}
+	
+	ngx_http_js__nginx_headers_out__prototype = proto;
 	
 	return JS_TRUE;
 }
