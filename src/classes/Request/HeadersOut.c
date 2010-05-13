@@ -21,7 +21,7 @@ static ngx_str_t date_header_name             = ngx_string("Date");
 static ngx_str_t content_length_header_name   = ngx_string("Content-Length");
 
 static ngx_table_elt_t *
-search_headers_out(ngx_http_request_t *r, char *name, u_int len);
+search_headers_out(ngx_http_request_t *r, u_char *name, u_int len);
 
 static void
 delete_header(ngx_table_elt_t **hp);
@@ -1036,7 +1036,7 @@ ngx_http_js__nginx_headers_out__init(JSContext *cx, JSObject *global)
 
 
 static ngx_table_elt_t *
-search_headers_out(ngx_http_request_t *r, char *name, u_int len)
+search_headers_out(ngx_http_request_t *r, u_char *name, u_int len)
 {
 	ngx_list_part_t            *part;
 	ngx_table_elt_t            *h;
@@ -1048,7 +1048,7 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 	
 	if (len == 0)
 	{
-		len = strlen(name);
+		len = strlen((char *) name);
 		if (len == 0)
 		{
 			return NULL;
@@ -1075,7 +1075,7 @@ search_headers_out(ngx_http_request_t *r, char *name, u_int len)
 		}
 		
 		// LOG("%s", h[i].key.data);
-		if (len != h[i].key.len || ngx_strcasecmp((u_char *) name, h[i].key.data) != 0)
+		if (len != h[i].key.len || ngx_strcasecmp(name, h[i].key.data) != 0)
 		{
 			continue;
 		}
