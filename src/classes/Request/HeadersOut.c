@@ -778,6 +778,171 @@ getter_contentTypeLowcase(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_table_elt_t           **ph;
+	ngx_uint_t                  i, n;
+	ssize_t                     size;
+	u_char                     *p, *data;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	n = r->headers_out.cache_control.nelts;
+	
+	if (n == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	ph = r->headers_out.cache_control.elts;
+	
+	if (ph == NULL)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	if (n == 1)
+	{
+		NGX_STRING_to_JS_STRING_to_JSVAL(cx, (*ph)->value, *vp);
+		return JS_TRUE;
+	}
+	
+	size = - (ssize_t) (sizeof("; ") - 1);
+	
+	for (i = 0; i < n; i++)
+	{
+		if (ph[i]->hash == 0)
+		{
+			continue;
+		}
+		size += ph[i]->value.len + sizeof("; ") - 1;
+	}
+	
+	// all headers was disabled
+	if (size == - (ssize_t) (sizeof("; ") - 1))
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	data = ngx_pnalloc(r->pool, size);
+	if (data == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	p = data;
+	
+	for (i = 0; /* void */ ; i++)
+	{
+		if (ph[i]->hash == 0)
+		{
+			continue;
+		}
+		
+		p = ngx_copy(p, ph[i]->value.data, ph[i]->value.len);
+		
+		if (i == n - 1)
+		{
+			break;
+		}
+		
+		*p++ = ';'; *p++ = ' ';
+	}
+	
+	DATA_LEN_to_JS_STRING_to_JSVAL(cx, data, size, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_table_elt_t            *cc, **ccp;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// For now the undefined value leads to header deletion. The “delete” keyword
+	// may be implemented only via Class.delProperty on the tinyId basis.
+	if (JSVAL_IS_VOID(*vp))
+	{
+		ngx_uint_t i;
+		
+		ccp = r->headers_out.cache_control.elts;
+		
+		if (ccp == NULL)
+		{
+			// empty already
+			return JS_TRUE;
+		}
+		
+		for (i = 1; i < r->headers_out.cache_control.nelts; i++)
+		{
+			ccp[i]->hash = 0;
+		}
+		
+		r->headers_out.cache_control.elts = NULL;
+		
+		return JS_TRUE;
+	}
+	
+	
+	ccp = r->headers_out.cache_control.elts;
+	
+	if (ccp == NULL)
+	{
+		if (ngx_array_init(&r->headers_out.cache_control, r->pool, 1, sizeof(ngx_table_elt_t *)) != NGX_OK)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		ccp = ngx_array_push(&r->headers_out.cache_control);
+		if (ccp == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		cc = ngx_list_push(&r->headers_out.headers);
+		if (cc == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		cc->hash = 1;
+		cc->key.len = sizeof("Cache-Control") - 1;
+		cc->key.data = (u_char *) "Cache-Control";
+		
+		*ccp = cc;
+	}
+	else
+	{
+		ngx_uint_t i;
+		
+		for (i = 1; i < r->headers_out.cache_control.nelts; i++)
+		{
+			ccp[i]->hash = 0;
+		}
+		
+		cc = ccp[0];
+	}
+	
+	set_string_header_from_jsval(cx, r, &cc->value, vp);
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -805,6 +970,7 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 	{"Content-Type",                 0,  JSPROP_ENUMERATE,                       getter_contentType,    setter_contentType},
 	{"$contentTypeLen",              0,  JSPROP_ENUMERATE,                       getter_contentTypeLen, NULL},
 	{"$contentTypeLowcase",          0,  JSPROP_ENUMERATE,                       getter_contentTypeLowcase, NULL},
+	{"Cache-Control",                0,  JSPROP_ENUMERATE,                       getter_cacheControl,   setter_cacheControl},
 	{0, 0, 0, NULL, NULL}
 };
 
