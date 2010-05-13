@@ -49,6 +49,9 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			
 			if (nameN)
 				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
+			
+			h[name] = undefined
+			t.eq(h[name], undefined, 'second delete')
 		}
 		
 		var headers =
