@@ -700,6 +700,84 @@ setter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_contentType(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.content_type.data == NULL || r->headers_out.content_type.len == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.content_type, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_contentType(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_string_header_from_jsval(cx, r, &r->headers_out.content_type, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	r->headers_out.content_type_len = r->headers_out.content_type.len;
+	
+	// reset the lowercased version
+	r->headers_out.content_type_lowcase = NULL;
+	// reset the hash of the lowercased version
+	r->headers_out.content_type_hash = 0;
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_contentTypeLen(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!JS_NewNumberValue(cx, r->headers_out.content_type_len, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_contentTypeLowcase(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.content_type_lowcase == NULL)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	DATA_LEN_to_JS_STRING_to_JSVAL(cx, r->headers_out.content_type_lowcase, ngx_strlen(r->headers_out.content_type_lowcase), *vp);
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -724,6 +802,9 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 	{"WWW-Authenticate",             0,  JSPROP_ENUMERATE,                       getter_wwwAuthenticate,setter_wwwAuthenticate},
 	{"Expires",                      0,  JSPROP_ENUMERATE,                       getter_expires,        setter_expires},
 	{"ETag",                         0,  JSPROP_ENUMERATE,                       getter_etag,           setter_etag},
+	{"Content-Type",                 0,  JSPROP_ENUMERATE,                       getter_contentType,    setter_contentType},
+	{"$contentTypeLen",              0,  JSPROP_ENUMERATE,                       getter_contentTypeLen, NULL},
+	{"$contentTypeLowcase",          0,  JSPROP_ENUMERATE,                       getter_contentTypeLowcase, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 

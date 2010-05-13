@@ -2,9 +2,8 @@
 
 NginxTests.requestHeadersOutSetGet = function (r)
 {
-	// r.headersOut['Server'] = 'trololo'
-	// r.headersOut['Server'] = 'trulala'
-	r.sendHttpHeader('text/plain; charset=utf-8')
+	var contentType = 'text/plain; charset=utf-8'
+	r.sendHttpHeader(contentType)
 	
 	Tests.test('tests for r.headersOut setting and getting', function (t)
 	{
@@ -18,7 +17,7 @@ NginxTests.requestHeadersOutSetGet = function (r)
 				value = header.value,
 				nameN = header.nameN
 			
-			t.eq(h[name], undefined, 'initial')
+			t.eq(h[name], header.initial, 'initial')
 			
 			h[name] = value
 			t.eq(h[name], value, 'first set')
@@ -70,7 +69,10 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'Accept-Ranges', value: 'bytes'},
 			{name: 'WWW-Authenticate', value: 'Basic realm="Nginx Area"'},
 			{name: 'Expires', value: 'Wed, 12 May 2010 19:15:52 GMT'},
-			{name: 'ETag', value: '8f1b0fb0a9f67ffaa43a83cad28435ca'}
+			{name: 'ETag', value: '8f1b0fb0a9f67ffaa43a83cad28435ca'},
+			{name: 'Content-Type', value: 'text/html', initial: contentType, nameN: '$contentTypeLen', valueN: 9, deletedN: 0},
+			{name: 'Content-Type', value: 'application/json', nameN: '$contentTypeLen', valueN: 16, deletedN: 0},
+			{name: 'Content-Type', value: 'TeXt/hTmL', nameN: '$contentTypeLowcase', valueN: undefined, deletedN: undefined}
 		]
 		
 		for (var i = 0; i < headers.length; i++)
