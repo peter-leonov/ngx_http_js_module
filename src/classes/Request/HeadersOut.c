@@ -997,7 +997,7 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 
-JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
+static JSPropertySpec props[] =
 {
 	{"Server",                       0,  0,                    getter_server,                setter_server},
 	{"Date",                         0,  0,                    getter_date,                  setter_date},
@@ -1022,7 +1022,7 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 };
 
 
-JSFunctionSpec ngx_http_js__nginx_headers_out__funcs[] =
+static JSFunctionSpec funcs[] =
 {
 	{0, NULL, 0, 0, 0}
 };
@@ -1046,7 +1046,7 @@ ngx_http_js__nginx_headers_out__init(JSContext *cx, JSObject *global)
 	nginxobj = JSVAL_TO_OBJECT(vp);
 	
 	ngx_http_js__nginx_headers_out__prototype = JS_InitClass(cx, nginxobj, NULL, &ngx_http_js__nginx_headers_out__class,  constructor, 0,
-		ngx_http_js__nginx_headers_out__props, ngx_http_js__nginx_headers_out__funcs,  NULL, NULL);
+		props, funcs,  NULL, NULL);
 	E(ngx_http_js__nginx_headers_out__prototype, "Can`t JS_InitClass(Nginx.HeadersOut)");
 	
 	return JS_TRUE;
