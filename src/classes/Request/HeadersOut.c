@@ -180,6 +180,14 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
+delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	TRACE();
+	return JS_TRUE;
+}
+
+
+static JSBool
 getter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
@@ -967,14 +975,6 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		return JS_TRUE;
 	}
 	
-	return JS_TRUE;
-}
-
-
-static JSBool
-delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	TRACE();
 	return JS_TRUE;
 }
 
