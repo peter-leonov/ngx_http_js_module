@@ -69,7 +69,8 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'Content-Range', value: 'bytes 500-1233/1234'},
 			{name: 'Accept-Ranges', value: 'bytes'},
 			{name: 'WWW-Authenticate', value: 'Basic realm="Nginx Area"'},
-			{name: 'Expires', value: 'Wed, 12 May 2010 19:15:52 GMT'}
+			{name: 'Expires', value: 'Wed, 12 May 2010 19:15:52 GMT'},
+			{name: 'ETag', value: '8f1b0fb0a9f67ffaa43a83cad28435ca'}
 		]
 		
 		for (var i = 0; i < headers.length; i++)

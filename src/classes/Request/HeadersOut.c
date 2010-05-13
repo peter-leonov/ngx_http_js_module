@@ -660,6 +660,43 @@ setter_expires(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.etag == NULL || r->headers_out.etag->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.etag->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	static ngx_str_t            header_name = ngx_string("ETag");
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_header_from_jsval(cx, r, &r->headers_out.etag, &header_name, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -683,6 +720,7 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 	{"Accept-Ranges",                0,  JSPROP_ENUMERATE,                       getter_acceptRanges,   setter_acceptRanges},
 	{"WWW-Authenticate",             0,  JSPROP_ENUMERATE,                       getter_wwwAuthenticate,setter_wwwAuthenticate},
 	{"Expires",                      0,  JSPROP_ENUMERATE,                       getter_expires,        setter_expires},
+	{"ETag",                         0,  JSPROP_ENUMERATE,                       getter_etag,           setter_etag},
 	{0, 0, 0, NULL, NULL}
 };
 
