@@ -64,7 +64,8 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'Location', value: 'http://nginx.org/'},
 			{name: 'Location', value: '/local-redirect'},
 			{name: 'Refresh', value: '0'},
-			{name: 'Refresh', value: '0; url=http://nginx.org/'}
+			{name: 'Refresh', value: '0; url=http://nginx.org/'},
+			{name: 'Last-Modified', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$lastModified', valueN: 1273691752, deletedN: 0},
 		]
 		
 		for (var i = 0; i < headers.length; i++)
