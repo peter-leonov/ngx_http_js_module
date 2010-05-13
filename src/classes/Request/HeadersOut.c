@@ -512,6 +512,43 @@ getter_lastModifiedTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_contentRange(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.content_range == NULL || r->headers_out.content_range->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.content_range->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_contentRange(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	static ngx_str_t            header_name = ngx_string("Content-Range");
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_header_from_jsval(cx, r, &r->headers_out.content_range, &header_name, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -531,6 +568,7 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 	{"Refresh",                      0,  JSPROP_ENUMERATE,                       getter_refresh,        setter_refresh},
 	{"Last-Modified",                0,  JSPROP_ENUMERATE,                       getter_lastModified,   setter_lastModified},
 	{"$lastModified",                0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_lastModifiedTime, NULL},
+	{"Content-Range",                0,  JSPROP_ENUMERATE,                       getter_contentRange,   setter_contentRange},
 	{0, 0, 0, NULL, NULL}
 };
 
