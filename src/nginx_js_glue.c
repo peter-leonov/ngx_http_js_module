@@ -576,17 +576,16 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	rc = ngx_http_js__glue__call_function(js_cx, r, jslcf->handler_function, &rval);
 	if (rc != NGX_OK)
 	{
-		return rc;
+		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
-	if (!JSVAL_IS_INT(rval))
+	if (JSVAL_IS_INT(rval))
 	{
-		rc = NGX_ERROR;
-		JS_ReportError(js_cx, "content handler must return an Integer");
+		rc = (ngx_int_t) JSVAL_TO_INT(rval);
 	}
 	else
 	{
-		rc = (ngx_int_t) JSVAL_TO_INT(rval);
+		rc = NGX_OK;
 	}
 	
 	// JS_MaybeGC(js_cx);
