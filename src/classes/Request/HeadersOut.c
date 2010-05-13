@@ -883,7 +883,8 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_TRUE;
 		}
 		
-		for (i = 1; i < r->headers_out.cache_control.nelts; i++)
+		// disable all headers
+		for (i = 0; i < r->headers_out.cache_control.nelts; i++)
 		{
 			ccp[i]->hash = 0;
 		}
@@ -936,7 +937,35 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		cc = ccp[0];
 	}
 	
-	set_string_header_from_jsval(cx, r, &cc->value, vp);
+	if (!set_string_header_from_jsval(cx, r, &cc->value, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	if (cc->value.len == 0)
+	{
+		// dirty copy-paste
+		
+		ngx_uint_t i;
+		
+		ccp = r->headers_out.cache_control.elts;
+		
+		if (ccp == NULL)
+		{
+			// empty already
+			return JS_TRUE;
+		}
+		
+		// disable all headers
+		for (i = 0; i < r->headers_out.cache_control.nelts; i++)
+		{
+			ccp[i]->hash = 0;
+		}
+		
+		r->headers_out.cache_control.elts = NULL;
+		
+		return JS_TRUE;
+	}
 	
 	return JS_TRUE;
 }
