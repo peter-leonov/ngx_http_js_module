@@ -412,6 +412,42 @@ setter_location(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
+static JSBool
+getter_refresh(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.refresh == NULL || r->headers_out.refresh->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.refresh->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_refresh(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	static ngx_str_t            header_name = ngx_string("Refresh");
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_header_from_jsval(cx, r, &r->headers_out.refresh, &header_name, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
 
 
 static JSBool
@@ -431,6 +467,7 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 	{"$contentLength",               0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_contentLengthN, NULL},
 	{"Content-Encoding",             0,  JSPROP_ENUMERATE,                       getter_contentEncoding,setter_contentEncoding},
 	{"Location",                     0,  JSPROP_ENUMERATE,                       getter_location,       setter_location},
+	{"Refresh",                      0,  JSPROP_ENUMERATE,                       getter_refresh,        setter_refresh},
 	{0, 0, 0, NULL, NULL}
 };
 
