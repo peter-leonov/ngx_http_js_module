@@ -243,14 +243,13 @@ setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	if (r->headers_out.date == NULL)
+	if (r->headers_out.date == NULL || r->headers_out.date->value.len == 0)
 	{
 		r->headers_out.date_time = 0;
+		return JS_TRUE;
 	}
-	else
-	{
-		r->headers_out.date_time = ngx_http_parse_time(r->headers_out.date->value.data, r->headers_out.date->value.len);
-	}
+	
+	r->headers_out.date_time = ngx_http_parse_time(r->headers_out.date->value.data, r->headers_out.date->value.len);
 	
 	return JS_TRUE;
 }
