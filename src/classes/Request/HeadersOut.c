@@ -340,6 +340,44 @@ getter_contentLengthN(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_contentEncoding(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.content_encoding == NULL || r->headers_out.content_encoding->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.content_encoding->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_contentEncoding(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	static ngx_str_t            header_name = ngx_string("Content-Encoding");
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_header_from_jsval(cx, r, &r->headers_out.content_encoding, &header_name, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -354,6 +392,7 @@ JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 	{"$dateTime",                    0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_dateTime,       NULL},
 	{"Content-Length",               0,  JSPROP_ENUMERATE,                       getter_contentLength,  setter_contentLength},
 	{"$contentLength",               0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_contentLengthN, NULL},
+	{"Content-Encoding",             0,  JSPROP_ENUMERATE,                       getter_contentEncoding,setter_contentEncoding},
 	{0, 0, 0, NULL, NULL}
 };
 
