@@ -104,20 +104,33 @@ static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	char                       *name;
+	u_char                     *key;
 	ngx_table_elt_t            *header;
+	JSString                   *key_jsstr;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	if (JSVAL_IS_STRING(id) && (name = JS_GetStringBytes(JSVAL_TO_STRING(id))) != NULL)
+	key_jsstr = JS_ValueToString(cx, id);
+	if (key_jsstr == NULL)
 	{
-		header = search_headers_out(r, name, 0);
-		if (header != NULL)
-		{
-			NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
-		}
+		return JS_FALSE;
 	}
+	
+	key = (u_char *) JS_GetStringBytes(key_jsstr);
+	if (key == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	header = search_headers_out(r, key, 0);
+	if (header == NULL || header->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, header->value, *vp);
 	
 	return JS_TRUE;
 }
@@ -127,32 +140,28 @@ static JSBool
 setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
+	u_char                     *key;
 	ngx_table_elt_t            *header;
-	char                       *key;
-	size_t                      key_len;
-	JSString                   *key_jsstr, *value_jsstr;
+	JSString                   *key_jss, *value_jss;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	if (JSVAL_IS_STRING(id))
+	key_jss = JS_ValueToString(cx, id);
+	if (key_jss == NULL)
 	{
-		key_jsstr = JSVAL_TO_STRING(id);
-		E(key = js_str2c_str(cx, key_jsstr, r->pool, &key_len), "Can`t js_str2c_str(key_jsstr)");
-		E(value_jsstr = JS_ValueToString(cx, *vp), "Can`t JS_ValueToString()");
-		
-		
-		header = search_headers_out(r, key, key_len);
-		if (header != NULL)
-		{
-			header->key.data = (u_char*)key;
-			header->key.len = key_len;
-			E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
-			
-			return JS_TRUE;
-		}
-		
-		
+		return JS_FALSE;
+	}
+	
+	key = (u_char *) JS_GetStringBytes(key_jss);
+	if (key == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	header = search_headers_out(r, key, 0);
+	if (header == NULL)
+	{
 		header = ngx_list_push(&r->headers_out.headers);
 		if (header == NULL)
 		{
@@ -160,21 +169,30 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		header->hash = 1;
-		
-		header->key.data = (u_char*)key;
-		header->key.len = key_len;
-		E(js_str2ngx_str(cx, value_jsstr, r->pool, &header->value), "Can`t js_str2ngx_str(value_jsstr)");
-		
-		if (NCASE_COMPARE(header->key, "Content-Length"))
+		if (!js_str2ngx_str(cx, key_jss, r->pool, &header->key))
 		{
-			E(JSVAL_IS_INT(*vp), "the Content-Length value must be an Integer");
-			r->headers_out.content_length_n = (off_t) JSVAL_TO_INT(*vp);
-			r->headers_out.content_length = header;
-			
-			return JS_TRUE;
+			return JS_FALSE;
 		}
 	}
+	
+	if(JSVAL_IS_VOID(*vp))
+	{
+		header->hash = 0;
+		return JS_TRUE;
+	}
+	
+	value_jss = JS_ValueToString(cx, *vp);
+	if (value_jss == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	if (!js_str2ngx_str(cx, value_jss, r->pool, &header->value))
+	{
+		return JS_FALSE;
+	}
+	
+	header->hash = header->value.len == 0 ? 0 : 1;
 	
 	return JS_TRUE;
 }
