@@ -31,6 +31,12 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			
 			h[name] = value
 			t.eq(h[name], value, 'second set')
+			
+			h[name] = ''
+			t.eq(h[name], undefined, 'disabled')
+			
+			h[name] = value
+			t.eq(h[name], value, 'third set')
 		}
 		
 		var headers =
