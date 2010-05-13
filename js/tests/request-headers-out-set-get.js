@@ -72,7 +72,8 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'ETag', value: '8f1b0fb0a9f67ffaa43a83cad28435ca'},
 			{name: 'Content-Type', value: 'text/html', initial: contentType, nameN: '$contentTypeLen', valueN: 9, deletedN: 0},
 			{name: 'Content-Type', value: 'application/json', nameN: '$contentTypeLen', valueN: 16, deletedN: 0},
-			{name: 'Content-Type', value: 'TeXt/hTmL', nameN: '$contentTypeLowcase', valueN: undefined, deletedN: undefined}
+			{name: 'Content-Type', value: 'TeXt/hTmL', nameN: '$contentTypeLowcase', valueN: undefined, deletedN: undefined},
+			{name: 'Cache-Control', value: 'no-cache; no-store; max-age=3600'}
 		]
 		
 		for (var i = 0; i < headers.length; i++)
