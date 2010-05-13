@@ -16,8 +16,9 @@ JSObject *ngx_http_js__nginx_headers_out__prototype;
 JSClass ngx_http_js__nginx_headers_out__class;
 static JSClass* private_class = &ngx_http_js__nginx_headers_out__class;
 
-static ngx_str_t server_header_name = ngx_string("Server");
-static ngx_str_t date_header_name   = ngx_string("Date");
+static ngx_str_t server_header_name           = ngx_string("Server");
+static ngx_str_t date_header_name             = ngx_string("Date");
+static ngx_str_t content_length_header_name   = ngx_string("Content-Length");
 
 static ngx_table_elt_t *
 search_headers_out(ngx_http_request_t *r, char *name, u_int len);
@@ -273,6 +274,72 @@ getter_dateTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_contentLength(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.content_length == NULL || r->headers_out.content_length->hash == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.content_length->value, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_contentLength(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	jsdouble                    val_n;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_header_from_jsval(cx, r, &r->headers_out.content_length, &content_length_header_name, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	if (r->headers_out.content_length == NULL || r->headers_out.content_length->value.len == 0)
+	{
+		r->headers_out.content_length_n = 0;
+		return JS_TRUE;
+	}
+	
+	if (!JS_ValueToNumber(cx, *vp, &val_n))
+	{
+		return JS_FALSE;
+	}
+	
+	r->headers_out.content_length_n = val_n;//ngx_http_parse_time(r->headers_out.date->value.data, r->headers_out.date->value.len);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_contentLengthN(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!JS_NewNumberValue(cx, r->headers_out.content_length_n, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	TRACE();
@@ -282,9 +349,11 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 JSPropertySpec ngx_http_js__nginx_headers_out__props[] =
 {
-	{"Server",                       0,  JSPROP_ENUMERATE,                       getter_server,    setter_server},
-	{"Date",                         0,  JSPROP_ENUMERATE,                       getter_date,      setter_date},
-	{"$dateTime",                    0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_dateTime,      NULL},
+	{"Server",                       0,  JSPROP_ENUMERATE,                       getter_server,         setter_server},
+	{"Date",                         0,  JSPROP_ENUMERATE,                       getter_date,           setter_date},
+	{"$dateTime",                    0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_dateTime,       NULL},
+	{"Content-Length",               0,  JSPROP_ENUMERATE,                       getter_contentLength,  setter_contentLength},
+	{"$contentLength",               0,  JSPROP_ENUMERATE | JSPROP_READONLY,     getter_contentLengthN, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
