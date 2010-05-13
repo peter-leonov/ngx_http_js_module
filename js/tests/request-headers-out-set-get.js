@@ -66,7 +66,8 @@ NginxTests.requestHeadersOutSetGet = function (r)
 			{name: 'Refresh', value: '0'},
 			{name: 'Refresh', value: '0; url=http://nginx.org/'},
 			{name: 'Last-Modified', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$lastModified', valueN: 1273691752, deletedN: -1},
-			{name: 'Content-Range', value: 'bytes 500-1233/1234'}
+			{name: 'Content-Range', value: 'bytes 500-1233/1234'},
+			{name: 'Accept-Ranges', value: 'bytes'}
 		]
 		
 		for (var i = 0; i < headers.length; i++)
