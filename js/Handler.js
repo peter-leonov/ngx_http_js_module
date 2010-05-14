@@ -81,3 +81,4 @@ require('tests/standart-classes.js')
 // require('tests/subrequest-quick.js')
 
 require('demos/request-headers-out.js')
+require('demos/delayed-output.js')
