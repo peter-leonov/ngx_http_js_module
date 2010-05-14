@@ -18,10 +18,10 @@ JSClass ngx_http_js__nginx_headers_in__class;
 static JSClass* private_class = &ngx_http_js__nginx_headers_in__class;
 
 static ngx_http_header_t *
-search_hashed_headers_in(ngx_http_request_t *r, u_char *name, u_int len);
+search_hashed_headers_in(ngx_http_request_t *r, u_char *name, size_t len);
 
 static ngx_table_elt_t *
-search_headers_in(ngx_http_request_t *r, u_char *name, u_int len);
+search_headers_in(ngx_http_request_t *r, u_char *name, size_t len);
 
 
 JSObject *
@@ -361,7 +361,7 @@ ngx_http_js__nginx_headers_in__init(JSContext *cx, JSObject *global)
 
 
 static ngx_http_header_t *
-search_hashed_headers_in(ngx_http_request_t *r, u_char *name, u_int len)
+search_hashed_headers_in(ngx_http_request_t *r, u_char *name, size_t len)
 {
 	ngx_http_core_main_conf_t  *cmcf;
 	u_char                     *lowcase_key;
@@ -399,7 +399,7 @@ search_hashed_headers_in(ngx_http_request_t *r, u_char *name, u_int len)
 }
 
 static ngx_table_elt_t *
-search_headers_in(ngx_http_request_t *r, u_char *name, u_int len)
+search_headers_in(ngx_http_request_t *r, u_char *name, size_t len)
 {
 	ngx_list_part_t            *part;
 	ngx_table_elt_t            *h;
