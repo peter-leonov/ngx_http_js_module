@@ -547,7 +547,7 @@ static JSBool
 method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
-	char                      *filename;
+	u_char                    *filename;
 	int                        offset;
 	size_t                     bytes;
 	ngx_str_t                  path;
@@ -593,7 +593,7 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	path.data = ngx_pcalloc(r->pool, path.len + 1);
 	E(path.data != NULL, "Can`t ngx_pcalloc()");
 	
-	(void) ngx_cpystrn(path.data, (u_char*)filename, path.len + 1);
+	(void) ngx_cpystrn(path.data, filename, path.len + 1);
 	
 	if (ngx_open_cached_file(clcf->open_file_cache, &path, &of, r->pool) != NGX_OK)
 	{

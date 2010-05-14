@@ -7,7 +7,7 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool);
 extern JSBool
 js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s);
 
-extern char *
+extern u_char *
 js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len);
 
 #endif

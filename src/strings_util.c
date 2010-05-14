@@ -87,17 +87,17 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 }
 
 
-char *
+u_char *
 js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len)
 {
-	char                *p, *np;
+	u_char              *p, *np;
 	size_t               len;
 	
 	ngx_assert(cx);
 	ngx_assert(str);
 	ngx_assert(pool);
 	
-	p = JS_GetStringBytes(str);
+	p = (u_char *) JS_GetStringBytes(str);
 	// JS_GetStringBytes() returns an empty C-string on failure,
 	// but on success it does the same, so treat every response as a success
 	if (p == NULL)

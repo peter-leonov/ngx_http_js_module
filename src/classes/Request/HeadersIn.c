@@ -18,10 +18,10 @@ JSClass ngx_http_js__nginx_headers_in__class;
 static JSClass* private_class = &ngx_http_js__nginx_headers_in__class;
 
 static ngx_http_header_t *
-search_hashed_headers_in(ngx_http_request_t *r, char *name, u_int len);
+search_hashed_headers_in(ngx_http_request_t *r, u_char *name, u_int len);
 
 static ngx_table_elt_t *
-search_headers_in(ngx_http_request_t *r, char *name, u_int len);
+search_headers_in(ngx_http_request_t *r, u_char *name, u_int len);
 
 
 JSObject *
@@ -98,7 +98,7 @@ else \
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	char                       *key;
+	u_char                     *key;
 	u_int                       len;
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
@@ -145,7 +145,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	}
 	else if (JSVAL_IS_STRING(id))
 	{
-		key = JS_GetStringBytes(JSVAL_TO_STRING(id));
+		key = (u_char *) JS_GetStringBytes(JSVAL_TO_STRING(id));
 		if (key == NULL)
 		{
 			return JS_FALSE;
@@ -198,7 +198,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 static JSBool
 setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	char                       *key;
+	u_char                     *key;
 	size_t                      key_len;
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
@@ -361,7 +361,7 @@ ngx_http_js__nginx_headers_in__init(JSContext *cx, JSObject *global)
 
 
 static ngx_http_header_t *
-search_hashed_headers_in(ngx_http_request_t *r, char *name, u_int len)
+search_hashed_headers_in(ngx_http_request_t *r, u_char *name, u_int len)
 {
 	ngx_http_core_main_conf_t  *cmcf;
 	u_char                     *lowcase_key;
@@ -399,7 +399,7 @@ search_hashed_headers_in(ngx_http_request_t *r, char *name, u_int len)
 }
 
 static ngx_table_elt_t *
-search_headers_in(ngx_http_request_t *r, char *name, u_int len)
+search_headers_in(ngx_http_request_t *r, u_char *name, u_int len)
 {
 	ngx_list_part_t            *part;
 	ngx_table_elt_t            *h;
