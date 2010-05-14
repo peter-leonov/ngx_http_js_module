@@ -82,3 +82,5 @@ require('tests/standart-classes.js')
 
 require('demos/request-headers-out.js')
 require('demos/delayed-output.js')
+require('demos/return-an-error.js')
+require('demos/return-error-500.js')
