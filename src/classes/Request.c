@@ -746,7 +746,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_int_t                    rc;
 	ngx_http_request_t          *r, *sr;
 	ngx_http_post_subrequest_t  *psr;
-	ngx_str_t                   *uri, args;
+	ngx_str_t                    uri, args;
 	ngx_uint_t                   flags;
 	JSString                    *str;
 	JSObject                    *subrequest;
@@ -760,15 +760,24 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	str = JSVAL_TO_STRING(argv[0]);
 	
-	E(uri = ngx_palloc(r->pool, sizeof(ngx_str_t)), "Can`t ngx_palloc(ngx_str_t)");
-	E(js_str2ngx_str(cx, str, r->pool, uri), "Can`t js_str2ngx_str()")
-	E(uri->len, "empty uri passed");
+	if (!js_str2ngx_str(cx, str, r->pool, &uri))
+	{
+		return JS_FALSE;
+	}
+	
+	if (uri.len == 0)
+	{
+		THROW("empty uri passed");
+	}
 	
 	flags = 0;
 	args.len = 0;
 	args.data = NULL;
 	
-	E(ngx_http_parse_unsafe_uri(r, uri, &args, &flags) == NGX_OK, "Error in ngx_http_parse_unsafe_uri(%s)", uri->data)
+	if (ngx_http_parse_unsafe_uri(r, &uri, &args, &flags) != NGX_OK)
+	{
+		THROW("Error in ngx_http_parse_unsafe_uri(%s)", uri.data);
+	}
 	
 	psr = NULL;
 	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
@@ -780,7 +789,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	sr = NULL;
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "before ngx_http_subrequest()");
-	rc = ngx_http_subrequest(r, uri, &args, &sr, psr, flags);
+	rc = ngx_http_subrequest(r, &uri, &args, &sr, psr, flags);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "after ngx_http_subrequest()");
 	if (sr == NULL || rc != NGX_OK)
 	{
