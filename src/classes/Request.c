@@ -829,7 +829,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	ngx_http_js_ctx_t                *ctx;
 	ngx_http_request_t               *r;
 	JSObject                         *subrequest;
-	jsval                             callback, rval, args[2];
+	jsval                             callback, rval, args[3];
 	
 	r = sr->main;
 	TRACE_REQUEST_METHOD();
@@ -856,33 +856,49 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	// LOG("sr->upstream = %p", sr->upstream);
 	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
 	
+	args[0] = OBJECT_TO_JSVAL(subrequest);
+	
 	if (sr->upstream)
 	{
 		JSString  *js_buf;
+		
 		js_buf = JS_NewStringCopyN(js_cx, (char*) sr->upstream->buffer.pos, sr->upstream->buffer.last-sr->upstream->buffer.pos);
 		if (js_buf == NULL)
 		{
-			rc = NGX_ERROR;
+			return NGX_ERROR;
 		}
-		else
-		{
-			args[0] = STRING_TO_JSVAL(js_buf);
-		}
+		
+		args[1] = STRING_TO_JSVAL(js_buf);
 	}
 	else if (ctx->chain_first != NULL)
 	{
-		args[0] = OBJECT_TO_JSVAL(ngx_http_js__nginx_chain__wrap(js_cx, ctx->chain_first, subrequest));
+		JSObject  *chain;
+		
+		chain = ngx_http_js__nginx_chain__wrap(js_cx, ctx->chain_first, subrequest);
+		if (chain == NULL)
+		{
+			return NGX_ERROR;
+		}
+		
+		args[1] = OBJECT_TO_JSVAL(chain);
 	}
 	else
 	{
-		args[0] = JSVAL_VOID;
+		args[1] = JSVAL_VOID;
 	}
 	
-	args[1] = INT_TO_JSVAL(rc);
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
+	args[2] = INT_TO_JSVAL(rc);
 	
-	if (!JS_CallFunctionValue(js_cx, subrequest, callback, 2, args, &rval))
-		rc = NGX_ERROR;
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
+	if (!JS_CallFunctionValue(js_cx, js_global, callback, 3, args, &rval))
+	{
+		return NGX_ERROR;
+	}
+	
+	if (JSVAL_IS_INT(rval))
+	{
+		return JSVAL_TO_INT(rval);
+	}
 	
 	return rc;
 }
