@@ -262,8 +262,16 @@ setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	if (ctx->js_request == NULL)
 	{
-		JS_ReportError(cx, "can't set a cleanup callback for a not rooted request");
-		return JS_FALSE;
+		if (ngx_http_js__nginx_request__root_in(cx, r, self) != NGX_OK)
+		{
+			return JS_FALSE;
+		}
+		
+		if (ctx->js_request == NULL)
+		{
+			JS_ReportError(cx, "can't root the request for you");
+			return JS_FALSE;
+		}
 	}
 	
 	if (!JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, *vp))
@@ -1140,7 +1148,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
-	{"cleanupHandler",  0,                        JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
+	{"oncleanup",       0,                        JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},

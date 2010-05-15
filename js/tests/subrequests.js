@@ -30,7 +30,7 @@ NginxTests.subrequests = function (r)
 	// }
 	// Tests.run(r)
 	
-	r.cleanupCallback = function ()
+	r.oncleanup = function ()
 	{
 		this.puts('all done')
 		this.flush()
