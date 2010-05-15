@@ -58,6 +58,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-headers-out-set-get"
 curl $OPTS "http://127.0.0.1:19090/variable-set" # will be rewritten to th /run/variable-set
 curl $OPTS "http://127.0.0.1:19090/run/request-variables"
 curl $OPTS "http://127.0.0.1:19090/run/standart-classes"
+curl $OPTS "http://127.0.0.1:19090/run/subrequests"
 
 curl $OPTS "http://127.0.0.1:19090/demo/request-headers-out"
 curl $OPTS "http://127.0.0.1:19090/demo/delayed-output"
