@@ -9,6 +9,13 @@ Some features:
 The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debugging must not be a pain.
 
 
+
+REQUIREMENTS
+
+This module requires the SpiderMonkey to be properly installed in your system. We plan to make SpiderMonkey sources a part of the module tree to provide the latest mozjs version right with the module.
+
+
+
 CONFIGURE
 
 The JS module could be compiled as any other nginx module:
@@ -17,7 +24,7 @@ The JS module could be compiled as any other nginx module:
 If you want to look into the guts please configure like the following:
 HTTP_JS_COLOR=yes ./configure --with-debug --add-module=/absolute/path/to/the/ngx_http_js_module/
 
---with-debug enables the JS module debug logging in addition to the nginx builtin;
+--with-debug enables the JS module debug logging:
 HTTP_JS_COLOR=yes enables the colored logging for the JS module.
 
 
@@ -25,10 +32,10 @@ MAKE
 
 Then run make as you usual do.
 
-After make processe has successfuly completed you may run some simple tests for JS module (before the actual installation) with this:
+After the make process has successfully completed you may run some simple tests for JS module (before the actual installation) with this:
 make test-js
 
-This will run nginx on 19090 port and process some requests to it with curl.
+This will run nginx on 19090 port and issue some requests to it with curl.
 
 If you get the following error:
 .../objs/nginx: error while loading shared libraries: libmozjs.so: cannot open shared object file: No such file or directory
