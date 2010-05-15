@@ -462,7 +462,7 @@ method_getBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]), "Request#hasBody takes 1 argument: callback:Function");
+	E(argc == 1 && JSVAL_IS_OBJECT(argv[0]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[0])), "Request#hasBody takes 1 argument: callback:Function");
 	
 	
 	if (r->headers_in.content_length_n <= 0)
@@ -640,7 +640,7 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ValueToFunction(cx, argv[0]) && JSVAL_IS_INT(argv[1]),
+	E(argc == 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[0])) && JSVAL_IS_INT(argv[1]),
 			"Nginx.Request#setTimer() takes two mandatory argument callback:Function and milliseconds:Number");
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
@@ -755,7 +755,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ValueToFunction(cx, argv[1]),
+	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1])),
 		"Request#subrequest takes 2 mandatory arguments: uri:String and callback:Function");
 	
 	str = JSVAL_TO_STRING(argv[0]);

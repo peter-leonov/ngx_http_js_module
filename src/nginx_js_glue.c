@@ -57,7 +57,7 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 		JS_ReportError(cx, "global.load is undefined");
 		return JS_FALSE;
 	}
-	if (!JSVAL_IS_OBJECT(fval) || !JS_ValueToFunction(cx, fval))
+	if (!JSVAL_IS_OBJECT(fval) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fval)))
 	{
 		JS_ReportError(cx, "global.load is not a function");
 		return JS_FALSE;
@@ -119,7 +119,7 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 		JS_ReportError(cx, "global.require is undefined");
 		return NGX_ERROR;
 	}
-	if (!JSVAL_IS_OBJECT(fval) || !JS_ValueToFunction(cx, fval))
+	if (!JSVAL_IS_OBJECT(fval) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fval)))
 	{
 		JS_ReportError(cx, "global.require is not a Function object");
 		return NGX_ERROR;
@@ -382,7 +382,7 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 	if (!JS_EvaluateScript(js_cx, js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
+	if (!JSVAL_IS_OBJECT(function) || !JS_ObjectIsFunction(js_cx, JSVAL_TO_OBJECT(function)))
 	{
 		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
 		return NGX_CONF_ERROR;
@@ -504,7 +504,7 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 			return NGX_CONF_ERROR;
 		}
 		
-		if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
+		if (!JSVAL_IS_OBJECT(function) || !JS_ObjectIsFunction(js_cx, JSVAL_TO_OBJECT(function)))
 		{
 			ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of \"%*s\" is not a function", value[2].len, (char *) value[2].data);
 			return NGX_CONF_ERROR;
@@ -540,7 +540,7 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 	if (!JS_EvaluateScript(js_cx, js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
 		return NGX_CONF_ERROR;
 	
-	if (!JSVAL_IS_OBJECT(function) || !JS_ValueToFunction(js_cx, function))
+	if (!JSVAL_IS_OBJECT(function) || !JS_ObjectIsFunction(js_cx, JSVAL_TO_OBJECT(function)))
 	{
 		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
 		return NGX_CONF_ERROR;
