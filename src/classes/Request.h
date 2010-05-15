@@ -11,7 +11,8 @@
 #define NGX_JS_REQUEST_SLOT__HEADERS_OUT              4
 #define NGX_JS_REQUEST_SLOT__COOKIES                  5
 #define NGX_JS_REQUEST_SLOT__VARIABLES                6
-#define NGX_JS_REQUEST_SLOTS_COUNT                    7
+#define NGX_JS_REQUEST_SLOT__CLEANUP                  7
+#define NGX_JS_REQUEST_SLOTS_COUNT                    8
 
 
 extern JSClass ngx_http_js__nginx_request__class;

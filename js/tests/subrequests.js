@@ -30,6 +30,13 @@ NginxTests.subrequests = function (r)
 	// }
 	// Tests.run(r)
 	
+	r.cleanupCallback = function ()
+	{
+		this.puts('all done')
+		this.flush()
+		this.sendSpecial(Nginx.HTTP_LAST)
+	}
+	
 	return Nginx.OK
 }
 

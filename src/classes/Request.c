@@ -157,10 +157,36 @@ cleanup_handler(void *data)
 	ngx_http_js__nginx_request__cleanup(ctx, r, js_cx);
 }
 
+static ngx_inline void
+call_cleanup_js_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
+{
+	jsval     fun, rval;
+	
+	if (!ctx->cleanup_handler_set || ctx->js_request == NULL)
+	{
+		return;
+	}
+	
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "calling the js handler for request cleanup");
+	
+	if (!JS_GetReservedSlot(cx, ctx->js_request, NGX_JS_REQUEST_SLOT__CLEANUP, &fun))
+	{
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
+		return;
+	}
+	
+	// if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
+	// {
+		JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
+	// }
+}
+
 void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
+	
+	call_cleanup_js_handler(ctx, r, cx);
 	
 	// let the modules to deside what to clean up
 	ngx_http_js__nginx_headers_in__cleanup(ctx, r, cx);
@@ -194,8 +220,60 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 
 
 static JSBool
-method_cleanup(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+getter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
+	ngx_http_request_t         *r;
+	ngx_http_js_ctx_t         *ctx;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	
+	if (!ctx->cleanup_handler_set)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	if (!JS_GetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, vp))
+	{
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_http_js_ctx_t         *ctx;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	
+	if (ctx->js_request == NULL)
+	{
+		JS_ReportError(cx, "can't set a cleanup callback for a not rooted request");
+		return JS_FALSE;
+	}
+	
+	if (!JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, *vp))
+	{
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
+		return JS_FALSE;
+	}
+	
+	ctx->cleanup_handler_set = 1;
+	
 	return JS_TRUE;
 }
 
@@ -1062,6 +1140,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
+	{"cleanupHandler",  0,                        JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
 	
 	// TODO:
 	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
@@ -1077,7 +1156,6 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 	{"flush",             method_flush,                0, 0, 0},
 	{"sendString",        method_sendString,           1, 0, 0},
 	{"subrequest",        method_subrequest,           2, 0, 0},
-	{"cleanup",           method_cleanup,              0, 0, 0},
 	{"sendSpecial",       method_sendSpecial,          1, 0, 0},
 	{"discardBody",       method_discardBody,          0, 0, 0},
 	{"getBody",           method_getBody,              1, 0, 0},

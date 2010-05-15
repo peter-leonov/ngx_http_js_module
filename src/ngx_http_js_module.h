@@ -13,7 +13,8 @@ typedef struct {
 	JSObject                 *js_cookies;
 	JSObject                 *js_variables;
 	
-	int                       filter_enabled;
+	int                       cleanup_handler_set:1;
+	int                       filter_enabled:1;
 	ngx_chain_t              *chain_first, *chain_last;
 	
 	ngx_event_t               js_timer;
