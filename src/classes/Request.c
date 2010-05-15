@@ -799,20 +799,20 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	// sr->filter_need_in_memory = 1;
 	
 	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
-	
-	if (subrequest)
+	if (subrequest == NULL)
 	{
-		E(JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]),
-			"can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
-		if (ngx_http_js__nginx_request__root_in(js_cx, sr, subrequest) != NGX_OK)
-		{
-			// forward the exception
-			return JS_FALSE;
-		}
+		// forward the exception
+		return JS_FALSE;
 	}
-	else
+	
+	if (!JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]))
 	{
-		JS_ReportError(cx, "couldn't wrap subrequest");
+		THROW("can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
+	}
+	
+	if (ngx_http_js__nginx_request__root_in(cx, sr, subrequest) != NGX_OK)
+	{
+		// forward the exception
 		return JS_FALSE;
 	}
 	
@@ -835,15 +835,14 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	TRACE_REQUEST_METHOD();
 	
 	ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
-	if (!ctx)
+	if (ctx == NULL)
 	{
 		ngx_log_error(NGX_LOG_CRIT, sr->connection->log, 0, "subrequest handler with empty module context");
 		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
-	subrequest = ctx->js_request;
-	// ctx->js_request may not be present if the subrequest construction has failed
-	if (!subrequest)
+	subrequest = ngx_http_js__nginx_request__wrap(js_cx, sr);
+	if (subrequest == NULL)
 	{
 		return NGX_ERROR;
 	}
