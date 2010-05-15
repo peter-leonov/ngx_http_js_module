@@ -162,7 +162,7 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
 	
-	// let the Headers modules to deside what to clean up
+	// let the modules to deside what to clean up
 	ngx_http_js__nginx_headers_in__cleanup(ctx, r, cx);
 	ngx_http_js__nginx_headers_out__cleanup(ctx, r, cx);
 	ngx_http_js__nginx_variables__cleanup(ctx, r, cx);
@@ -181,7 +181,7 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 		
 		// finaly mark the object as inactive
-		// after that the GET_PRIVATE macros will raise an exception when called
+		// after that the GET_PRIVATE macros will raise an exception if called
 		JS_SetPrivate(cx, ctx->js_request, NULL);
 		// and set the native request as unwrapped
 		ctx->js_request = NULL;
