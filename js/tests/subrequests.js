@@ -12,12 +12,11 @@ NginxTests.subrequests = function (r)
 			var body = String(body)
 			r.puts('callback with rc=' + rc + ', body=' + JSON.stringify(body) + ', header=' + sr.headersOut['X-Lalala'])
 			r.flush()
-			r.sendSpecial(Nginx.HTTP_LAST)
 			// t.done()
 		}
 		
-		// r.subrequest('/quick', callback)
-		// r.subrequest('/slow', callback)
+		r.subrequest('/quick', callback)
+		r.subrequest('/slow', callback)
 		r.subrequest('/run/subrequests-headers', callback)
 		
 		// t.wait(3000)
