@@ -121,3 +121,25 @@ js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len)
 	
 	return np;
 }
+
+
+u_char *
+js_debug_value_to_cstring(JSContext *cx, jsval v)
+{
+	JSString  *str_jss;
+	u_char    *str;
+	
+	str_jss = JS_ValueToString(cx, v);
+	if (str_jss == NULL)
+	{
+		return (u_char *) "[JS_ValueToString() == NULL]";
+	}
+	
+	str = (u_char *) JS_GetStringBytes(str_jss);
+	if (str == NULL)
+	{
+		return (u_char *) "[JS_GetStringBytes() == NULL]";
+	}
+	
+	return str;
+}

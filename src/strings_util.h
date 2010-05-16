@@ -10,4 +10,7 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s);
 extern u_char *
 js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len);
 
+extern u_char *
+js_debug_value_to_cstring(JSContext *cx, jsval v);
+
 #endif
