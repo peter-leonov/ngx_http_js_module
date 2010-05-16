@@ -10,8 +10,11 @@
 #include <js/jsapi.h>
 
 #include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
 #include <strings_util.h>
 #include <nginx_js_macroses.h>
+
+#define JS_CLASS_NAME "Nginx"
 
 // see the http://nginx.org/pipermail/nginx-devel/2010-May/000220.html
 #if (NGX_PTR_SIZE == 4)
