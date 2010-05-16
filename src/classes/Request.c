@@ -772,6 +772,7 @@ method_clearTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	if (timer->timer_set)
 	{
+		// implies timer_set = 0;
 		ngx_del_timer(timer);
 		r->main->count--;
 	}
@@ -815,7 +816,7 @@ method_setTimer_handler(ngx_event_t *timer)
 		}
 	}
 	
-	// ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
+	// the ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
 	
 	// implies count--
 	ngx_http_finalize_request(r, rc);
