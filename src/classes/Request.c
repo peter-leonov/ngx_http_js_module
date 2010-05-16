@@ -61,7 +61,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	}
 	
 	request = JS_NewObject(cx, &ngx_http_js__nginx_request__class, ngx_http_js__nginx_request__prototype, NULL);
-	if (!request)
+	if (request == NULL)
 	{
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not create a wrapper object");
 		return NULL;
