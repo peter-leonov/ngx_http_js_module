@@ -10,6 +10,7 @@
 #include <js/jsapi.h>
 
 #include <ngx_http_js_module.h>
+#include <strings_util.h>
 #include <nginx_js_macroses.h>
 
 // see the http://nginx.org/pipermail/nginx-devel/2010-May/000220.html
@@ -85,9 +86,12 @@ method_md5(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 static JSBool
 js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
+#ifdef NGX_DEBUG
+	TRACE_S(js_debug_value_to_cstring(cx, *vp));
+#else
 	TRACE();
+#endif
 	
-	// LOG("Nginx property id = %d\n", JSVAL_TO_INT(id));
 	if (JSVAL_IS_INT(id))
 	{
 		switch (JSVAL_TO_INT(id))
