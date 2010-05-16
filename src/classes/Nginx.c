@@ -159,19 +159,6 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case 51: *vp = INT_TO_JSVAL(NGX_HTTP_FLUSH); break;
 			
 			
-			case 100:
-			{
-				// ngx_time_t *tp;
-				// tp = ngx_timeofday();
-				// ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "%L", tp->sec * 1000 + tp->msec);
-				if (!JS_NewNumberValue(cx, JS_GET_NGINX_FULL_MSECS(), vp))
-				{
-					JS_ReportOutOfMemory(cx);
-					return JS_FALSE;
-				}
-			}
-			break;
-			
 			case 101:
 			{
 				if (!ngx_cycle->conf_prefix.len)
@@ -187,6 +174,21 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			case 102: *vp = INT_TO_JSVAL(ngx_pid); break;
 		}
 	}
+	return JS_TRUE;
+}
+
+
+static JSBool
+getter_time(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	TRACE_STATIC_GETTER()
+	
+	if (!JS_NewNumberValue(cx, JS_GET_NGINX_FULL_MSECS(), vp))
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
 	return JS_TRUE;
 }
 
@@ -251,7 +253,7 @@ static JSPropertySpec nginx_class_props[] =
 	{"HTTP_LAST",                          50, JSPROP_READONLY, NULL, NULL},
 	{"HTTP_FLUSH",                         51, JSPROP_READONLY, NULL, NULL},
 	
-	{"time",                              100, JSPROP_READONLY, NULL, NULL},
+	{"time",                                0, JSPROP_READONLY, getter_time, NULL},
 	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
 	{"pid",                               102, JSPROP_READONLY, NULL, NULL},
 	
