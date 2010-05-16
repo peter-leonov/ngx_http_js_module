@@ -90,7 +90,7 @@ static JSBool
 js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 #ifdef NGX_DEBUG
-	TRACE_S(js_debug_value_to_cstring(cx, *vp));
+	TRACE_S(js_debug_value_to_cstring(cx, id));
 #else
 	TRACE();
 #endif
