@@ -71,7 +71,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	
 	
 	// We can't just store the wrapper in the request context without rooting it,
-	// because the wrapper may be garbage collected out and we got a pointer to nothing
+	// because the wrapper may be garbage collected out and we get a pointer to nothing
 	// in our ctx->js_request which leads to a crash or worst. So leaving the ctx->js_request
 	// empty.
 	
@@ -736,6 +736,7 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
 	
+	// check if the timer is not set up already
 	if (!timer->timer_set)
 	{
 		// from ngx_cycle.c:740
@@ -747,7 +748,7 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	}
 	
 	// implies timer_set = 1;
-	// AFAIK, the socond addition of the timer does not duplicate it
+	// AFAIK, the second addition of the timer does not duplicate it
 	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
 	
 	return JS_TRUE;
