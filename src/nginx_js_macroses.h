@@ -44,6 +44,7 @@ if (!(expr)) \
 // #define TRACE() { fprintf(stderr, "%s() at %s:%d\n", __FUNCTION__, __FILE__, __LINE__); }
 // #define TRACE() { fprintf(stderr, "%s()\n", __FUNCTION__); }
 #define TRACE() ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "%s" COLOR_CLEAR "()", __FUNCTION__);
+#define TRACE_S(s) ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "%s" COLOR_CLEAR "(%s)", __FUNCTION__, s);
 #define TRACE_REQUEST(func) ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "%s(r=%p)", func, r);
 #define TRACE_REQUEST_METHOD() ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_CYAN "Request#%s" COLOR_CLEAR "(r=%p)", __FUNCTION__ + 7, r);
 #define TRACE_REQUEST_GETTER() ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_CYAN "get Request#%s" COLOR_CLEAR ", r=%p", __FUNCTION__ + 7, r);
@@ -67,6 +68,7 @@ if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) 
 #define LOG2(mess, args...)
 
 #define TRACE()
+#define TRACE_S(s)
 #define TRACE_REQUEST(func)
 #define TRACE_REQUEST_METHOD()
 #define TRACE_REQUEST_GETTER()
