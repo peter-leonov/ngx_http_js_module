@@ -36,7 +36,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	ngx_http_js_ctx_t         *ctx;
 	JSObject                  *request;
 	
-	TRACE_REQUEST("request_root");
+	TRACE_REQUEST("request_wrap");
 	
 	// get a js module context
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
@@ -59,8 +59,6 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	{
 		return ctx->js_request;
 	}
-	
-	TRACE_REQUEST("request_wrap");
 	
 	request = JS_NewObject(cx, &ngx_http_js__nginx_request__class, ngx_http_js__nginx_request__prototype, NULL);
 	if (!request)
