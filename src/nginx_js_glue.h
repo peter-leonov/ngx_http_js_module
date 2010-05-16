@@ -4,6 +4,7 @@
 extern JSRuntime *ngx_http_js_module_js_runtime;
 extern JSContext *ngx_http_js_module_js_context;
 extern JSObject  *ngx_http_js_module_js_global;
+extern ngx_log_t *ngx_http_js_module_log;
 
 #define js_cx ngx_http_js_module_js_context
 #define js_global ngx_http_js_module_js_global
