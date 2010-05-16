@@ -801,20 +801,18 @@ method_setTimer_handler(ngx_event_t *timer)
 	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__SET_TIMER, &callback))
 	{
 		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__SET_TIMER(%d)", NGX_JS_REQUEST_SLOT__SET_TIMER);
-		rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+		ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+		return;
 	}
-	else
+	
+	// here a new timeout handler may be set
+	if (!JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 	{
-		// here a new timeout handler may be set
-		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
-		{
-			rc = NGX_DONE;
-		}
-		else
-		{
-			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
-		}
+		ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+		return;
 	}
+	
+	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : NGX_OK;
 	
 	// the ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
 	
