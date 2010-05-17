@@ -3,38 +3,46 @@
 NginxTests.subrequests = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
+	r.flush()
 	
-	// Tests.test('tests for subrequests', function (t)
-	// {
-		function callback (sr, body, rc)
-		{
-			log('\x1B[31m!!!\x1B[0m ' + rc)
-			var body = String(body)
-			r.puts('callback with rc=' + rc + ', body=' + JSON.stringify(body) + ', header=' + sr.headersOut['X-Lalala'])
-			r.flush()
-			// t.done()
-		}
-		
-		r.subrequest('/quick', callback)
-		r.subrequest('/slow', callback)
-		r.subrequest('/run/subrequests-headers', callback)
-		
-		// t.wait(3000)
-	// })
-	// Tests.oncomplete = function ()
-	// {
-	// 	r.puts('all done')
-	// 	r.flush()
-	// 	r.sendSpecial(Nginx.HTTP_LAST)
-	// }
-	// Tests.run(r)
-	
-	r.oncleanup = function ()
+	Tests.test('tests for subrequests', function (t)
 	{
-		this.puts('all done')
-		this.flush()
-		this.sendSpecial(Nginx.HTTP_LAST)
+		t.test('quick', function (t)
+		{
+			function callback (sr, body, rc)
+			{
+				// log('\x1B[31m!!!\x1B[0m ' + rc)
+				var body = String(body)
+				r.puts('callback with rc=' + rc + ', body=' + JSON.stringify(body) + ', header=' + sr.headersOut['X-Lalala'])
+				r.flush()
+				t.done()
+			}
+			
+			r.subrequest('/quick', callback)
+			t.wait(3000)
+		})
+		
+		// r.subrequest('/slow', callback)
+		// r.subrequest('/run/subrequests-headers', callback)
+		
+		t.wait(3000)
+	})
+	Tests.oncomplete = function ()
+	{
+		r.puts('all done')
+		r.flush()
+		r.sendSpecial(Nginx.HTTP_LAST)
 	}
+	Tests.run(r)
+	
+	// r.setTimeout(function (e) { r.subrequest('/slow', callback) }, 3000)
+	
+	// r.oncleanup = function ()
+	// {
+	// 	this.puts('all done')
+	// 	this.flush()
+	// 	this.sendSpecial(Nginx.HTTP_LAST)
+	// }
 	
 	return Nginx.OK
 }
