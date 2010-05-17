@@ -206,6 +206,48 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!JS_NewNumberValue(cx, r->headers_out.status, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	jsdouble                    val_n;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (JSVAL_IS_VOID(*vp))
+	{
+		r->headers_out.status = 0;
+		return JS_TRUE;
+	}
+	
+	if (!JS_ValueToNumber(cx, *vp, &val_n))
+	{
+		return JS_FALSE;
+	}
+	
+	r->headers_out.status = val_n;
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 getter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
@@ -999,6 +1041,7 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 static JSPropertySpec props[] =
 {
+	{"status",                       0,  0,                    getter_status,                setter_status},
 	{"Server",                       0,  0,                    getter_server,                setter_server},
 	{"Date",                         0,  0,                    getter_date,                  setter_date},
 	{"$dateTime",                    0,  JSPROP_READONLY,      getter_dateTime,              NULL},

@@ -26,7 +26,7 @@ NginxTests.requestHeadersOutSetGet = function (r)
 				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
 			
 			h[name] = undefined
-			t.eq(h[name], undefined, 'first delete')
+			t.eq(h[name], header.deleted, 'first delete')
 			
 			if (nameN)
 				t.eq(h[nameN], header.deletedN, 'deleted number value (' + nameN + ')')
@@ -38,7 +38,7 @@ NginxTests.requestHeadersOutSetGet = function (r)
 				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
 			
 			h[name] = ''
-			t.eq(h[name], undefined, 'disabled')
+			t.eq(h[name], header.disabled, 'disabled')
 			
 			if (nameN)
 				t.eq(h[nameN], header.deletedN, 'disabled number value (' + nameN + ')')
@@ -50,11 +50,12 @@ NginxTests.requestHeadersOutSetGet = function (r)
 				t.eq(h[nameN], header.valueN, 'number value (' + nameN + ')')
 			
 			h[name] = undefined
-			t.eq(h[name], undefined, 'second delete')
+			t.eq(h[name], header.deleted, 'second delete')
 		}
 		
 		var headers =
 		[
+			{name: 'status', value: 404, initial: 200, deleted: 0, disabled: 0},
 			{name: 'Server', value: 'nginxy'},
 			{name: 'Date', value: 'Wed, 12 May 2010 19:15:52 GMT', nameN: '$dateTime', valueN: 1273691752, deletedN: -1},
 			{name: 'Content-Length', value: '123456', nameN: '$contentLength', valueN: 123456, deletedN: 0},
