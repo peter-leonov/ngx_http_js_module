@@ -9,6 +9,8 @@ NginxTests.subrequests = function (r)
 	{
 		t.test('quick', function (t)
 		{
+			t.mayFail()
+			
 			function callback (sr, body, rc)
 			{
 				t.match(String(body), /403 Forbidden/i, 'body')
