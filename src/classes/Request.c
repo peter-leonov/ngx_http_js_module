@@ -959,9 +959,6 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		return NGX_ERROR;
 	}
 	
-	// LOG("sr->upstream = %p", sr->upstream);
-	// LOG("sr->upstream = %s", sr->upstream->buffer.pos);
-	
 	args[0] = OBJECT_TO_JSVAL(subrequest);
 	
 	if (sr->upstream)
