@@ -11,16 +11,11 @@ NginxTests.subrequests = function (r)
 		{
 			function callback (sr, body, rc)
 			{
-				var body = String(body)
-				r.puts('callback with rc=' + rc + ', body=' + JSON.stringify(body) + ', header=' + sr.headersOut['X-Lalala'])
-				r.flush()
-				t.done()
+				t.match(String(body), /403 Forbidden/i, 'body')
+				t.eq(rc, 403, 'rc')
 				
-				return Nginx.DONE
+				t.done()
 			}
-			
-			// r.setTimeout(function () { t.done() }, 500)
-			// t.wait(3000)
 			
 			r.subrequest('/quick', callback)
 			t.wait(3000)
@@ -30,37 +25,44 @@ NginxTests.subrequests = function (r)
 		{
 			function callback (sr, body, rc)
 			{
-				var body = String(body)
-				r.puts('callback with rc=' + rc + ', body=' + JSON.stringify(body) + ', header=' + sr.headersOut['X-Lalala'])
-				r.flush()
-				t.done()
+				t.match(String(body), /welcome to nginx/i, 'body')
 				
-				return Nginx.DONE
+				t.done()
 			}
 			
-			// r.setTimeout(function () { t.done() }, 500)
-			// t.wait(3000)
-			
-			r.subrequest('/slow', callback)
+			r.subrequest('/loopback/', callback)
 			t.wait(3000)
 		})
 		
-		t.test('/run/subrequests-headers', function (t)
+		t.test('JS handler', function (t)
 		{
 			function callback (sr, body, rc)
 			{
-				var body = String(body)
-				r.puts('callback with rc=' + rc + ', body=' + JSON.stringify(body) + ', header=' + sr.headersOut['X-Lalala'])
-				r.flush()
-				t.done()
+				t.eq(sr.headersOut['X-Lalala'], 'lololo', 'headersOut["X-Lalala"]')
 				
-				return Nginx.DONE
+				t.done()
 			}
 			
 			// r.setTimeout(function () { t.done() }, 500)
 			// t.wait(3000)
 			
-			r.subrequest('/slow', callback)
+			r.subrequest('/run/subrequests-headers', callback)
+			t.wait(3000)
+		})
+		
+		t.test('JS handler via proxy pass', function (t)
+		{
+			function callback (sr, body, rc)
+			{
+				t.eq(sr.headersOut['X-Lalala'], 'lololo', 'headersOut["X-Lalala"]')
+				
+				t.done()
+			}
+			
+			// r.setTimeout(function () { t.done() }, 500)
+			// t.wait(3000)
+			
+			r.subrequest('/loopback/run/subrequests-headers', callback)
 			t.wait(3000)
 		})
 	})
