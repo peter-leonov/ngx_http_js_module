@@ -248,6 +248,42 @@ setter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
+getter_statusLine(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (r->headers_out.status_line.data == NULL || r->headers_out.status_line.len == 0)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->headers_out.status_line, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_statusLine(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	if (!set_string_header_from_jsval(cx, r, &r->headers_out.status_line, vp))
+	{
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 getter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
 	ngx_http_request_t         *r;
@@ -1042,6 +1078,7 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 static JSPropertySpec props[] =
 {
 	{"status",                       0,  0,                    getter_status,                setter_status},
+	{"statusLine",                   0,  0,                    getter_statusLine,            setter_statusLine},
 	{"Server",                       0,  0,                    getter_server,                setter_server},
 	{"Date",                         0,  0,                    getter_date,                  setter_date},
 	{"$dateTime",                    0,  JSPROP_READONLY,      getter_dateTime,              NULL},
