@@ -143,7 +143,7 @@ var sup = Super.prototype,
 		
 		var test = new Me(this, name, conf, callback)
 		test.holder = this.holder
-		test.reporter = this.reporter.create()
+		test.reporter = this.reporter.create(this)
 		
 		// link cascades
 		this.add(test)
@@ -187,7 +187,7 @@ var sup = Super.prototype,
 	{
 		this.results.push({status: 'failed', message: m, description: d})
 		if (m || d)
-			this.reporter.fail(m, d)
+			this.reporter[this.conf.mayFail ? 'warn' : 'fail'](m, d)
 	},
 	
 	setStatus: function (s)

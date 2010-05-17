@@ -74,9 +74,11 @@ Reporter.prototype =
 		clear: '\x1B[0m'
 	},
 	
-	create: function ()
+	create: function (parent)
 	{
-		return new Reporter(this.holder)
+		var r = new Reporter(this.holder)
+		r.parent = parent
+		return r
 	},
 	
 	send: function (msg)
@@ -134,6 +136,7 @@ Reporter.prototype =
 		this.send(this.colors[cn] + row + this.colors.clear)
 	},
 	
+	warn: function (m, d) { this.line('warn', m, d) },
 	fail: function (m, d) { this.line('fail', m, d) },
 	pass: function (m, d) { this.line('pass', m, d) },
 	info: function (m, d) { this.line('info', m, d) },
