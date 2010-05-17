@@ -23,6 +23,23 @@ NginxTests.subrequests = function (r)
 			t.wait(3000)
 		})
 		
+		
+		t.test('quick with NGX_DONE', function (t)
+		{
+			function callback (sr, body, rc)
+			{
+				t.eq(body, undefined, 'body')
+				t.eq(rc, 403, 'rc')
+				
+				t.done()
+				return Nginx.DONE
+			}
+			
+			r.subrequest('/quick', callback)
+			t.wait(3000)
+		})
+		
+		
 		t.test('slow', function (t)
 		{
 			function callback (sr, body, rc)
@@ -35,6 +52,7 @@ NginxTests.subrequests = function (r)
 			r.subrequest('/loopback/', callback)
 			t.wait(3000)
 		})
+		
 		
 		t.test('JS handler', function (t)
 		{
@@ -51,6 +69,7 @@ NginxTests.subrequests = function (r)
 			r.subrequest('/run/subrequests-headers', callback)
 			t.wait(3000)
 		})
+		
 		
 		t.test('JS handler via proxy pass', function (t)
 		{
