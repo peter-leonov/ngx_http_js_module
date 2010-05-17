@@ -29,6 +29,12 @@ cleanup_handler(void *data);
 static void
 method_setTimer_handler(ngx_event_t *ev);
 
+static ngx_int_t
+method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
+
+void
+method_getBody_handler(ngx_http_request_t *r);
+
 
 JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
@@ -535,9 +541,6 @@ method_sendSpecial(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval
 	return JS_TRUE;
 }
 
-void
-method_getBody_handler(ngx_http_request_t *r);
-
 static JSBool
 method_getBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
@@ -824,9 +827,6 @@ method_setTimer_handler(ngx_event_t *timer)
 }
 
 
-static ngx_int_t
-method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc);
-
 static JSBool
 method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
@@ -982,10 +982,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		return NGX_ERROR;
 	}
 	
-	if (JSVAL_IS_INT(rval))
-	{
-		return JSVAL_TO_INT(rval);
-	}
+	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : rc;
 	
 	return rc;
 }
