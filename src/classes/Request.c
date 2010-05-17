@@ -816,11 +816,11 @@ method_setTimer_handler(ngx_event_t *timer)
 	
 	// the ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
 	
+	// see this http://nginx.org/pipermail/nginx-devel/2010-May/000253.html
+	ngx_http_run_posted_requests(r->main->connection);
+	
 	// implies count--
 	ngx_http_finalize_request(r, rc);
-	
-	// see this http://nginx.org/pipermail/nginx-devel/2010-May/000253.html
-	ngx_http_run_posted_requests(r->connection);
 }
 
 
