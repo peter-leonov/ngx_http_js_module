@@ -19,6 +19,8 @@ NginxTests.subrequestHeadersOut = function (r)
 				t.eq(sr.headersOut['Content-Type'], 'application/json; charset=utf-8', 'headersOut["Content-Type"]')
 				t.eq(sr.headersOut['Expires'], 'today', 'headersOut["Expires"]')
 				
+				t.eq(body, '12345', 'body')
+				
 				t.done()
 			}
 			
@@ -54,6 +56,7 @@ NginxTests.subrequestHeadersOutHandler = function (r)
 	
 	r.sendHttpHeader()
 	
+	r.print('12345')
 	r.sendSpecial(Nginx.HTTP_LAST)
 	
 	// return Nginx.DONE to avoid subrequest handler
