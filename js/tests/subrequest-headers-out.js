@@ -17,6 +17,7 @@ NginxTests.subrequestHeadersOut = function (r)
 				t.eq(sr.headersOut.statusLine, '206 Dont worry be happy', 'headersOut.statusLine')
 				t.eq(sr.headersOut['X-Lalala'], 'lololo', 'headersOut["X-Lalala"]')
 				t.eq(sr.headersOut['Content-Type'], 'application/json; charset=utf-8', 'headersOut["Content-Type"]')
+				t.eq(sr.headersOut['Content-Length'], '5', 'headersOut["Content-Length"]')
 				t.eq(sr.headersOut['Expires'], 'today', 'headersOut["Expires"]')
 				
 				t.eq(body, '12345', 'body')
@@ -52,6 +53,7 @@ NginxTests.subrequestHeadersOutHandler = function (r)
 	r.headersOut['Range'] = 'bytes; 5-25'
 	r.headersOut['X-Lalala'] = 'lololo'
 	r.headersOut['Content-Type'] = 'application/json; charset=utf-8'
+	r.headersOut['Content-Length'] = 5
 	r.headersOut['Expires'] = 'today'
 	
 	r.sendHttpHeader()
