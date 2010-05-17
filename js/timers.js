@@ -48,8 +48,11 @@ Me.prototype =
 		if (!callbacks)
 			return
 		
-		delete callbacks[n]
-		callbacks.total--
+		if (callbacks[n])
+		{
+			delete callbacks[n]
+			callbacks.total--
+		}
 		
 		if (callbacks.total == 0)
 			this.clearTimer()
