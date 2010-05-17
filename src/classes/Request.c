@@ -930,8 +930,12 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	JSObject                         *subrequest;
 	jsval                             callback, rval, args[3];
 	
-	// this handler is called from the _subrequest_ finalizer
-	// which, AFAIK, implies count--
+	// This handler is called from the _subrequest_ finalizer
+	// which, AFAIK, implies count-- if and only if the subrequest
+	// is really finalized. Also, this handler may be called more
+	// then one time: for the header and for the body
+	// if the subrequest is “quick”: location /quick { return 403; }
+	// is an example of a quick subrequest.
 	
 	r = sr->main;
 	TRACE_REQUEST_METHOD();
