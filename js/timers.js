@@ -91,9 +91,14 @@ Me.prototype =
 			delete timers[t]
 			for (var j = 0, jl = arr.length; j < jl; j++)
 			{
-				var f = callbacks[arr[j]]
+				var n = arr[j]
+				var f = callbacks[n]
+				
 				if (!f)
 					continue
+				
+				delete callbacks[n]
+				callbacks.total--
 				
 				try
 				{
@@ -103,7 +108,7 @@ Me.prototype =
 			}
 		}
 		
-		if (min < Infinity)
+		if (min < Infinity && callbacks.total >= 1)
 		{
 			this.__timers_nextTimer = now + min
 			this.setTimer(this.expireTimers, min) // setTimer invokes with this
