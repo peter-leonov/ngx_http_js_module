@@ -818,6 +818,9 @@ method_setTimer_handler(ngx_event_t *timer)
 	
 	// implies count--
 	ngx_http_finalize_request(r, rc);
+	
+	// see this http://nginx.org/pipermail/nginx-devel/2010-May/000253.html
+	ngx_http_run_posted_requests(r->connection);
 }
 
 
