@@ -808,6 +808,9 @@ method_setTimer_handler(ngx_event_t *timer)
 		return;
 	}
 	
+	// timer_set is 0 here and count is incremented
+	// because ngx_event_expire_timers() sets it before calling the handler
+	
 	// here a new timeout handler may be set
 	if (!JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 	{
@@ -819,7 +822,12 @@ method_setTimer_handler(ngx_event_t *timer)
 	
 	// the ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
 	
+	
+	// the content or the filter handler will run our posted subrequests
+	// but timer will not, so running them manually
 	// see this http://nginx.org/pipermail/nginx-devel/2010-May/000253.html
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "manually running posted requests");
+	// here a new timeout handler may be set (via subrequest handlers)
 	ngx_http_run_posted_requests(r->main->connection);
 	
 	// implies count--
