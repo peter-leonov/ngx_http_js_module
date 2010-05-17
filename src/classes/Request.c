@@ -911,6 +911,9 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		return JS_FALSE;
 	}
 	
+	// to be able to manually call finalize at the subrequest handler
+	r->main->count++;
+	
 	*rval = INT_TO_JSVAL(rc);
 	return JS_TRUE;
 }
@@ -991,6 +994,10 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	}
 	
 	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : rc;
+	// ngx_http_run_posted_requests(r->main->connection);
+	
+	// complements the manual count++ in the subrequest method
+	ngx_http_finalize_request(r, NGX_OK);
 	
 	return rc;
 }
