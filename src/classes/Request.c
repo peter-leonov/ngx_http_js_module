@@ -117,7 +117,7 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 			return NGX_ERROR;
 		}
 		
-		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more than once", request, ctx);
+		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more then once", request, ctx);
 		return NGX_OK;
 	}
 	
