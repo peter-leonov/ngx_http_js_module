@@ -1225,6 +1225,39 @@ setter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
+
+static JSBool
+getter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	*vp = r->internal ? JSVAL_TRUE : JSVAL_FALSE;
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	JSBool                b;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_SETTER();
+	
+	if (!JS_ValueToBoolean(cx, *vp, &b))
+	{
+		return JS_FALSE;
+	}
+	
+	r->internal = b == JS_TRUE ? 1 : 0;
+	
+	return JS_TRUE;
+}
+
 JSPropertySpec ngx_http_js__nginx_request__props[] =
 {
 	{"uri",             REQUEST_URI,              JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
@@ -1241,6 +1274,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
 	{"oncleanup",       0,                        JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
+	{"internal",        0,                        JSPROP_ENUMERATE,                   getter_internal,           setter_internal},
 	{0, 0, 0, NULL, NULL}
 };
 

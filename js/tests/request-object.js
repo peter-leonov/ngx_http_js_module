@@ -14,6 +14,7 @@ NginxTests.requestObject = function (r)
 		t.eq(r.method, args.method, 'method')
 		t.eq(r.filename, Nginx.prefix + 'html/run/request-object', 'filename')
 		t.eq(r.remoteAddr, '127.0.0.1', 'remoteAddr')
+		t.eq(r.internal, {'true':true, 'false':false}[args.internal], 'method')
 		t.eq(r.headerOnly, false, 'headerOnly')
 		t.eq(r.hasBody, false, 'hasBody')
 		r.allowRanges = 1
