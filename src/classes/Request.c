@@ -650,9 +650,13 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	E(argc >= 1 && JSVAL_IS_STRING(argv[0]),
 		"Nginx.Request#sendfile takes 1 mandatory argument: filename:String, and 2 optional offset:Number and bytes:Number");
 	
+	filename = js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, NULL);
+	if (filename == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
-	E(filename = js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, NULL), "Can`t js_str2c_str()");
-	ngx_assert(filename);
 	
 	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
 	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
@@ -660,11 +664,26 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending file \"%s\" with offset=%d and bytes=%d", filename, offset, bytes);
 	
 	b = ngx_calloc_buf(r->pool);
-	E(b != NULL, "Can`t ngx_calloc_buf()");
+	if (b == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
 	b->file = ngx_pcalloc(r->pool, sizeof(ngx_file_t));
-	E(b->file != NULL, "Can`t ngx_pcalloc()");
+	if (b->file == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	
+	path.len = ngx_strlen(filename);
+	path.data = ngx_pcalloc(r->pool, path.len + 1);
+	if (path.data == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
 	clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 	ngx_assert(clcf);
 	
@@ -675,17 +694,19 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	of.errors = clcf->open_file_cache_errors;
 	of.events = clcf->open_file_cache_events;
 	
-	path.len = ngx_strlen(filename);
-	
-	path.data = ngx_pcalloc(r->pool, path.len + 1);
-	E(path.data != NULL, "Can`t ngx_pcalloc()");
 	
 	(void) ngx_cpystrn(path.data, filename, path.len + 1);
 	
 	if (ngx_open_cached_file(clcf->open_file_cache, &path, &of, r->pool) != NGX_OK)
 	{
-		if (of.err != 0)
-			ngx_log_error(NGX_LOG_CRIT, r->connection->log, ngx_errno, ngx_open_file_n " \"%s\" failed", filename);
+		if (of.err == 0)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, ngx_errno, "%s \"%s\" failed", of.failed, filename);
+		
 		*rval = JSVAL_FALSE;
 		return JS_TRUE;
 	}
@@ -1047,7 +1068,10 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 				ngx_str_t           filename;
 				
 				if (ngx_http_map_uri_to_path(r, &filename, &root, 0) == NULL)
-					break;
+				{
+					JS_ReportOutOfMemory(cx);
+					return JS_FALSE;
+				}
 				filename.len--;
 				
 				NGX_STRING_to_JS_STRING_to_JSVAL(cx, filename, *vp);
