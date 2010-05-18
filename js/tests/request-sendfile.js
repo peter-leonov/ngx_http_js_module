@@ -1,6 +1,6 @@
 ;(function(){
 
-NginxTests.sendfile = function (r)
+NginxTests.requestSendfile = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
@@ -13,7 +13,7 @@ NginxTests.sendfile = function (r)
 			t.done()
 		}
 		
-		r.subrequest('/loopback/run/sendfile-handler', callback)
+		r.subrequest('/loopback/run/request-sendfile-handler', callback)
 		
 		t.wait(3000)
 	})
@@ -26,7 +26,7 @@ NginxTests.sendfile = function (r)
 	return Nginx.OK
 }
 
-NginxTests.sendfileHandler = function (r)
+NginxTests.requestSendfileHandler = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	r.flush()

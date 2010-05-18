@@ -77,7 +77,7 @@ require('tests/standart-classes.js')
 require('tests/subrequests.js')
 require('tests/subrequest-headers-out.js')
 require('tests/subrequest-headers-in.js')
-require('tests/sendfile.js')
+require('tests/request-sendfile.js')
 
 require('demos/request-headers-out.js')
 require('demos/delayed-output.js')
