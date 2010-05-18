@@ -915,7 +915,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	// // to be able to manually call finalize at the subrequest handler
 	// r->main->count++;
 	
-	*rval = INT_TO_JSVAL(rc);
+	*rval = OBJECT_TO_JSVAL(subrequest);
 	return JS_TRUE;
 }
 
