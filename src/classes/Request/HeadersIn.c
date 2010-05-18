@@ -302,11 +302,13 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		
+		// mark header as enabled
 		header->hash = 1;
 		
-		header->key.data = (u_char*)key;
+		// set up header name
+		header->key.data = (u_char *) key;
 		header->key.len = key_len;
+		
 		// has to be set to proxy_pass without a crash
 		// see this http://wiki.nginx.org/HeadersManagement#headers_in_and_proxy_pass
 		header->lowcase_key = lowercased;
