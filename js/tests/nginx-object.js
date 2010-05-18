@@ -9,6 +9,8 @@ NginxTests.nginxObject = function (r)
 	Tests.test('tests for Nginx object', function (t)
 	{
 		t.type(Nginx, 'object', 'Nginx object')
+		t.type(Nginx.version, 'number', 'Nginx.version')
+		t.type(Nginx.VERSION, 'string', 'Nginx.VERSION')
 		t.type(Nginx.logError, 'function', 'Nginx.logError')
 		t.eq(Nginx.prefix, args.prefix, 'compare Nginx.prefix and args.prefix')
 		t.eq(Nginx.pid, +args.pid, 'Nginx.pid')

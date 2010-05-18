@@ -172,6 +172,18 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			break;
 			
 			case 102: *vp = INT_TO_JSVAL(ngx_pid); break;
+			case 103: *vp = INT_TO_JSVAL(nginx_version); break;
+			case 104:
+			{
+				JSString  *ver;
+				ver = JS_NewStringCopyZ(cx, NGINX_VERSION);
+				if (ver == NULL)
+				{
+					return JS_FALSE;
+				}
+				*vp = STRING_TO_JSVAL(ver);
+			}
+			break;
 		}
 	}
 	return JS_TRUE;
@@ -256,6 +268,8 @@ static JSPropertySpec nginx_class_props[] =
 	{"time",                                0, JSPROP_READONLY, getter_time, NULL},
 	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
 	{"pid",                               102, JSPROP_READONLY, NULL, NULL},
+	{"version",                           103, JSPROP_READONLY, NULL, NULL},
+	{"VERSION",                           104, JSPROP_READONLY, NULL, NULL},
 	
 	{0, 0, 0, NULL, NULL}
 };
