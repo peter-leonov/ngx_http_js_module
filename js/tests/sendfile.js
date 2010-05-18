@@ -8,7 +8,7 @@ NginxTests.sendfile = function (r)
 	{
 		function callback (sr, body, rc)
 		{
-			t.ok(body, 'response body')
+			t.eq(body, 'before:ha-ha, sendme!:abbbc:the rest:after', 'response body')
 			
 			t.done()
 		}
@@ -31,16 +31,16 @@ NginxTests.sendfileHandler = function (r)
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	r.flush()
 	
-	// all these four commants add just a specific buffer to the output chain
-	// r.sendfile('/etc/passwd')
+	// all these commants just add a specific buffer to the output chain
 	r.print('before:')
-	r.flush()
-	
 	r.sendfile(Nginx.prefix + 'sendfile-1.txt')
-	
+	r.print(':')
+	r.sendfile(Nginx.prefix + 'sendfile-2.txt', 2, 5)
+	r.print(':')
+	r.sendfile(Nginx.prefix + 'sendfile-3.txt', 3)
 	r.print(':after')
-	r.flush()
 	
+	r.flush()
 	r.sendSpecial(Nginx.HTTP_LAST)
 	
 	return Nginx.OK
