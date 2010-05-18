@@ -17,8 +17,11 @@ JSObject *ngx_http_js__nginx_headers_in__prototype;
 JSClass ngx_http_js__nginx_headers_in__class;
 static JSClass* private_class = &ngx_http_js__nginx_headers_in__class;
 
-static ngx_http_header_t *
-search_hashed_headers_in(ngx_http_request_t *r, u_char *name, size_t len);
+static ngx_inline ngx_int_t
+hash_header_name(u_char *lowercased, u_char *name, size_t len);
+
+static ngx_inline ngx_http_header_t *
+search_hashed_headers_in(ngx_http_request_t *r, ngx_int_t hash, u_char *lowercased, size_t len);
 
 static ngx_table_elt_t *
 search_headers_in(ngx_http_request_t *r, u_char *name, size_t len);
@@ -360,33 +363,33 @@ ngx_http_js__nginx_headers_in__init(JSContext *cx, JSObject *global)
 }
 
 
-static ngx_http_header_t *
-search_hashed_headers_in(ngx_http_request_t *r, u_char *name, size_t len)
+static ngx_inline ngx_int_t
+hash_header_name(u_char *lowercased, u_char *name, size_t len)
 {
-	ngx_http_core_main_conf_t  *cmcf;
-	u_char                     *lowcase_key;
 	ngx_uint_t                  i, hash;
 	
 	TRACE();
-	ngx_assert(r);
-	ngx_assert(name);
-	
-	// look in hashed headers
-	
-	// header names are case-insensitive
-	lowcase_key = ngx_palloc(r->pool, len);
-	if (lowcase_key == NULL)
-	{
-		return NULL;
-	}
 	
 	// calculate a hash of header name
 	hash = 0;
 	for (i = 0; i < len; i++)
 	{
-		lowcase_key[i] = ngx_tolower(name[i]);
-		hash = ngx_hash(hash, lowcase_key[i]);
+		lowercased[i] = ngx_tolower(name[i]);
+		hash = ngx_hash(hash, lowercased[i]);
 	}
+	
+	return hash;
+}
+
+
+static ngx_inline ngx_http_header_t *
+search_hashed_headers_in(ngx_http_request_t *r, ngx_int_t hash, u_char *lowercased, size_t len)
+{
+	ngx_http_core_main_conf_t  *cmcf;
+	
+	TRACE();
+	
+	// look in hashed headers
 	
 	// The layout of hashed headers is stored in ngx_http_core_module main config.
 	// All the hashes, its offsets and handlers are precalculated at the configuration time
@@ -395,7 +398,7 @@ search_hashed_headers_in(ngx_http_request_t *r, u_char *name, size_t len)
 	cmcf = ngx_http_get_module_main_conf(r, ngx_http_core_module);
 	
 	// find the currents header description (ngx_http_header_t) by its hash
-	return ngx_hash_find(&cmcf->headers_in_hash, hash, lowcase_key, len);
+	return ngx_hash_find(&cmcf->headers_in_hash, hash, lowercased, len);
 }
 
 static ngx_table_elt_t *
