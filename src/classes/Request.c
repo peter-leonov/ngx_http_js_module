@@ -657,8 +657,7 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		return JS_FALSE;
 	}
 	
-	
-	offset = argc < 2 ? -1 : JSVAL_TO_INT(argv[1]);
+	offset = argc < 2 ? 0 : JSVAL_TO_INT(argv[1]);
 	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
 	
 	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending file \"%s\" with offset=%d and bytes=%d", filename, offset, bytes);
@@ -684,18 +683,19 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	
+	(void) ngx_cpystrn(path.data, filename, path.len + 1);
+	
 	clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 	ngx_assert(clcf);
 	
+	ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 	
 	of.test_dir = 0;
 	of.valid = clcf->open_file_cache_valid;
 	of.min_uses = clcf->open_file_cache_min_uses;
 	of.errors = clcf->open_file_cache_errors;
 	of.events = clcf->open_file_cache_events;
-	
-	
-	(void) ngx_cpystrn(path.data, filename, path.len + 1);
 	
 	if (ngx_open_cached_file(clcf->open_file_cache, &path, &of, r->pool) != NGX_OK)
 	{
@@ -711,11 +711,6 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		return JS_TRUE;
 	}
 	
-	if (offset == -1)
-	{
-		offset = 0;
-	}
-	
 	if (bytes == 0)
 	{
 		bytes = of.size - offset;
@@ -728,6 +723,7 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	b->file->fd = of.fd;
 	b->file->log = r->connection->log;
+	b->file->directio = of.is_directio;
 	
 	
 	out.buf = b;
@@ -1209,7 +1205,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 	{"sendSpecial",       method_sendSpecial,          1, 0, 0},
 	{"discardBody",       method_discardBody,          0, 0, 0},
 	{"getBody",           method_getBody,              1, 0, 0},
-	{"sendfile",          method_sendfile,             1, 0, 0},
+	{"sendfile",          method_sendfile,             3, 0, 0},
 	{"setTimer",          method_setTimer,             2, 0, 0},
 	{"clearTimer",        method_clearTimer,           0, 0, 0},
 	{"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
