@@ -778,8 +778,7 @@ method_redirect(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	}
 	else
 	{
-		args.len = 0;
-		args.data = NULL;
+		ngx_str_null(&args);
 	}
 	
 	*rval = INT_TO_JSVAL(ngx_http_internal_redirect(r, &uri, &args));
@@ -937,8 +936,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	}
 	
 	flags = 0;
-	args.len = 0;
-	args.data = NULL;
+	ngx_str_null(&args);
 	
 	if (ngx_http_parse_unsafe_uri(r, &uri, &args, &flags) != NGX_OK)
 	{

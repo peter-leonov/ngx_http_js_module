@@ -1024,8 +1024,7 @@ setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		}
 		
 		cc->hash = 1;
-		cc->key.len = sizeof("Cache-Control") - 1;
-		cc->key.data = (u_char *) "Cache-Control";
+		ngx_str_set(&cc->key, "Cache-Control");
 		
 		*ccp = cc;
 	}
@@ -1279,8 +1278,7 @@ set_string_header_from_jsval(JSContext *cx, ngx_http_request_t *r, ngx_str_t *sp
 	// may be implemented only via Class.delProperty on the tinyId basis.
 	if (JSVAL_IS_VOID(*vp))
 	{
-		sp->len = 0;
-		sp->data = NULL;
+		ngx_str_null(sp);
 		return JS_TRUE;
 	}
 	
