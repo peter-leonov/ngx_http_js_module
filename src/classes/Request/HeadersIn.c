@@ -101,11 +101,7 @@ else \
 static JSBool
 getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	u_char                     *key;
-	u_int                       len;
 	ngx_http_request_t         *r;
-	ngx_table_elt_t            *header;
-	ngx_http_header_t          *hh;
 	
 	TRACE();
 	GET_PRIVATE(r);
@@ -148,6 +144,13 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	}
 	else if (JSVAL_IS_STRING(id))
 	{
+		ngx_table_elt_t            *header;
+		ngx_http_header_t          *hh;
+		ngx_int_t                   hash;
+		u_char                     *key, *lowercased;
+		u_int                       len;
+		
+		
 		key = (u_char *) JS_GetStringBytes(JSVAL_TO_STRING(id));
 		if (key == NULL)
 		{
@@ -162,9 +165,18 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_TRUE;
 		}
 		
+		lowercased = ngx_palloc(r->pool, len);
+		if (lowercased == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		hash = hash_header_name(lowercased, key, len);
+		
 		header = NULL;
 		
-		hh = search_hashed_headers_in(r, key, len);
+		hh = search_hashed_headers_in(r, hash, lowercased, len);
 		if (hh != NULL)
 		{
 			// and this means its value was already cached in some field
@@ -201,12 +213,13 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 static JSBool
 setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	u_char                     *key;
+	u_char                     *key, *lowercased;
 	size_t                      key_len;
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *header;
 	ngx_http_header_t          *hh;
 	ngx_table_elt_t           **phh;
+	ngx_int_t                   hash;
 	JSString                   *key_jsstr, *value_jsstr;
 	
 	TRACE();
@@ -229,9 +242,18 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 			return JS_TRUE;
 		}
 		
+		lowercased = ngx_palloc(r->pool, key_len);
+		if (lowercased == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		hash = hash_header_name(lowercased, key, key_len);
+		
 		header = NULL;
 		
-		hh = search_hashed_headers_in(r, key, key_len);
+		hh = search_hashed_headers_in(r, hash, lowercased, key_len);
 		if (hh != NULL)
 		{
 			// and this means its value was already cached in some field
@@ -285,6 +307,10 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		
 		header->key.data = (u_char*)key;
 		header->key.len = key_len;
+		// has to be set to proxy_pass without a crash
+		// see this http://wiki.nginx.org/HeadersManagement#headers_in_and_proxy_pass
+		header->lowcase_key = lowercased;
+		
 		if (!js_str2ngx_str(cx, value_jsstr, r->pool, &header->value))
 		{
 			// forward exception if any
