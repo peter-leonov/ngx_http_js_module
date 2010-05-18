@@ -6,16 +6,35 @@ NginxTests.requestRedirect = function (r)
 	
 	Tests.test('redirect', function (t)
 	{
-		function callback (sr, body, rc)
+		t.test('redirect to JS handler', function (t)
 		{
-			t.eq(body, 'the body', 'response body')
+			function callback (sr, body, rc)
+			{
+				t.eq(body, 'the body', 'response body')
+				
+				t.done()
+			}
 			
-			t.done()
-		}
+			r.subrequest('/loopback/run/request-redirect-handler', callback)
+			
+			t.wait(3000)
+		})
 		
-		r.subrequest('/loopback/run/request-redirect-handler', callback)
-		
-		t.wait(3000)
+		t.test('redirect to non existent uri', function (t)
+		{
+			function callback (sr, body, rc)
+			{
+				t.eq(body, '', 'response body')
+				t.eq(sr.headersOut.status, 404, 'response status')
+				t.eq(rc, Nginx.OK, 'response code')
+				
+				t.done()
+			}
+			
+			r.subrequest('/loopback/run/request-redirect-handler-404', callback)
+			
+			t.wait(3000)
+		})
 	})
 	Tests.oncomplete = function ()
 	{
@@ -26,6 +45,7 @@ NginxTests.requestRedirect = function (r)
 	
 	return Nginx.OK
 }
+
 
 NginxTests.requestRedirectHandler = function (r)
 {
@@ -41,5 +61,13 @@ NginxTests.requestRedirectTarget = function (r)
 	
 	return Nginx.OK
 }
+
+
+NginxTests.requestRedirectHandler404 = function (r)
+{
+	r.redirect('/does-not-exist')
+	return Nginx.DONE
+}
+
 
 })();
