@@ -735,6 +735,60 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 
 
 static JSBool
+method_redirect(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t  *r;
+	ngx_str_t            uri, args;
+	JSString            *uri_jss, *args_jss;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
+	
+	if (argc < 1)
+	{
+		THROW("Nginx.Request#sendfile takes 1 mandatory argument: \"uri\", and 1 optional \"args\"")
+	}
+	
+	uri_jss = JS_ValueToString(cx, argv[0]);
+	if (uri_jss == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	if (!js_str2ngx_str(cx, uri_jss, r->pool, &uri))
+	{
+		return JS_FALSE;
+	}
+	
+	
+	if (!JSVAL_IS_VOID(argv[1]))
+	{
+		args_jss = JS_ValueToString(cx, argv[1]);
+		if (args_jss == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		if (!js_str2ngx_str(cx, args_jss, r->pool, &args))
+		{
+			return JS_FALSE;
+		}
+	}
+	else
+	{
+		args.len = 0;
+		args.data = NULL;
+	}
+	
+	*rval = INT_TO_JSVAL(ngx_http_internal_redirect(r, &uri, &args));
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
@@ -1202,6 +1256,7 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 	{"discardBody",       method_discardBody,          0, 0, 0},
 	{"getBody",           method_getBody,              1, 0, 0},
 	{"sendfile",          method_sendfile,             3, 0, 0},
+	{"redirect",          method_redirect,             2, 0, 0},
 	{"setTimer",          method_setTimer,             2, 0, 0},
 	{"clearTimer",        method_clearTimer,           0, 0, 0},
 	{"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},

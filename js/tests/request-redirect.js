@@ -4,7 +4,7 @@ NginxTests.requestRedirect = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
-	Tests.test('sendfile', function (t)
+	Tests.test('redirect', function (t)
 	{
 		function callback (sr, body, rc)
 		{
@@ -19,6 +19,7 @@ NginxTests.requestRedirect = function (r)
 	})
 	Tests.oncomplete = function ()
 	{
+		r.puts('all done')
 		r.sendSpecial(Nginx.HTTP_LAST)
 	}
 	Tests.run(r)
