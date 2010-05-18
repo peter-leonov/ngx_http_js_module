@@ -1187,10 +1187,6 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
 	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
 	{"oncleanup",       0,                        JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
-	
-	// TODO:
-	// {"status",       MY_WIDTH,       JSPROP_ENUMERATE,  NULL, NULL},
-	// {"allowRanges",       MY_ARRAY,       JSPROP_ENUMERATE,  NULL, NULL},
 	{0, 0, 0, NULL, NULL}
 };
 
