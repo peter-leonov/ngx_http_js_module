@@ -218,7 +218,9 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 		// second param has to be &ctx->js_request
 		// because JS_AddRoot was used with it's address
 		if (!JS_RemoveRoot(cx, &ctx->js_request))
-			JS_ReportError(cx, "Can`t remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
+		{
+			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "can't remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
+		}
 		
 		// finaly mark the object as inactive
 		// after that the GET_PRIVATE macros will raise an exception if called
