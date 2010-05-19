@@ -12,7 +12,7 @@ The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debuggi
 
 REQUIREMENTS
 
-This module requires the SpiderMonkey to be properly installed in your system. We plan to make SpiderMonkey sources a part of the module tree to provide the latest mozjs version right with the module.
+This module requires the SpiderMonkey to be properly installed in your system. We plan to make the sources of SpiderMonkey a part of the module tree to provide the latest mozjs version right with the module.
 
 
 
@@ -30,7 +30,8 @@ HTTP_JS_COLOR=yes enables the colored logging for the JS module.
 
 MAKE
 
-Then run make as you usual do.
+Then run make as you usual do:
+make
 
 After the make process has successfully completed you may run some simple tests for JS module (before the actual installation) with this:
 make test-js
