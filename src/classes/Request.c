@@ -132,18 +132,15 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not add new root %s", JS_REQUEST_ROOT_NAME);
-		ctx->js_request = NULL;
-		// mark the request wrapper as inactive
-		JS_SetPrivate(cx, request, NULL);
+		ngx_http_js__nginx_request__cleanup(ctx, r, cx);
 		return NGX_ERROR;
 	}
 	
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
 	{
-		ctx->js_request = NULL;
 		// mark the request wrapper as inactive
-		JS_SetPrivate(cx, request, NULL);
+		ngx_http_js__nginx_request__cleanup(ctx, r, cx);
 		JS_ReportOutOfMemory(cx);
 		return NGX_ERROR;
 	}
