@@ -1,0 +1,667 @@
+2010/05/19 20:13:25 [notice] 44378#0: using the "kqueue" event method
+2010/05/19 20:13:25 [notice] 44378#0: nginx/0.8.37
+2010/05/19 20:13:25 [notice] 44378#0: built by gcc 4.2.1 (Apple Inc. build 5659)
+2010/05/19 20:13:25 [notice] 44378#0: OS: Darwin 10.3.0
+2010/05/19 20:13:25 [notice] 44378#0: hw.ncpu: 2
+2010/05/19 20:13:25 [notice] 44378#0: net.inet.tcp.sendspace: 65536
+2010/05/19 20:13:25 [notice] 44378#0: kern.ipc.somaxconn: 128
+2010/05/19 20:13:25 [notice] 44378#0: getrlimit(RLIMIT_NOFILE): 4096:4096
+2010/05/19 20:13:25 [debug] 44378#0: ngx_http_js_init_worker()
+2010/05/19 20:13:25 [debug] 44378#0: global.initWorker() found
+2010/05/19 20:13:25 [debug] 44378#0: ngx_http_js_init_worker()
+2010/05/19 20:13:25 [debug] 44378#0: global.initWorker() found
+2010/05/19 20:13:26 [debug] 44378#0: *1 http process request line
+2010/05/19 20:13:26 [debug] 44378#0: *1 http request line: "GET /run/subrequests HTTP/1.1"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http uri: "/run/subrequests"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http args: ""
+2010/05/19 20:13:26 [debug] 44378#0: *1 http exten: ""
+2010/05/19 20:13:26 [debug] 44378#0: *1 http process request header line
+2010/05/19 20:13:26 [debug] 44378#0: *1 http header: "User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http header: "Host: 127.0.0.1:19090"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http header: "Accept: */*"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http header done
+2010/05/19 20:13:26 [debug] 44378#0: *1 generic phase: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script value: "abc"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script set $js_request_variables_a
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script var: "abc"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script copy: "123"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script set $js_request_variables_b
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:26 [debug] 44378#0: ngx_http_js__glue__variable()
+2010/05/19 20:13:26 [debug] 44378#0: ngx_http_js__glue__call_function()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_wrap(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 js handler done: main->count = 1
+2010/05/19 20:13:26 [debug] 44378#0: *1 js request cleanup
+2010/05/19 20:13:26 [debug] 44378#0: *1 cleaning up the request with an empty wrapper
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script var: "bar1"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script set $js_request_variables_j
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script value: ""
+2010/05/19 20:13:26 [debug] 44378#0: *1 http script set $js_request_variables_v
+2010/05/19 20:13:26 [debug] 44378#0: *1 test location: "/"
+2010/05/19 20:13:26 [debug] 44378#0: *1 test location: "rewrite/"
+2010/05/19 20:13:26 [debug] 44378#0: *1 test location: "variable-set"
+2010/05/19 20:13:26 [debug] 44378#0: *1 test location: "run/"
+2010/05/19 20:13:26 [debug] 44378#0: *1 test location: "request-body-file"
+2010/05/19 20:13:26 [debug] 44378#0: *1 using configuration "/run/"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http cl:-1 max:1048576
+2010/05/19 20:13:26 [debug] 44378#0: *1 generic phase: 2
+2010/05/19 20:13:26 [debug] 44378#0: *1 post rewrite phase: 3
+2010/05/19 20:13:26 [debug] 44378#0: *1 generic phase: 4
+2010/05/19 20:13:26 [debug] 44378#0: *1 generic phase: 5
+2010/05/19 20:13:26 [debug] 44378#0: *1 access phase: 6
+2010/05/19 20:13:26 [debug] 44378#0: *1 access phase: 7
+2010/05/19 20:13:26 [debug] 44378#0: *1 post access phase: 8
+2010/05/19 20:13:26 [debug] 44378#0: *1 js handler
+2010/05/19 20:13:26 [debug] 44378#0: ngx_http_js__glue__call_function()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_wrap(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#sendHttpHeader(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 HTTP/1.1 200 OK
+Server: nginx/0.8.37
+Date: Wed, 19 May 2010 16:13:26 GMT
+Content-Type: text/plain; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:171
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFEA18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFEA18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:171
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFEA18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFEA18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 35
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:41
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFEA18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFEA18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:41
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#setTimer(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 timer.timer_set = 0
+2010/05/19 20:13:26 [debug] 44378#0: setter_cleanupCallback()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_root(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http cleanup add: 00804298
+2010/05/19 20:13:26 [debug] 44378#0: js_nginx_class_getProperty(43)
+2010/05/19 20:13:26 [debug] 44378#0: *1 js handler done: main->count = 3
+2010/05/19 20:13:26 [debug] 44378#0: *1 http finalize request: 0, "/run/subrequests?" a:1, c:3
+2010/05/19 20:13:26 [debug] 44378#0: *1 http request count:3 blk:0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http finalize request: -4, "/run/subrequests?" a:1, c:2
+2010/05/19 20:13:26 [debug] 44378#0: *1 http request count:2 blk:0
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#setTimer_handler(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 19
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:25
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:25
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#setTimer(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 timer.timer_set = 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 33
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:39
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:39
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 18
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:24
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:24
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 24
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:30
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:30
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 39
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:45
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" BFFFE818
+2010/05/19 20:13:26 [debug] 44378#0: *1 http chunk: 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:1 s:45
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter limit 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter 00000000
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 manually running posted requests
+2010/05/19 20:13:26 [debug] 44378#0: *1 http finalize request: 0, "/run/subrequests?" a:1, c:2
+2010/05/19 20:13:26 [debug] 44378#0: *1 http request count:2 blk:0
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#setTimer_handler(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#subrequest(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 before ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 http subrequest "/quick?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 after ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_wrap(r=0084D810)
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_root(r=0084D810)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http cleanup add: 00804914
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#setTimer(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 timer.timer_set = 0
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#subrequest(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 before ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 http subrequest "/quick?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 after ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_wrap(r=0084DC80)
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_root(r=0084DC80)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http cleanup add: 008049D4
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#subrequest(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 before ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 http subrequest "/loopback/?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 after ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_wrap(r=0084E15C)
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_root(r=0084E15C)
+2010/05/19 20:13:26 [debug] 44378#0: *1 http cleanup add: 0084E6D0
+2010/05/19 20:13:26 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:26 [debug] 44378#0: *1 Request#subrequest(r=00807C00)
+2010/05/19 20:13:26 [debug] 44378#0: *1 before ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 http subrequest "/run/subrequests-headers?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 after ngx_http_subrequest()
+2010/05/19 20:13:26 [debug] 44378#0: *1 request_wrap(r=00819E10)
+2010/05/19 20:13:26 [emerg] 44378#0: *1 shit happens, failing allocation of 108 bytes, client: 127.0.0.1, server: _, request: "GET /run/subrequests HTTP/1.1", host: "127.0.0.1:19090"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http finalize request: 500, "/run/subrequests?" a:0, c:6
+2010/05/19 20:13:26 [debug] 44378#0: *1 http special response: 500, "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http set discard body
+2010/05/19 20:13:26 [debug] 44378#0: *1 HTTP/1.1 500 Internal Server Error
+Server: nginx/0.8.37
+Date: Wed, 19 May 2010 16:13:26 GMT
+Content-Type: text/html
+Content-Length: 193
+Transfer-Encoding: chunked
+Connection: close
+
+2010/05/19 20:13:26 [debug] 44378#0: *1 http write filter: l:0 f:0 s:190
+2010/05/19 20:13:26 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 008040EC
+2010/05/19 20:13:26 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 008040EC
+2010/05/19 20:13:26 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:26 [debug] 44378#0: *1 http finalize request: 0, "/run/subrequests?" a:0, c:6
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#setTimer_handler(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: get Nginx.time
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0084E7EC
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0084E7EC
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A440
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A440
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A4B4
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A4B4
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A4F8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A4F8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A56C
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A56C
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A5B0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A5B0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A634
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A634
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A678
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A678
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A6DC
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A6DC
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A720
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A720
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A794
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A794
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A7D8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A7D8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 manually running posted requests
+2010/05/19 20:13:29 [debug] 44378#0: *1 http posted request: "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_a
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "123"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_b
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "bar1"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_j
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: ""
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_v
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "rewrite/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "loopback"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "quick"
+2010/05/19 20:13:29 [debug] 44378#0: *1 using configuration "/quick"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http cl:-1 max:1048576
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 2
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: 403, "/quick?" a:1, c:6
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#subrequest_handler(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 request_wrap(r=0084D810)
+2010/05/19 20:13:29 [debug] 44378#0: *1 calling subrequest js callback
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A968
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A968
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081A9AC
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081A9AC
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081AA14
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081AA14
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081AA58
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081AA58
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http special response: 403, "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/quick?" 0081AB08
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: <html>
+<head><title>403 Forbidden</title></head>
+<body bgcolor="white">
+<center><h1>403 Forbidden</h1></center>
+
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: <hr><center>nginx/0.8.37</center>
+</body>
+</html>
+
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: 0, "/quick?" a:1, c:6
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#subrequest_handler(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 request_wrap(r=0084D810)
+2010/05/19 20:13:29 [debug] 44378#0: ngx_http_js__nginx_chain__wrap()
+2010/05/19 20:13:29 [debug] 44378#0: *1 calling subrequest js callback
+2010/05/19 20:13:29 [debug] 44378#0: getProperty()
+2010/05/19 20:13:29 [debug] 44378#0: method_toString()
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081ABD4
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081ABD4
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081AC18
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081AC18
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081AC7C
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081AC7C
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081ACC0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081ACC0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http wake parent request: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http posted request: "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_a
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "123"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_b
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "bar1"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_j
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: ""
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_v
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "rewrite/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "loopback"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "quick"
+2010/05/19 20:13:29 [debug] 44378#0: *1 using configuration "/quick"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http cl:-1 max:1048576
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 2
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: 403, "/quick?" a:0, c:5
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#subrequest_handler(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 request_wrap(r=0084DC80)
+2010/05/19 20:13:29 [debug] 44378#0: *1 calling subrequest js callback
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081ADE0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081ADE0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter wake "/quick?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0081ADF8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0081ADF8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 00851924
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 00851924
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 00851968
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 00851968
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: js_nginx_class_getProperty(47)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http wake parent request: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http posted request: "/loopback/?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_a
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "123"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_b
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "bar1"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_j
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: ""
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_v
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "rewrite/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "loopback"
+2010/05/19 20:13:29 [debug] 44378#0: *1 using configuration "/loopback"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http cl:-1 max:1048576
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 2
+2010/05/19 20:13:29 [debug] 44378#0: *1 post rewrite phase: 3
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 4
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 5
+2010/05/19 20:13:29 [debug] 44378#0: *1 http init upstream, client timer: 0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "Host: localhost
+"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "Connection: close
+"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http proxy header: "User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http proxy header: "Accept: */*"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http proxy header:
+"GET // HTTP/1.0
+Host: localhost
+Connection: close
+User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3
+Accept: */*
+
+"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http cleanup add: 00851DB0
+2010/05/19 20:13:29 [debug] 44378#0: *1 get rr peer, try: 1
+2010/05/19 20:13:29 [debug] 44378#0: *1 http upstream connect: -2
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: -4, "/loopback/?" a:0, c:5
+2010/05/19 20:13:29 [debug] 44378#0: *1 http request count:5 blk:0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http posted request: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_a
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "abc"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "123"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_b
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script complex value
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script var: "bar1"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script copy: "xx"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_j
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script value: ""
+2010/05/19 20:13:29 [debug] 44378#0: *1 http script set $js_request_variables_v
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "rewrite/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "variable-set"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "run/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 test location: "request-body-file"
+2010/05/19 20:13:29 [debug] 44378#0: *1 using configuration "/run/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http cl:-1 max:1048576
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 2
+2010/05/19 20:13:29 [debug] 44378#0: *1 post rewrite phase: 3
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 4
+2010/05/19 20:13:29 [debug] 44378#0: *1 generic phase: 5
+2010/05/19 20:13:29 [debug] 44378#0: *1 js handler
+2010/05/19 20:13:29 [debug] 44378#0: ngx_http_js__glue__call_function()
+2010/05/19 20:13:29 [debug] 44378#0: *1 request_wrap(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: setProperty()
+2010/05/19 20:13:29 [debug] 44378#0: search_headers_out()
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#sendHttpHeader(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEB28
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: the body
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEB28
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: 
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEB28
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: the body
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEB28
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: 
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEB28
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: the body
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEB28
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: 
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: js_nginx_class_getProperty(50)
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#sendSpecial(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests-headers?" BFFFEAF8
+2010/05/19 20:13:29 [debug] 44378#0: *1 buf: 
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests-headers?"
+2010/05/19 20:13:29 [debug] 44378#0: js_nginx_class_getProperty(43)
+2010/05/19 20:13:29 [debug] 44378#0: *1 js handler done: main->count = 5
+2010/05/19 20:13:29 [debug] 44378#0: *1 complex request handled, rooting wrapper
+2010/05/19 20:13:29 [debug] 44378#0: *1 request_root(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http cleanup add: 008520E8
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: 0, "/run/subrequests-headers?" a:0, c:5
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#subrequest_handler(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 request_wrap(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: ngx_http_js__nginx_chain__wrap()
+2010/05/19 20:13:29 [debug] 44378#0: *1 calling subrequest js callback
+2010/05/19 20:13:29 [debug] 44378#0: reportError()
+2010/05/19 20:13:29 [error] 44378#0: (void 0) is not a function at <no filename>:0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http terminate request count:5
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup_handler(r=00819E10)
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup
+2010/05/19 20:13:29 [debug] 44378#0: *1 cleanup http upstream request: "/loopback/"
+2010/05/19 20:13:29 [debug] 44378#0: *1 finalize http upstream request: -4
+2010/05/19 20:13:29 [debug] 44378#0: *1 finalize http proxy request
+2010/05/19 20:13:29 [debug] 44378#0: *1 free rr peer 1 0
+2010/05/19 20:13:29 [debug] 44378#0: *1 close http upstream connection: 7
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: -4, "/loopback/?" a:0, c:5
+2010/05/19 20:13:29 [debug] 44378#0: *1 http request count:5 blk:0
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup_handler(r=0084E15C)
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup_handler(r=0084DC80)
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup_handler(r=0084D810)
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup_handler(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 js request cleanup
+2010/05/19 20:13:29 [debug] 44378#0: *1 calling the js handler for request cleanup
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#print(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 00852130
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 00852130
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter wake "/loopback/?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#flush(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 0085217C
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 0085217C
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: js_nginx_class_getProperty(50)
+2010/05/19 20:13:29 [debug] 44378#0: *1 Request#sendSpecial(r=00807C00)
+2010/05/19 20:13:29 [debug] 44378#0: *1 http output filter "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http js buffer filter "/run/subrequests?" 008521C0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http postpone filter "/run/subrequests?" 008521C0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http copy filter: 0 "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http terminate cleanup count:4 blk:0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: -4, "/run/subrequests-headers?" a:0, c:4
+2010/05/19 20:13:29 [debug] 44378#0: *1 http request count:4 blk:0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http posted request: "/run/subrequests?"
+2010/05/19 20:13:29 [debug] 44378#0: *1 http terminate handler count:3
+2010/05/19 20:13:29 [debug] 44378#0: *1 http request count:1 blk:0
+2010/05/19 20:13:29 [debug] 44378#0: *1 http close request
+2010/05/19 20:13:29 [debug] 44378#0: *1 http log handler
+2010/05/19 20:13:29 [debug] 44378#0: *1 close http connection: 6
+2010/05/19 20:13:29 [debug] 44378#0: *1 http finalize request: 0, "??/subrequests?" a:0, c:0
+  
