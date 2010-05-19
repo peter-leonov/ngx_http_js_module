@@ -643,6 +643,7 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
 	{
 		ngx_http_js_module_log = last_log;
+		// it mat be OOM, so be brute
 		return NGX_ERROR;
 	}
 	ngx_http_js_module_log = last_log;

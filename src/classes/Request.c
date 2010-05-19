@@ -612,7 +612,8 @@ method_getBody_handler(ngx_http_request_t *r)
 		}
 		else
 		{
-			rc = NGX_HTTP_INTERNAL_SERVER_ERROR;
+			// it may be OOM, so be brute
+			rc = NGX_ERROR;
 		}
 	}
 	else
@@ -893,7 +894,8 @@ method_setTimer_handler(ngx_event_t *timer)
 	// here a new timeout handler may be set
 	if (!JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 	{
-		ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+		// it may be OOM, so be brute
+		ngx_http_finalize_request(r, NGX_ERROR);
 		return;
 	}
 	
@@ -1088,6 +1090,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
 	if (!JS_CallFunctionValue(js_cx, js_global, callback, 3, args, &rval))
 	{
+		// it may be OOM, so be brute
 		return NGX_ERROR;
 	}
 	
