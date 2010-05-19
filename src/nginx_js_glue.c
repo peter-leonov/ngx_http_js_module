@@ -134,7 +134,7 @@ ngx_http_js_run_requires(JSContext *cx, JSObject *global, ngx_array_t *requires,
 		strval = STRING_TO_JSVAL(JS_NewStringCopyZ(cx, (char*)value));
 		if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
 		{
-			JS_ReportError(cx, "error calling global.require from nginx");
+			ngx_log_error(NGX_LOG_EMERG, log, 0, "error calling global.require from nginx");
 			return NGX_ERROR;
 		}
 	}
@@ -300,7 +300,7 @@ ngx_http_js__glue__init_worker(ngx_cycle_t *cycle)
 			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.initWorker() found");
 			if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
 			{
-				JS_ReportError(cx, "error calling global.initWorker() from nginx");
+				ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "error calling global.initWorker() from nginx");
 				return NGX_ERROR;
 			}
 		}
@@ -330,7 +330,7 @@ ngx_http_js__glue__exit_worker(ngx_cycle_t *cycle)
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.exitWorker() found");
 		if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
 		{
-			JS_ReportError(cx, "error calling global.exitWorker() from nginx");
+			ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "error calling global.exitWorker() from nginx");
 		}
 	}
 	
@@ -358,7 +358,7 @@ ngx_http_js__glue__exit_master(ngx_cycle_t *cycle)
 		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0, "global.exitMaster() found");
 		if (!JS_CallFunctionValue(cx, global, fval, 0, NULL, &rval))
 		{
-			JS_ReportError(cx, "error calling global.exitMaster() from nginx");
+			ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "error calling global.exitMaster() from nginx");
 		}
 	}
 	
