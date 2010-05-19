@@ -102,6 +102,8 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
 		if (ctx == NULL)
 		{
+			// mark the request wrapper as inactive
+			JS_SetPrivate(cx, request, NULL);
 			// or return an error
 			return NGX_ERROR;
 		}
@@ -114,6 +116,8 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 		if (ctx->js_request != request)
 		{
 			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root JS request %p in ctx %p in place of JS request %p", request, ctx, ctx->js_request);
+			// mark the request wrapper as inactive
+			JS_SetPrivate(cx, request, NULL);
 			return NGX_ERROR;
 		}
 		
@@ -127,6 +131,8 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not add new root %s", JS_REQUEST_ROOT_NAME);
+		// mark the request wrapper as inactive
+		JS_SetPrivate(cx, request, NULL);
 		ctx->js_request = NULL;
 		return NGX_ERROR;
 	}
@@ -134,6 +140,8 @@ ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObje
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
 	{
+		// mark the request wrapper as inactive
+		JS_SetPrivate(cx, request, NULL);
 		ctx->js_request = NULL;
 		return NGX_ERROR;
 	}
