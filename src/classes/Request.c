@@ -186,10 +186,10 @@ call_cleanup_js_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 		return;
 	}
 	
-	// if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
-	// {
+	if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
+	{
 		JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
-	// }
+	}
 }
 
 void
