@@ -658,7 +658,9 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 		{
 			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, rooting wrapper");
 			if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
+			{
 				return NGX_ERROR;
+			}
 		}
 		// the request wrapper is no more needed to nginx
 		else
