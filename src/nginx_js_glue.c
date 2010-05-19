@@ -71,7 +71,7 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 	
 	if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
 	{
-		JS_ReportError(cx, "error calling global.load from nginx");
+		// forward the exception
 		return JS_FALSE;
 	}
 	
