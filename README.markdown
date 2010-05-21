@@ -88,4 +88,5 @@ Simple example
 	}
 
 curl http://localhost/demo/random
-0.540526149221515
+
+	0.540526149221515
