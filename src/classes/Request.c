@@ -488,8 +488,10 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(( (argc == 1 && JSVAL_IS_STRING(argv[0])) || (argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_STRING(argv[1])) ),
-		"Nginx.Request#sendString takes 1 mandatory argument: str:String, and 1 optional: contentType:String");
+	if (argc == 0)
+	{
+		THROW("Nginx.Request#sendString takes 1 mandatory argument: string, and 1 optional contentType");
+	}
 	
 	str = JS_ValueToString(cx, argv[0]);
 	b = js_str2ngx_buf(cx, str, r->pool);
