@@ -44,7 +44,8 @@ in which:
 * HTTP_JS_COLOR=yes env variable enables the colored logging for the JS module.
 
 
-== make ==
+make
+----
 
 Then run make as you usual do:
 make
@@ -64,12 +65,27 @@ and then run make test-js again.
 make test-js (calling run-tests from the module saurces) tries to set the LD_LIBRARY_PATH env variable for you.
 
 
-== install ==
+install
+-------
 
 Then you may peacefully run:
 make install
 
 
 
-= Configuration =
+Configuration
+=============
 
+This module tries to mimic the perl modules in most cases.
+
+
+Simple example
+--------------
+
+	location /demo/random
+	{
+		js 'function (r) { r.sendString(Math.random()); return Nginx.OK }';
+	}
+
+curl http://localhost/demo/random
+0.540526149221515
