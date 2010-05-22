@@ -82,7 +82,13 @@ Reporter.prototype =
 	
 	send: function (msg)
 	{
-		this.holder.puts(this.testName + ': ' + msg)
+		if (Tests.lastTest != this.parent)
+		{
+			Tests.lastTest = this.parent
+			this.holder.puts(this.testName)
+		}
+		
+		this.holder.puts('    ' + msg)
 	},
 	
 	name: function (name)
@@ -100,7 +106,7 @@ Reporter.prototype =
 		if (this.parent.parent != Tests)
 			return
 		
-		this.send('summary: ' + summary)
+		this.holder.puts(summary)
 	},
 	
 	inspect: function (v)
