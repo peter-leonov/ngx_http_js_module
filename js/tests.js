@@ -88,7 +88,6 @@ Reporter.prototype =
 	name: function (name)
 	{
 		this.testName = name
-		this.send('starting…')
 	},
 	
 	setStatus: function (s)
@@ -98,6 +97,9 @@ Reporter.prototype =
 	
 	summary: function (summary)
 	{
+		if (this.parent.parent != Tests)
+			return
+		
 		this.send('summary: ' + summary)
 	},
 	
