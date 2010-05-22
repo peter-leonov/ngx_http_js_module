@@ -20,7 +20,7 @@ var myName = 'Tests', Me = self[myName] =
 		
 		var h = new Holder(r)
 		// h.buffered = this.buffered
-		test.reporter = new Reporter(h)
+		test.reporter = new Reporter(h, test)
 		
 		test.run()
 	},
@@ -57,9 +57,10 @@ Holder.prototype =
 	}
 }
 
-function Reporter (holder)
+function Reporter (holder, parent)
 {
 	this.holder = holder
+	this.parent = parent
 }
 Reporter.prototype =
 {
@@ -76,9 +77,7 @@ Reporter.prototype =
 	
 	create: function (parent)
 	{
-		var r = new Reporter(this.holder)
-		r.parent = parent
-		return r
+		return new Reporter(this.holder, parent)
 	},
 	
 	send: function (msg)

@@ -143,7 +143,7 @@ var sup = Super.prototype,
 		
 		var test = new Me(this, name, conf, callback)
 		test.holder = this.holder
-		test.reporter = this.reporter.create(this)
+		test.reporter = this.reporter.create(test)
 		
 		// link cascades
 		this.add(test)
