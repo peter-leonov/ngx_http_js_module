@@ -1094,8 +1094,8 @@ static JSPropertySpec props[] =
 	{"Expires",                      0,  0,                    getter_expires,               setter_expires},
 	{"ETag",                         0,  0,                    getter_etag,                  setter_etag},
 	{"Content-Type",                 0,  0,                    getter_contentType,           setter_contentType},
-	{"$contentTypeLen",              0,  0,                    getter_contentTypeLen,        NULL},
-	{"$contentTypeLowcase",          0,  0,                    getter_contentTypeLowcase,    NULL},
+	{"$contentTypeLen",              0,  JSPROP_READONLY,      getter_contentTypeLen,        NULL},
+	{"$contentTypeLowcase",          0,  JSPROP_READONLY,      getter_contentTypeLowcase,    NULL},
 	{"Cache-Control",                0,  0,                    getter_cacheControl,          setter_cacheControl},
 	{0, 0, 0, NULL, NULL}
 };
