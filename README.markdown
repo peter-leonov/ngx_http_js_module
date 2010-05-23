@@ -169,7 +169,7 @@ Variable example
 		rewrite ^ /;
 	}
 
-curl "http://localhost/demo/msie6"
+curl http://localhost/demo/msie6
 
 	<!DOCTYPE html>
 	<html>
