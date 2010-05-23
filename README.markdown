@@ -92,6 +92,18 @@ curl http://localhost/demo/random
 	0.540526149221515
 
 
+Full handler example
+--------------------
+	http {
+		js_load "js/demos/handler.js";
+		
+		server {
+			location = /demo/handler {
+				js  Hello.handler;
+			}
+		}
+	}
+
 Variable example
 ----------------
 
