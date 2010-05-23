@@ -1,4 +1,5 @@
 Some features:
+
 * full port of ngx_http_perl_module;
 * support for native Nginx subrequests with JS callback for the the response and its body;
 * cosy headers management (via Nginx.HeadersIn and Nginx.HeaderOut classes);
