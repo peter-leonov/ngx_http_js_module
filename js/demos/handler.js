@@ -11,7 +11,7 @@ Hello =
 		
 		r.print('hello!\n<br/>')
 		
-		if (Nginx.File.open(r.filename))
+		if (Nginx.File.exists(r.filename))
 		{
 			r.print(' exists!\n')
 		}
