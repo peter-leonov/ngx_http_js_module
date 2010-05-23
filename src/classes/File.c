@@ -5,6 +5,8 @@
 
 #include <js/jsapi.h>
 
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
 #include <classes/File.h>
 
 #include <nginx_js_macroses.h>
@@ -177,6 +179,37 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
 	*rval = INT_TO_JSVAL(ngx_delete_file(name));
+	
+	return JS_TRUE;
+}
+
+static JSBool
+method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	JSString        *jss_name;
+	const char      *name;
+	ngx_file_info_t  fi;
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 1, "Nginx.File#exists takes 1 mandatory argument: name");
+	
+	jss_name = JS_ValueToString(cx, argv[0]);
+	if (jss_name == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	name = JS_GetStringBytes(jss_name);
+	if (name == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_file_info(\"%s\")", name);
+	*rval = ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR ? JSVAL_FALSE : JSVAL_TRUE;
 	
 	return JS_TRUE;
 }
@@ -432,6 +465,7 @@ static JSFunctionSpec static_funcs[] =
 	{"rename",           method_rename,               2, 0, 0},
 	{"open",             method_open,                 1, 0, 0},
 	{"remove",           method_remove,               1, 0, 0},
+	{"exists",           method_exists,               1, 0, 0},
 	{0, NULL, 0, 0, 0}
 };
 

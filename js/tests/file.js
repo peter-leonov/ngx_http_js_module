@@ -23,17 +23,27 @@ NginxTests.file = function (r)
 			t.ne(rc, File.ERROR, 'rename back')
 		})
 		
-		t.test('create/delete', function (t)
+		t.test('create/delete/exists', function (t)
 		{
-			var file = File.open(prefix + 'nginx-file-create.txt')
+			var fname = prefix + 'nginx-file-create.txt'
+			
+			t.no(File.exists(fname), 'not exists')
+			
+			var file = File.open(fname)
 			t.ok(file, 'create')
 			t.instance(file, File, 'file object')
 			
-			var rc = File.remove(prefix + 'nginx-file-create.txt')
+			t.ok(File.exists(fname), 'exists')
+			
+			var rc = File.remove(fname)
 			t.ne(rc, File.ERROR, 'delete')
 			
-			var rc = File.remove(prefix + 'nginx-file-create.txt')
+			t.no(File.exists(fname), 'not exists')
+			
+			var rc = File.remove(fname)
 			t.eq(rc, File.ERROR, 'second delete')
+			
+			t.no(File.exists(fname), 'not exists')
 		})
 		
 		t.test('unicode read/write', function (t)
