@@ -69,31 +69,24 @@ ngx_http_js_load(JSContext *cx, JSObject *global, char *filename)
 		
 	strval = STRING_TO_JSVAL(fnstring);
 	
-	if (!JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval))
-	{
-		// forward the exception
-		return JS_FALSE;
-	}
-	
-	return JS_TRUE;
+	return JS_CallFunctionValue(cx, global, fval, 1, &strval, &rval);
 }
 
 static ngx_int_t
-ngx_http_js_run_loads(JSContext *cx, JSObject *global, ngx_array_t *requires, ngx_log_t *log)
+ngx_http_js_run_loads(JSContext *cx, JSObject *global, ngx_array_t *arr, ngx_log_t *log)
 {
-	char          **script;
+	char          **elts;
 	ngx_uint_t      i;
 	char           *value;
 	
 	TRACE();
-		
-	script = requires->elts;
-	for (i = 0; i < requires->nelts; i++)
+	
+	elts = arr->elts;
+	for (i = 0; i < arr->nelts; i++)
 	{
-		value = script[i];
+		value = elts[i];
 		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, log, 0, "js_load: %s\n", value);
-		
-		if (!ngx_http_js_load(cx, global, (char*)value))
+		if (!ngx_http_js_load(cx, global, (char *) value))
 			return NGX_ERROR;
 	}
 	
