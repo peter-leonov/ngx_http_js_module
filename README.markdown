@@ -103,6 +103,43 @@ Full handler example
 		}
 	}
 
+in handler.js:
+
+	Hello = {
+		handler: function (r) {
+			r.sendHttpHeader('text/html')
+			
+			if (r.headerOnly) {
+				return Nginx.OK
+			}
+			
+			r.print('hello!\n<br/>')
+			
+			if (Nginx.File.exists(r.filename)) {
+				r.print(' exists!\n')
+			}
+			
+			r.sendSpecial(Nginx.HTTP_LAST)
+			
+			return Nginx.OK
+		}
+	}
+
+curl -I http://localhost/demo/handler
+
+	HTTP/1.1 200 OK
+	Server: nginx/0.8.37
+	Date: Sun, 23 May 2010 15:18:26 GMT
+	Content-Type: text/html
+	Connection: keep-alive
+	
+
+curl http://localhost/demo/handler
+
+	hello!
+	<br/>
+
+
 Variable example
 ----------------
 
