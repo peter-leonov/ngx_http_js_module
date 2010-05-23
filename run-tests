@@ -70,6 +70,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-redirect"
 # curl $OPTS "http://127.0.0.1:19090/demo/return-an-error"
 # curl $OPTS "http://127.0.0.1:19090/demo/return-error-500"
 # curl $OPTS "http://127.0.0.1:19090/demo/random"
+curl $OPTS "http://127.0.0.1:19090/demo/msie6"
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 

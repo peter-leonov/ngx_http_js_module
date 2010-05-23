@@ -79,8 +79,8 @@ Configuration
 This module tries to mimic the perl modules in most cases.
 
 
-Simple example
---------------
+Handler example
+---------------
 
 	location /demo/random
 	{
@@ -90,3 +90,46 @@ Simple example
 curl http://localhost/demo/random
 
 	0.540526149221515
+
+
+Variable example
+----------------
+
+	js_set  $msie6  '
+	
+		function (r)
+		{
+			var ua = r.headersIn["User-Agent"]
+			
+			if (/Opera/.test(ua))
+				return ""
+			
+			if (/ MSIE [6-9]\.\d+/.test(ua))
+				return "1"
+			
+			return "";
+		}
+	
+	';
+	
+	location = /demo/msie6
+	{
+		if ($msie6)
+		{
+			return 404;
+		}
+		
+		rewrite ^ /;
+	}
+
+curl "http://localhost/demo/msie6"
+
+	<!DOCTYPE html>
+	<html>
+	<head>
+	<title>Welcome to nginx!</title>
+	</head>
+	<body>
+	<h1>Welcome to nginx!</h1>
+	</body>
+	</html>
