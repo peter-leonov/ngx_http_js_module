@@ -181,3 +181,37 @@ curl http://localhost/demo/msie6
 	<h1>Welcome to nginx!</h1>
 	</body>
 	</html>
+
+
+Directives
+==========
+
+
+js
+--
+
+**syntax**: js object.property | 'function (r) { ... }' | any other JS expression that returns a Function  
+**default**: none  
+**context**: location
+
+Defines a JS handler for curent location. The request object is passed to a function as the first argument.
+
+
+js_load
+--
+
+**syntax**: js_load path  
+**default**: none  
+**context**: http
+
+Simply loads and executes the file specified by path. A script from the file will be compiled and run in the global scope.
+
+
+js_set
+--
+
+**syntax**: js_set $variable object.property | 'function (r) { ... }' | any other JS expression that returns a Function  
+**default**: none  
+**context**: http
+
+Defines a variable read handler (write handler is planned). The request object is passed to a function as the first argument.
