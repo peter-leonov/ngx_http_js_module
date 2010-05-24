@@ -281,7 +281,7 @@ This is a combo-method. It does many thing at once: calculates the size in bytes
 sendSpecial(number)
 -------------------
 
-Send a “special” value through the request. The only tested special value is Nginx.HTTP_LAST (the `NGX_HTTP_LAST` in terms of nginx).
+Send a “special” value through the request. The only tested special value is `Nginx.HTTP_LAST` (the `NGX_HTTP_LAST` in terms of nginx).
 
 	r.puts('The reques is done.')
 	r.sendSpecial(Nginx.HTTP_LAST)
