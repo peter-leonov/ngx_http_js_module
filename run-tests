@@ -39,9 +39,9 @@ OPTS="-m 5 --connect-timeout 1" # --http1.0
 curl $OPTS "http://127.0.0.1:19090/run/nginx-object?prefix=$MODULE_ROOT&pid=$(cat $PIDFILE)"
 curl $OPTS "http://127.0.0.1:19090/run/request-object?nginx=yes&uri=/run/request-object&method=GET&internal=false"
 curl $OPTS "http://127.0.0.1:19090/rewrite/run/request-object?nginx=yes&uri=/run/request-object&method=GET&internal=true"
+curl $OPTS --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-discard"
 curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body?body=some+text+body,+ля-ля-ля"
 curl $OPTS --http1.0 --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-file?body=some+text+body,+ля-ля-ля"
-curl $OPTS --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-discard"
 curl $OPTS http://127.0.0.1:19090/run/file
 if [ "$WITH_MASTER"  == "yes" ]; then
 curl $OPTS "http://127.0.0.1:19090/run/process-cycle?fname=process-cycle-worker-exited-$TIME.txt"
