@@ -75,6 +75,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-redirect"
 # curl $OPTS "http://127.0.0.1:19090/demo/msie6"
 # curl $OPTS -I "http://127.0.0.1:19090/demo/handler"
 # curl $OPTS "http://127.0.0.1:19090/demo/handler"
+# curl $OPTS "http://127.0.0.1:19090/demo/subrequest-long"
 
 # ab -kc 20 -n 200 http://127.0.0.1:19090/run/file
 
