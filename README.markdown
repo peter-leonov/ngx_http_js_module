@@ -576,7 +576,7 @@ Just clears the timer if set. There is no arguments as far as the only one timer
 
 ### subrequest(uri, callback)
 
-Subrequest in nginx are by no means an AJAX request. Subrequests are quite useless at the point as far as they share the same headers and variables set in same time being processed in parallel. In short use this if and only if you know what you are doing ;)
+Subrequests in nginx are by no means an AJAX requests. Subrequests are quite useless at the point as far as they share the same headers and variables set in the main request, in the same time requests are processed in parallel. In short use this if and only if you know what you are doing ;)
 
 This methods creates a subrequest (a dependent request with shared almost everything) and directs it to the `uri`. After the subrequest is complete (always asynchronous) nginx will invoke the `callback`.
 
