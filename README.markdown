@@ -434,3 +434,8 @@ produces (with 250ms delay for each line):
 
 In this example nginx will wait till all the `sayHello()`'s will fire and only after that finalize the request.
 
+
+clearTimer()
+------------
+
+Just cleares the timer if set. There is no arguments as far as the only one timer can be set per request (without a third-party library as timers.js).
