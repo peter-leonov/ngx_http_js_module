@@ -65,6 +65,7 @@ curl $OPTS "http://127.0.0.1:19090/run/subrequest-headers-out"
 curl $OPTS "http://127.0.0.1:19090/run/subrequest-headers-in"
 curl $OPTS "http://127.0.0.1:19090/run/request-sendfile"
 curl $OPTS "http://127.0.0.1:19090/run/request-redirect"
+curl $OPTS "http://127.0.0.1:19090/run/request-send-string"
 
 # curl $OPTS "http://127.0.0.1:19090/demo/request-headers-out"
 # curl $OPTS "http://127.0.0.1:19090/demo/delayed-output"

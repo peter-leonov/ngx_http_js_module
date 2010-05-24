@@ -80,6 +80,7 @@ require('tests/subrequest-headers-out.js')
 require('tests/subrequest-headers-in.js')
 require('tests/request-sendfile.js')
 require('tests/request-redirect.js')
+require('tests/request-send-string.js')
 
 require('demos/request-headers-out.js')
 require('demos/delayed-output.js')
