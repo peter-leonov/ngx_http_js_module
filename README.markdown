@@ -478,6 +478,7 @@ The callback itself is very interesting part:
 
 The callback takes three parameters: subrequest (`sr`) in which context it was invoked, the response body data (`body`) and the subrequest “result code” (`rc`). The last one is an internal nginx code and now is used for test purposes only.
 
+This is a good idea to issue a subrequest throug the `proxy_passs` even to the nginx itself. This trick helps to deal with other modules in cost of establishing a loopback connection from nginx to nginx itself.
 
 In nginx.conf:
 
