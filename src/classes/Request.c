@@ -375,9 +375,11 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	
 	len = b->last - b->pos;
 	if (len == 0)
 	{
+		// do not send an empty buf
 		return JS_TRUE;
 	}
 	
