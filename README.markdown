@@ -228,11 +228,13 @@ TODO
 
 There are some thing that must be implemented to get the full and intuitive request wrapper:
 
-* [safe properties enumeration][#27]: now you may somehow interact with a request inumerationg its properties;
-* [send “last chunk” on the request completeness][#28]: you have to send the HTTP_LAST_ manually for now.
+* [safe properties enumeration][#27]: now we may somehow interact with a request inumerationg its properties;
+* [send “last chunk” on the request completeness][#28]: we have to send the HTTP_LAST_ manually for now;
+* [binary data API][#29] is needed: today we can response with a plain text only.
 
 [#27]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/27
 [#28]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/28
+[#29]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/29
 
 
 sendHttpHeader(contentType)
