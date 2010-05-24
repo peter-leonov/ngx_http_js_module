@@ -346,7 +346,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 		}
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
-    }
+	}
 	
 	E(ngx_http_set_content_type(r) == NGX_OK, "Can`t ngx_http_set_content_type(r)")
 	E(ngx_http_send_header(r) == NGX_OK, "Can`t ngx_http_send_header(r)");
@@ -521,6 +521,7 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	
 	len = b->last - b->pos;
 	if (len == 0)
 	{
