@@ -617,3 +617,15 @@ the handler:
 		
 		r.subrequest(uri, callback)
 	}
+
+
+
+To be described
+===============
+
+* Nginx
+* Nginx.HeadersIn
+* Nginx.HeadersOut
+* Nginx.Cookies
+* Nginx.Variables
+* Nginx.File
