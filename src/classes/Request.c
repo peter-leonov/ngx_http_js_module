@@ -363,6 +363,12 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	E(argc == 1, "Nginx.Request#print takes 1 argument: str");
 	
 	str = JS_ValueToString(cx, argv[0]);
+	if (str == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
 	b = js_str2ngx_buf(cx, str, r->pool);
 	if (b == NULL)
 	{
