@@ -371,3 +371,18 @@ the result:
 	send me please!
 	can be split into: send, me, please!
 
+
+redirect(uri, args)
+-------------------
+
+Yes, it's kinda like rewrite :)
+
+Note that nginx stores uri (is used while finding a location) and orguments (the data after the `?` chracter) separately. And to avoid additional uri parsing we can specify the `uri` and `args` arguments for `redirect()`.
+
+	var cookies = r.headersIn.cookies
+	
+	if (Nginx.md5hash(cookies.username + ':a secret') != cookies.signature)
+	{
+		r.redirect('/login', 'from=' + r.uri)
+		return Nginx.OK
+	}
