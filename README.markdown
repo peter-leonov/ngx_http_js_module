@@ -277,3 +277,14 @@ This is a combo-method. It does many thing at once: calculates the size in bytes
 	
 	r.sendString(body, 'text/plain')
 
+
+sendSpecial(number)
+-------------------
+
+Send a “special” value through the request. The only tested special value is Nginx.HTTP_LAST (the `NGX_HTTP_LAST` in terms of nginx).
+
+	r.puts('The reques is done.')
+	r.sendSpecial(Nginx.HTTP_LAST)
+
+AFAIK, sending the `Nginx.HTTP_LAST` signals nginx to send a last chunk in a chunked response, otherwise a connection will hang.
+
