@@ -331,10 +331,20 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 	
 	if (argc == 1)
 	{
-		E(JSVAL_IS_STRING(argv[0]), "sendHttpHeader() takes one optional argument: contentType:String");
+		JSString  *str;
 		
-		E(js_str2ngx_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, &r->headers_out.content_type),
-			"Can`t js_str2ngx_str(cx, contentType)")
+		str = JS_ValueToString(cx, argv[0]);
+		if (str == NULL)
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
+		
+		if (!js_str2ngx_str(cx, str, r->pool, &r->headers_out.content_type))
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
     }
