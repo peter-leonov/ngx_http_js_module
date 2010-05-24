@@ -249,8 +249,7 @@ On success returns `Nginx.OK`.
 	r.sendHttpHeader('text/html; charset=utf-8')
 
 
-print(string)
--------------
+### print(string)
 
 Sends data of a UTF-8 encoded `string`. This method is able to send only text, not binary data. This means we can not send a string containing the binary zero symbol (i.e. `"\0"`). Also this method could not send an empty string, it just returns without doing any work.
 
@@ -259,8 +258,8 @@ On success returns `Nginx.OK`.
 	r.print('Hello, World!')
 
 
-flush()
--------
+
+### flush()
 
 This method is pretty simple, it just flushes the request output chain. In terms of nginx it sends a special buffer with a `flush` field set on.
 
@@ -272,8 +271,8 @@ On success returns `Nginx.OK` (the same as `print()`).
 	r.print(', World!')
 
 
-sendString(string [, contentType])
-----------------------------------
+
+### sendString(string [, contentType])
 
 This is a combo-method. It does many thing at once: calculates the size in bytes of the `string`, sets the `Content-Length` header, sets an optional `Content-Type` header, then sends the response headers (like `sendHttpHeader()` does) and sends the `string` (like `print()` does). Overcomplicated? Yes, but all this must be done on the nginx side when the client doesn't support HTTP/1.1. The main thing in all this is that the JS can not calculate a real bytes count will be send on the wire. JS cal only tell us a count of UTF-16 characters in a string, while we need the count of bytes. In short, just do not use this method if you do not really need it ;)
 
@@ -288,8 +287,8 @@ On success returns `Nginx.OK`. Due to the overcomplication, this method may retu
 	r.sendString(body, 'text/plain')
 
 
-sendSpecial(number)
--------------------
+
+### sendSpecial(number)
 
 Send a “special” value through the request. The only tested special value is `Nginx.HTTP_LAST` (the `NGX_HTTP_LAST` in terms of nginx).
 
@@ -301,8 +300,8 @@ On success returns `Nginx.OK`.
 AFAIK, sending the `Nginx.HTTP_LAST` signals nginx to send a last chunk in a chunked response, otherwise a connection will hang.
 
 
-getBody(callback)
------------------
+
+### getBody(callback)
 
 As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is gurantied than the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
 
@@ -339,8 +338,8 @@ The handler:
 	}
 
 
-discardBody()
--------------
+
+### discardBody()
 
 This method ask nginx to discard body with all the tenderness it has. It is not a trivial thing ignoring request body, but we can relax relying on nginx wisdom ;)
 
@@ -357,8 +356,8 @@ On success returns `Nginx.OK`.
 	}
 
 
-sendfile(path, offset, bytes)
-----------
+
+### sendfile(path, offset, bytes)
 
 This method helps to add the content of a file to the request body. We can send more then one file and even the same file more then once. We can set the frame in file to be sent with the `offset` and `bytes` orguments. The two arguments are optional. If only `offset` is specified, nginx will send the file from the `offset` byte from the begin of the file and till the end of the file. If neighter `offset` nor `byte` was specified, nginx will send the entire file to the client.
 
@@ -390,8 +389,8 @@ the result:
 	can be split into: send, me, please!
 
 
-redirect(uri, args)
--------------------
+
+### redirect(uri, args)
 
 Yes, it's kinda like rewrite :)
 
@@ -408,8 +407,8 @@ On success returns `Nginx.OK`.
 	}
 
 
-setTimer(callback, timeout)
----------------------------
+
+### setTimer(callback, timeout)
 
 This method creates a nginx internal timer associated with the request. It means that the timer will be automatically cleared on the request destruction. And that the only one timer may be set at once. To be able to set more that one timer per request, see the the timers.js in `js/` folder of the module.
 
@@ -457,14 +456,14 @@ produces (with 250ms delay for each line):
 In this example nginx will wait till all the `sayHello()`'s will fire and only after that finalize the request.
 
 
-clearTimer()
-------------
+
+### clearTimer()
 
 Just cleares the timer if set. There is no arguments as far as the only one timer can be set per request (without a third-party library as timers.js).
 
 
-subrequest(uri, callback)
--------------------------
+
+### subrequest(uri, callback)
 
 Subrequest in nginx are by no means an AJAX request. Subrequests are quite useless at the point as far as they share the same headers and variables set in same time being processed in parallel. In short use this if and only if you know what you are doing ;)
 
