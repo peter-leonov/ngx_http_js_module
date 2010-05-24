@@ -244,3 +244,14 @@ Sends the header. In addition this method sets the response status to `200` if n
 
 	r.sendHttpHeader('text/html; charset=utf-8')
 
+
+print(string)
+-------------
+
+Sends data of a UTF-8 encoded `string`. This method is able to send only text, not binary data. This means we can not send a string containing the binary zero symbol (i.e. `"\0"`). Also this method could not send an empty string, it just returns without doing any work.
+
+
+flush()
+-------
+
+This method is pretty simple, it just flushes the request output chain. In terms of nginx it sends a special buffer with a `flush` field set on.
