@@ -72,6 +72,7 @@ if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) 
 
 #define TRACE()
 #define TRACE_S(s)
+#define TRACE_STATIC_GETTER()
 #define TRACE_REQUEST(func)
 #define TRACE_REQUEST_METHOD()
 #define TRACE_REQUEST_GETTER()
