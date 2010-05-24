@@ -147,9 +147,6 @@ ngx_http_js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r)
 {
-	if (r->zero_in_uri)
-		return NGX_HTTP_NOT_FOUND;
-	
 	r->main->count++;
 	
 	ngx_http_finalize_request(r, ngx_http_js__glue__call_handler(r));
