@@ -288,3 +288,41 @@ Send a “special” value through the request. The only tested special value is
 
 AFAIK, sending the `Nginx.HTTP_LAST` signals nginx to send a last chunk in a chunked response, otherwise a connection will hang.
 
+
+getBody(callback)
+-----------------
+
+As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is gurantied than the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
+
+The following example shows how to get all the request body in memory.
+
+In the nginx.conf:
+
+	location /ajax {
+		client_max_body_size 512K;
+		client_body_buffer_size 512K;
+		
+		js handler;
+	}
+
+The handler:
+
+	function handler (r) {
+		r.sendHttpHeader('text/plain; charset=utf-8')
+		
+		r.print('waiting for body')
+		r.flush()
+		
+		function onbody ()
+		{
+			r.print('got a body: ' + r.body)
+			r.sendSpecial(Nginx.HTTP_LAST)
+		}
+		
+		r.getBody(body)
+		
+		return Nginx.OK
+	}
+
+
+
