@@ -215,3 +215,23 @@ js_set
 **context**: http
 
 Defines a variable read handler (write handler is planned). The request object is passed to a function as the first argument.
+
+
+Request object
+==============
+
+This object of class Nginx.Request is the most important one. It let us do almost everything we could expect in the HTTP server: read and write headers of both a request and a response, check and then get or reject a request body, send data back to the client with over keep-alived connection, set a timer on a request,  redirect a request and so on.
+
+
+TODO
+----
+
+There are some thing that must be implemented to get the full and intuitive request wrapper:
+
+* [safe properties enumeration][#27]: now you may somehow interact with a request inumerationg its properties;
+* [send “last chunk” on the request completeness][#28]: you have to send the HTTP_LAST_ manually for now.
+
+[#27]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/27
+[#28]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/28
+
+
