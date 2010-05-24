@@ -386,3 +386,51 @@ Note that nginx stores uri (is used while finding a location) and orguments (the
 		r.redirect('/login', 'from=' + r.uri)
 		return Nginx.OK
 	}
+
+
+setTimer(callback, timeout)
+---------------------------
+
+This method creates a nginx internal timer associated with the request. It means that the timer will be automatically cleared on the request destruction. And that the only one timer may be set at once. To be able to set more that one timer per request, see the the timers.js in `js/` folder of the module.
+
+The `callback` must be a function (a closure) and `timeout` is specified in milliseconds.
+
+Example of a cascade timer setting:
+
+	function handler (r)
+	{
+		r.sendHttpHeader('text/html')
+		
+		var count = 10
+		
+		function sayHello ()
+		{
+			r.print('Hello # ' + count + '!\n')
+			r.flush()
+			
+			if (--count > 0)
+				r.setTimer(sayHello, 250)
+			else
+				r.sendSpecial(Nginx.HTTP_LAST)
+		}
+		
+		sayHello()
+		
+		return Nginx.OK
+	}
+
+produces (with 250ms delay for each line):
+
+	Hello # 10!
+	Hello # 9!
+	Hello # 8!
+	Hello # 7!
+	Hello # 6!
+	Hello # 5!
+	Hello # 4!
+	Hello # 3!
+	Hello # 2!
+	Hello # 1!
+
+In this example nginx will wait till all the `sayHello()`'s will fire and only after that finalize the request.
+
