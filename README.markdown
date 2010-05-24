@@ -414,7 +414,7 @@ AFAIK, sending the `Nginx.HTTP_LAST` signals nginx to send a last chunk in a chu
 
 ### getBody(callback)
 
-As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is guarantied than the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
+As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is guarantied that the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
 
 On success returns `Nginx.OK` if the body is ready ATM and `Nginx.AGAIN` if the network could be touched before the body is ready.
 
