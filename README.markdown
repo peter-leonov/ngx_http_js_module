@@ -461,3 +461,48 @@ clearTimer()
 ------------
 
 Just cleares the timer if set. There is no arguments as far as the only one timer can be set per request (without a third-party library as timers.js).
+
+
+subrequest(uri, callback)
+-------------------------
+
+Subrequest in nginx are by no means an AJAX request. Subrequests are quite useless at the point as far as they share the same headers and variables set in same time being processed in parallel. In short use this if and only if you know what you are doing ;)
+
+This methods creates a subrequest (a dependent request with shared almost everything) and directs it to the `uri`. After the subrequest is complete (always asynchronous) nginx will invoke the `callback`.
+
+On the successful subrequest creation the method return a subrequest object (actually a `Nginx.Request` instance). It looks like a general request but it is not, be careful with it as far as we do not know all the cases in which it can crash ;)
+
+The callback itself is very interesting part:
+
+	function callback (sr, body, rc) { /* ... */ }
+
+The callback takes three parameters: subrequest (`sr`) in which context it was invoked, the response body data (`body`) and the subrequest “result code” (`rc`). The last one is an internal nginx code and now is used for test purposes only.
+
+
+In nginx.conf:
+
+	location /nginx.org
+	{
+		proxy_pass http://nginx.org/;
+		proxy_buffers 3 512K;
+		proxy_buffer_size 512K;
+	}
+
+the handler:
+
+	function handler (r)
+	{
+		var uri = '/nginx.org'
+		
+		r.sendHttpHeader('text/plain; charset=utf-8')
+		r.print('accessing ' + uri + '\n')
+		r.flush()
+		
+		function callback (sr, body, rc)
+		{
+			r.print('got body with length ' + body.length + '\n')
+			r.sendSpecial(Nginx.HTTP_LAST)
+		}
+		
+		r.subrequest(uri, callback)
+	}
