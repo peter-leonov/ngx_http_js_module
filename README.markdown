@@ -235,3 +235,10 @@ There are some thing that must be implemented to get the full and intuitive requ
 [#28]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/28
 
 
+sendHttpHeader(contentType)
+---------------------------
+
+Sends the header. In addition this method sets the response status to `200` if not it set, and sets the `headersOut["Content-Type"]` to the value of argument `contentType`.
+
+	r.sendHttpHeader('text/html; charset=utf-8')
+
