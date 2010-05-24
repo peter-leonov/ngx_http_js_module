@@ -250,8 +250,30 @@ print(string)
 
 Sends data of a UTF-8 encoded `string`. This method is able to send only text, not binary data. This means we can not send a string containing the binary zero symbol (i.e. `"\0"`). Also this method could not send an empty string, it just returns without doing any work.
 
+	r.print('Hello, World!')
+
 
 flush()
 -------
 
 This method is pretty simple, it just flushes the request output chain. In terms of nginx it sends a special buffer with a `flush` field set on.
+
+	// sending the response body in two chunks
+	r.print('Hello')
+	r.flush()
+	r.print(', World!')
+
+
+sendString(string [, contentType])
+----------------------------------
+
+This is a combo-method. It does many thing at once: calculates the size in bytes of the `string`, sets the `Content-Length` header, sets an optional `Content-Type` header, then sends the response headers (like `sendHttpHeader()` does) and sends the `string` (like `print()` does). Overcomplicated? Yes, but all this must be done on the nginx side when the client doesn't support HTTP/1.1. The main thing in all this is that the JS can not calculate a real bytes count will be send on the wire. JS cal only tell us a count of UTF-16 characters in a string, while we need the count of bytes. In short, just do not use this method if you do not really need it ;)
+
+	var body = ''
+	// ...
+	body += 'Hello'
+	// ...
+	body += ', World!'
+	
+	r.sendString(body, 'text/plain')
+
