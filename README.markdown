@@ -230,17 +230,21 @@ There are some thing that must be implemented to get the full and intuitive requ
 
 * [safe properties enumeration][#27]: now we may somehow interact with a request inumerationg its properties;
 * [send “last chunk” on the request completeness][#28]: we have to send the HTTP_LAST_ manually for now;
-* [binary data API][#29] is needed: today we can response with a plain text only.
+* [binary data API][#29] is needed: today we can response with a plain text only;
+* [sane return values and exceptions][#31]: for now the returned `Nginx.OK` is a most common sign of success.
 
 [#27]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/27
 [#28]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/28
 [#29]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/29
+[#31]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/31
 
 
 sendHttpHeader(contentType)
 ---------------------------
 
 Sends the header. In addition this method sets the response status to `200` if not it set, and sets the `headersOut["Content-Type"]` to the value of argument `contentType`.
+
+On success returns `Nginx.OK`.
 
 	r.sendHttpHeader('text/html; charset=utf-8')
 
@@ -250,6 +254,8 @@ print(string)
 
 Sends data of a UTF-8 encoded `string`. This method is able to send only text, not binary data. This means we can not send a string containing the binary zero symbol (i.e. `"\0"`). Also this method could not send an empty string, it just returns without doing any work.
 
+On success returns `Nginx.OK`.
+
 	r.print('Hello, World!')
 
 
@@ -257,6 +263,8 @@ flush()
 -------
 
 This method is pretty simple, it just flushes the request output chain. In terms of nginx it sends a special buffer with a `flush` field set on.
+
+On success returns `Nginx.OK` (the same as `print()`).
 
 	// sending the response body in two chunks
 	r.print('Hello')
@@ -268,6 +276,8 @@ sendString(string [, contentType])
 ----------------------------------
 
 This is a combo-method. It does many thing at once: calculates the size in bytes of the `string`, sets the `Content-Length` header, sets an optional `Content-Type` header, then sends the response headers (like `sendHttpHeader()` does) and sends the `string` (like `print()` does). Overcomplicated? Yes, but all this must be done on the nginx side when the client doesn't support HTTP/1.1. The main thing in all this is that the JS can not calculate a real bytes count will be send on the wire. JS cal only tell us a count of UTF-16 characters in a string, while we need the count of bytes. In short, just do not use this method if you do not really need it ;)
+
+On success returns `Nginx.OK`. Due to the overcomplication, this method may return an error and throw an exception.
 
 	var body = ''
 	// ...
@@ -283,6 +293,8 @@ sendSpecial(number)
 
 Send a “special” value through the request. The only tested special value is `Nginx.HTTP_LAST` (the `NGX_HTTP_LAST` in terms of nginx).
 
+On success returns `Nginx.OK`.
+
 	r.puts('The reques is done.')
 	r.sendSpecial(Nginx.HTTP_LAST)
 
@@ -293,6 +305,8 @@ getBody(callback)
 -----------------
 
 As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is gurantied than the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
+
+On success returns `Nginx.OK` if the body is ready atm and `Nginx.AGAIN` if the network could be touched before the body is ready.
 
 The following example shows how to get all the request body in memory.
 
@@ -330,6 +344,8 @@ discardBody()
 
 This method ask nginx to discard body with all the tenderness it has. It is not a trivial thing ignoring request body, but we can relax relying on nginx wisdom ;)
 
+On success returns `Nginx.OK`.
+
 	function handler (r) {
 		r.discardBody()
 		
@@ -347,6 +363,8 @@ sendfile(path, offset, bytes)
 This method helps to add the content of a file to the request body. We can send more then one file and even the same file more then once. We can set the frame in file to be sent with the `offset` and `bytes` orguments. The two arguments are optional. If only `offset` is specified, nginx will send the file from the `offset` byte from the begin of the file and till the end of the file. If neighter `offset` nor `byte` was specified, nginx will send the entire file to the client.
 
 As far as `sendfile()` adds just a file buf into the output chain, we can send files mixed with strings, specials and flushes.
+
+On success returns `Nginx.OK` (the same as `print()`).
 
 In file.txt:
 
@@ -379,6 +397,8 @@ Yes, it's kinda like rewrite :)
 
 Note that nginx stores uri (is used while finding a location) and orguments (the data after the `?` chracter) separately. And to avoid additional uri parsing we can specify the `uri` and `args` arguments for `redirect()`.
 
+On success returns `Nginx.OK`.
+
 	var cookies = r.headersIn.cookies
 	
 	if (Nginx.md5hash(cookies.username + ':a secret') != cookies.signature)
@@ -394,6 +414,8 @@ setTimer(callback, timeout)
 This method creates a nginx internal timer associated with the request. It means that the timer will be automatically cleared on the request destruction. And that the only one timer may be set at once. To be able to set more that one timer per request, see the the timers.js in `js/` folder of the module.
 
 The `callback` must be a function (a closure) and `timeout` is specified in milliseconds.
+
+On success returns `Nginx.OK`.
 
 Example of a cascade timer setting:
 
