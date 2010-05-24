@@ -510,6 +510,11 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	}
 	
 	str = JS_ValueToString(cx, argv[0]);
+	if (str == NULL)
+	{
+		return JS_FALSE;
+	}
+	
 	b = js_str2ngx_buf(cx, str, r->pool);
 	if (b == NULL)
 	{
