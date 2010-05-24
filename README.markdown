@@ -223,6 +223,7 @@ Request object
 This object of class Nginx.Request is the most important one. It let us do almost everything we could expect in the HTTP server: read and write headers of both a request and a response, check and then get or reject a request body, send data back to the client with over keep-alived connection, set a timer on a request,  redirect a request and so on.
 
 
+
 TODO
 ----
 
@@ -239,8 +240,118 @@ There are some thing that must be implemented to get the full and intuitive requ
 [#31]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/31
 
 
-sendHttpHeader(contentType)
----------------------------
+Properties
+----------
+
+
+
+### uri
+
+Tell us the uri of a request.
+
+
+
+### method
+
+Gives us a request method: `GET`, `POST`, etc.
+
+
+
+### filename
+
+Maps the uri to the filename respecting the current nginx configuration. Returned path may (and always will) point to an unexsistent file.
+
+
+
+### remoteAddr
+
+Return a string representation (i.e. `"81.19.68.137"`) of the client IP.
+
+
+
+### headersIn
+
+Returns a wrapper object (of class Nginx.HeadersIn) for the input headers structure. This wrapper helps us to get (and some times set) the request headers.
+
+	r.print(r.headersIn['User-Agent'])
+
+
+
+### headersOut
+
+Return a wrapper object (of class Nginx.HeadersOut) for the output headers structure. This wrapper gives us a chance to set (and get, for example in the header/body filter) the output headers.
+
+	r.headersIn['X-Powered-By'] = 'MegaGigaAwesome CMS'
+
+
+
+### args
+
+Stores the arguments (nginx handles request URI and arguments separately).
+
+
+
+### headerOnly
+
+Indicates does the client expect a body in the response or not. It will be true for a `HEAD` request for example.
+
+
+
+### bodyFilename
+
+Tell us in which file nginx have the request body stored. We have to `getBody()` before use this propery to be sure that nginx has the body recived already. Nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the `[client_body_in_file_only][]` directive.
+
+[client_body_in_file_only]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_in_file_only
+
+
+
+### hasBody
+
+Indicates the presence of the request body. It is a sister of the `headerOnly` property but in reflection around the wire.
+
+
+
+### body
+
+If the request body fits in memory (can be tweaked with [`client_body_buffer_size`][]) we can get it with thw `body` property. Otherwise ise the `bodyFilename` property.
+
+[client_body_buffer_size]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_buffer_size
+
+
+
+### variables
+
+Gieves an access to the request variables. It return a wrapper object (of type Nginx.Variables) which can read and write all the variables the rewrite module can set. Our own variables defined with `js_set` are also avalable through the `variables` property.
+
+	if (r.variables.ancient_browser)
+		return Nginx.HTTP_FORBIDDEN
+
+
+
+### allowRanges
+
+
+Allows and disallows range request.
+
+	if (r.headersIn.cookies.goodUser)
+		r.allowRanges = true
+
+
+
+### internal
+
+Indicates if the request is “internal” in terms of nginx. We can switch it if we want.
+
+	// do some security checks
+	r.internal = true
+
+
+
+Methods
+-------
+
+
+### sendHttpHeader(contentType)
 
 Sends the header. In addition this method sets the response status to `200` if not it set, and sets the `headersOut["Content-Type"]` to the value of argument `contentType`.
 
