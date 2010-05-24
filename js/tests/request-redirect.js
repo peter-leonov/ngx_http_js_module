@@ -10,7 +10,7 @@ NginxTests.requestRedirect = function (r)
 		{
 			function callback (sr, body, rc)
 			{
-				t.eq(body, 'the body', 'response body')
+				t.eq(body, 'args = a=1&b=2', 'response body')
 				
 				t.done()
 			}
@@ -49,14 +49,14 @@ NginxTests.requestRedirect = function (r)
 
 NginxTests.requestRedirectHandler = function (r)
 {
-	r.redirect('/run/request-redirect-target')
+	r.redirect('/run/request-redirect-target', 'a=1&b=2')
 	return Nginx.DONE
 }
 
 NginxTests.requestRedirectTarget = function (r)
 {
 	r.sendHttpHeader('application/json')
-	r.print('the body')
+	r.print('args = ' + r.args)
 	r.sendSpecial(Nginx.HTTP_LAST)
 	
 	return Nginx.OK
