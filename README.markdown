@@ -325,4 +325,18 @@ The handler:
 	}
 
 
+discardBody()
+-------------
+
+This method ask nginx to discard body with all the tenderness it has. It is not a trivial thing ignoring request body, but we can relax relying on nginx wisdom ;)
+
+	function handler (r) {
+		r.discardBody()
+		
+		r.sendHttpHeader('text/plain; charset=utf-8')
+		r.puts('the request body is not good for me')
+		r.sendSpecial(Nginx.HTTP_LAST)
+		
+		return Nginx.OK
+	}
 
