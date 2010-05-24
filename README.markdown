@@ -340,3 +340,34 @@ This method ask nginx to discard body with all the tenderness it has. It is not 
 		return Nginx.OK
 	}
 
+
+sendfile(path, offset, bytes)
+----------
+
+This method helps to add the content of a file to the request body. We can send more then one file and even the same file more then once. We can set the frame in file to be sent with the `offset` and `bytes` orguments. The two arguments are optional. If only `offset` is specified, nginx will send the file from the `offset` byte from the begin of the file and till the end of the file. If neighter `offset` nor `byte` was specified, nginx will send the entire file to the client.
+
+As far as `sendfile()` adds just a file buf into the output chain, we can send files mixed with strings, specials and flushes.
+
+In file.txt:
+
+	send me please!
+
+in handler:
+
+	r.sendfile('file.txt')
+	r.print('\ncan be split into: ')
+	r.flush()
+	
+	r.sendfile('file.txt', 0, 4)
+	r.print(', ')
+	r.sendfile('file.txt', 5, 2)
+	r.print(' and ')
+	r.sendfile('file.txt', 8, 7)
+	
+	r.sendSpecial(Nginx.HTTP_LAST)
+
+the result:
+
+	send me please!
+	can be split into: send, me, please!
+
