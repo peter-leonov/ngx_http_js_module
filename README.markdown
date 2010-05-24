@@ -18,7 +18,7 @@ The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debuggi
 Installation
 ============
 
-The installation is straightforward. Just this module with a familar --add-module configuretion directive in [nginx wiki][].
+The installation is straightforward. Just this module with a familiar --add-module configuration directive in [nginx wiki][].
 
 [nginx wiki] http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
 
@@ -37,7 +37,7 @@ configure
 The JS module could be compiled as any other nginx module:
 ./configure --add-module=/absolute/path/to/the/ngx_http_js_module/
 
-If you want to look into the guts and do somthing there, please configure like the following:
+If you want to look into the guts and do something there, please configure like the following:
 HTTP_JS_COLOR=yes ./configure --with-debug --add-module=/absolute/path/to/the/ngx_http_js_module/
 
 in which:
@@ -63,7 +63,7 @@ please, try to set LD_LIBRARY_PATH env variable like so:
 export LD_LIBRARY_PATH="/usr/local/lib/"
 and then run make test-js again.
 
-make test-js (calling run-tests from the module saurces) tries to set the LD_LIBRARY_PATH env variable for you.
+make test-js (calling run-tests from the module sources) tries to set the LD_LIBRARY_PATH env variable for you.
 
 
 install
@@ -194,7 +194,7 @@ js
 **default**: none  
 **context**: location
 
-Defines a JS handler for curent location. The request object is passed to a function as the first argument.
+Defines a JS handler for current location. The request object is passed to a function as the first argument.
 
 
 js_load
@@ -229,7 +229,7 @@ TODO
 
 There are some thing that must be implemented to get the full and intuitive request wrapper:
 
-* [safe properties enumeration][#27]: now we may somehow interact with a request inumerationg its properties;
+* [safe properties enumeration][#27]: now we may somehow interact with a request enumerating its properties;
 * [send “last chunk” on the request completeness][#28]: we have to send the HTTP_LAST_ manually for now;
 * [binary data API][#29] is needed: today we can response with a plain text only;
 * [sane return values and exceptions][#31]: for now the returned `Nginx.OK` is a most common sign of success.
@@ -259,7 +259,7 @@ Gives us a request method: `GET`, `POST`, etc.
 
 ### filename
 
-Maps the uri to the filename respecting the current nginx configuration. Returned path may (and always will) point to an unexsistent file.
+Maps the uri to the filename respecting the current nginx configuration. Returned path may (and always will) point to an inexistent file.
 
 
 
@@ -299,7 +299,7 @@ Indicates does the client expect a body in the response or not. It will be true 
 
 ### bodyFilename
 
-Tell us in which file nginx have the request body stored. We have to `getBody()` before use this propery to be sure that nginx has the body recived already. Nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the `[client_body_in_file_only][]` directive.
+Tell us in which file nginx have the request body stored. We have to `getBody()` before use this property to be sure that nginx has the body received already. Nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the `[client_body_in_file_only][]` directive.
 
 [client_body_in_file_only]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_in_file_only
 
@@ -313,7 +313,7 @@ Indicates the presence of the request body. It is a sister of the `headerOnly` p
 
 ### body
 
-If the request body fits in memory (can be tweaked with [`client_body_buffer_size`][]) we can get it with thw `body` property. Otherwise ise the `bodyFilename` property.
+If the request body fits in memory (can be tweaked with [`client_body_buffer_size`][]) we can get it with the `body` property. Otherwise use the `bodyFilename` property.
 
 [client_body_buffer_size]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_buffer_size
 
@@ -321,7 +321,7 @@ If the request body fits in memory (can be tweaked with [`client_body_buffer_siz
 
 ### variables
 
-Gieves an access to the request variables. It return a wrapper object (of type Nginx.Variables) which can read and write all the variables the rewrite module can set. Our own variables defined with `js_set` are also avalable through the `variables` property.
+Gives an access to the request variables. It return a wrapper object (of type Nginx.Variables) which can read and write all the variables the rewrite module can set. Our own variables defined with `js_set` are also available through the `variables` property.
 
 	if (r.variables.ancient_browser)
 		return Nginx.HTTP_FORBIDDEN
@@ -387,7 +387,7 @@ On success returns `Nginx.OK` (the same as `print()`).
 
 This is a combo-method. It does many thing at once: calculates the size in bytes of the `string`, sets the `Content-Length` header, sets an optional `Content-Type` header, then sends the response headers (like `sendHttpHeader()` does) and sends the `string` (like `print()` does). Overcomplicated? Yes, but all this must be done on the nginx side when the client doesn't support HTTP/1.1. The main thing in all this is that the JS can not calculate a real bytes count will be send on the wire. JS cal only tell us a count of UTF-16 characters in a string, while we need the count of bytes. In short, just do not use this method if you do not really need it ;)
 
-On success returns `Nginx.OK`. Due to the overcomplication, this method may return an error and throw an exception.
+On success returns `Nginx.OK`. Due to the overcomplicating, this method may return an error and throw an exception.
 
 	var body = ''
 	// ...
@@ -414,9 +414,9 @@ AFAIK, sending the `Nginx.HTTP_LAST` signals nginx to send a last chunk in a chu
 
 ### getBody(callback)
 
-As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is gurantied than the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
+As far as nginx is asynchronous by nature, we can't get the response body at once. We have to wait for it to arrive on the wire, go through the OS kernel buffers and only then we can catch the body data. This method asks nginx to wait for all this things to happen and then call the `callback`. In the callback it is guarantied than the request body related things (`r.body` and `r.bodyFilename`) will be useful to get the data of the request body.
 
-On success returns `Nginx.OK` if the body is ready atm and `Nginx.AGAIN` if the network could be touched before the body is ready.
+On success returns `Nginx.OK` if the body is ready ATM and `Nginx.AGAIN` if the network could be touched before the body is ready.
 
 The following example shows how to get all the request body in memory.
 
@@ -470,7 +470,7 @@ On success returns `Nginx.OK`.
 
 ### sendfile(path, offset, bytes)
 
-This method helps to add the content of a file to the request body. We can send more then one file and even the same file more then once. We can set the frame in file to be sent with the `offset` and `bytes` orguments. The two arguments are optional. If only `offset` is specified, nginx will send the file from the `offset` byte from the begin of the file and till the end of the file. If neighter `offset` nor `byte` was specified, nginx will send the entire file to the client.
+This method helps to add the content of a file to the request body. We can send more then one file and even the same file more then once. We can set the frame in file to be sent with the `offset` and `bytes` arguments. The two arguments are optional. If only `offset` is specified, nginx will send the file from the `offset` byte from the begin of the file and till the end of the file. If neither `offset` nor `byte` was specified, nginx will send the entire file to the client.
 
 As far as `sendfile()` adds just a file buf into the output chain, we can send files mixed with strings, specials and flushes.
 
@@ -505,7 +505,7 @@ the result:
 
 Yes, it's kinda like rewrite :)
 
-Note that nginx stores uri (is used while finding a location) and orguments (the data after the `?` chracter) separately. And to avoid additional uri parsing we can specify the `uri` and `args` arguments for `redirect()`.
+Note that nginx stores uri (is used while finding a location) and arguments (the data after the `?` character) separately. And to avoid additional uri parsing we can specify the `uri` and `args` arguments for `redirect()`.
 
 On success returns `Nginx.OK`.
 
@@ -570,7 +570,7 @@ In this example nginx will wait till all the `sayHello()`'s will fire and only a
 
 ### clearTimer()
 
-Just cleares the timer if set. There is no arguments as far as the only one timer can be set per request (without a third-party library as timers.js).
+Just clears the timer if set. There is no arguments as far as the only one timer can be set per request (without a third-party library as timers.js).
 
 
 
@@ -588,7 +588,7 @@ The callback itself is very interesting part:
 
 The callback takes three parameters: subrequest (`sr`) in which context it was invoked, the response body data (`body`) and the subrequest “result code” (`rc`). The last one is an internal nginx code and now is used for test purposes only.
 
-This is a good idea to issue a subrequest throug the `proxy_passs` even to the nginx itself. This trick helps to deal with other modules in cost of establishing a loopback connection from nginx to nginx itself.
+This is a good idea to issue a subrequest through the `proxy_passs` even to the nginx itself. This trick helps to deal with other modules in cost of establishing a loopback connection from nginx to nginx itself.
 
 In nginx.conf:
 
