@@ -68,6 +68,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-redirect"
 
 # curl $OPTS "http://127.0.0.1:19090/demo/request-headers-out"
 # curl $OPTS "http://127.0.0.1:19090/demo/delayed-output"
+# curl $OPTS "http://127.0.0.1:19090/demo/delayed-output-2"
 # curl $OPTS "http://127.0.0.1:19090/demo/return-an-error"
 # curl $OPTS "http://127.0.0.1:19090/demo/return-error-500"
 # curl $OPTS "http://127.0.0.1:19090/demo/random"
