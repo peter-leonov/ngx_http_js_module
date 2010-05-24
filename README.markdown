@@ -26,6 +26,8 @@ The installation is straightforward. Just this module with a familiar --add-modu
 Requirements
 ------------
 
+nginx version 0.8.37 and greater is required.
+
 This module requires the SpiderMonkey (or TraceMonkey, or JaegerMonkey, or anything else with [JSAPI][]) to be properly installed in your system. Plan to make the sources of SpiderMonkey a part of the module tree to provide the latest mozjs version right with the module.
 
 [JSAPI] https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference
