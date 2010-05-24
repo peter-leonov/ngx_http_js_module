@@ -539,11 +539,23 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	if (argc == 2)
 	{
-		E(js_str2ngx_str(cx, JS_ValueToString(cx, argv[1]), r->pool, &r->headers_out.content_type),
-			"Can`t js_str2ngx_str(cx, contentType)")
+		JSString  *str;
+		
+		str = JS_ValueToString(cx, argv[1]);
+		if (str == NULL)
+		{
+			return JS_FALSE;
+		}
+		
+		if (!js_str2ngx_str(cx, str, r->pool, &r->headers_out.content_type))
+		{
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
+		}
 		
 		r->headers_out.content_type_len = r->headers_out.content_type.len;
-    }
+	}
+	
 	
 	E(ngx_http_set_content_type(r) == NGX_OK, "Can`t ngx_http_set_content_type(r)")
 	E(ngx_http_send_header(r) == NGX_OK, "Can`t ngx_http_send_header(r)");
