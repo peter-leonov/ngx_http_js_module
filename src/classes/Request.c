@@ -336,7 +336,6 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 		str = JS_ValueToString(cx, argv[0]);
 		if (str == NULL)
 		{
-			JS_ReportOutOfMemory(cx);
 			return JS_FALSE;
 		}
 		
@@ -375,7 +374,6 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	str = JS_ValueToString(cx, argv[0]);
 	if (str == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
