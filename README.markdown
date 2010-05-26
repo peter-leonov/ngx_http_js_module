@@ -254,6 +254,12 @@ Request object
 This object of class Nginx.Request is the most important one. It let us do almost everything we could expect in the HTTP server: read and write headers of both a request and a response, check and then get or reject a request body, send data back to the client with over keep-alived connection, set a timer on a request,  redirect a request and so on.
 
 
+Note about GC
+-------------
+
+Every time a request reaches a JS handler a native request structure will be wrapped in an Nginx.Request instance and passed to the JS code. Then some work is doing in JS. After that nginx terminates the native request structure with all its data (headers, variables, request body, etc.), and the module will mark the wrapper object (and all satellite objects like Nginx.HeadersIn and Nginx.Cookies) as inactive. Every call to such a deactivated wrapper will cause an exception.
+
+
 TODO
 ----
 
