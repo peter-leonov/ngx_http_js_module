@@ -803,6 +803,93 @@ See more about [error_log][].
 
 
 
+Nginx.File
+==========
+
+This class is a tiny wrapper around `ngx_fd_t`. File descriptor (`ngx_fd_t`) has such a value that [fits in a pointer][uintptr_t]. This makes a work with `Nginx.File` object relatively fast and its memory footprint almost nothing.
+
+[uintptr_t]: http://nginx.org/pipermail/nginx-devel/2010-April/000200.html
+
+
+TODO
+----
+
+There are some simple things left for future:
+
+* [full support for `File.open`][#32]: now we can open a file only one way;
+* [add support for open file cache][#33]: for now the `Nginx.File` is just a lightweight wrapper for `fd`.
+
+[#32]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/32
+[#33]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/33
+
+
+Properties
+----------
+
+
+### open modes
+
+Reflects some `NGX_FILE_*` constants:
+
+* RDONLY
+* WRONLY
+* RDWR
+* CREATE_OR_OPEN
+* OPEN
+* TRUNCATE
+* APPEND
+* NONBLOCK
+* DEFAULT_ACCESS
+* OWNER_ACCESS
+
+
+### return codes
+
+Reflects some `NGX_FILE_*` constants:
+
+* INVALID
+* ERROR
+
+
+### useful stuff
+
+Reflects some `NGX_FILE_*` constants:
+
+* HAVE_CASELESS_FILESYSTEM
+
+
+Static methods
+--------------
+
+
+### open
+
+Tries to open file and on success return an instance of `Nginx.File`.
+
+	var file = Nginx.File.open(Nginx.prefix + 'nginx.conf')
+
+For now file will be created or opened (`Nginx.File.CREATE_OR_OPEN`), with read/write acces (`Nginx.File.RDWR`) and with a defaul file access (`Nginx.File.DEFAULT_ACCESS`).
+
+On failure return `null`.
+
+
+### rename(src, dst)
+
+Just renames file `src` to file `dst`.
+
+
+### remove(path)
+
+Just removes file this `path`.
+
+
+### exists(path)
+
+Checks if `path` directs to a file.
+
+Return `null` if path does not exist at all, `false` if there is something but not a file and return `true` on an existent plain file.
+
+
 To be described
 ===============
 
@@ -810,4 +897,3 @@ To be described
 * Nginx.HeadersOut
 * Nginx.Cookies
 * Nginx.Variables
-* Nginx.File
