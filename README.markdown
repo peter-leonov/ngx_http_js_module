@@ -32,6 +32,7 @@ The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debuggi
 [Programica.js]: http://github.com/kung-fu-tzu/programica.js
 
 
+
 Installation
 ============
 
@@ -202,12 +203,13 @@ curl http://localhost/demo/msie6
 	</html>
 
 
+
 Directives
 ==========
 
 
 js
---
+---
 
 **syntax**: js object.property | 'function (r) { ... }' | any other JS expression that returns a Function  
 **default**: none  
@@ -217,7 +219,7 @@ Defines a JS handler for current location. The request object is passed to a fun
 
 
 js_load
---
+-------
 
 **syntax**: js_load path  
 **default**: none  
@@ -227,7 +229,7 @@ Simply loads and executes the file specified by path. A script from the file wil
 
 
 js_set
---
+------
 
 **syntax**: js_set $variable object.property | 'function (r) { ... }' | any other JS expression that returns a Function  
 **default**: none  
@@ -236,11 +238,11 @@ js_set
 Defines a variable read handler (write handler is planned). The request object is passed to a function as the first argument.
 
 
+
 Request object
 ==============
 
 This object of class Nginx.Request is the most important one. It let us do almost everything we could expect in the HTTP server: read and write headers of both a request and a response, check and then get or reject a request body, send data back to the client with over keep-alived connection, set a timer on a request,  redirect a request and so on.
-
 
 
 TODO
@@ -263,11 +265,9 @@ Properties
 ----------
 
 
-
 ### uri
 
 Tell us the uri of a request.
-
 
 
 ### method
@@ -275,17 +275,14 @@ Tell us the uri of a request.
 Gives us a request method: `GET`, `POST`, etc.
 
 
-
 ### filename
 
 Maps the uri to the filename respecting the current nginx configuration. Returned path may (and always will) point to an inexistent file.
 
 
-
 ### remoteAddr
 
 Return a string representation (i.e. `"81.19.68.137"`) of the client IP.
-
 
 
 ### headersIn
@@ -295,7 +292,6 @@ Returns a wrapper object (of class Nginx.HeadersIn) for the input headers struct
 	r.print(r.headersIn['User-Agent'])
 
 
-
 ### headersOut
 
 Return a wrapper object (of class Nginx.HeadersOut) for the output headers structure. This wrapper gives us a chance to set (and get, for example in the header/body filter) the output headers.
@@ -303,17 +299,14 @@ Return a wrapper object (of class Nginx.HeadersOut) for the output headers struc
 	r.headersIn['X-Powered-By'] = 'MegaGigaAwesome CMS'
 
 
-
 ### args
 
 Stores the arguments (nginx handles request URI and arguments separately).
 
 
-
 ### headerOnly
 
 Indicates does the client expect a body in the response or not. It will be true for a `HEAD` request for example.
-
 
 
 ### bodyFilename
@@ -323,11 +316,9 @@ Tell us in which file nginx have the request body stored. We have to `getBody()`
 [client_body_in_file_only]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_in_file_only
 
 
-
 ### hasBody
 
 Indicates the presence of the request body. It is a sister of the `headerOnly` property but in reflection around the wire.
-
 
 
 ### body
@@ -337,14 +328,12 @@ If the request body fits in memory (can be tweaked with [`client_body_buffer_siz
 [client_body_buffer_size]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_buffer_size
 
 
-
 ### variables
 
 Gives an access to the request variables. It return a wrapper object (of type Nginx.Variables) which can read and write all the variables the rewrite module can set. Our own variables defined with `js_set` are also available through the `variables` property.
 
 	if (r.variables.ancient_browser)
 		return Nginx.HTTP_FORBIDDEN
-
 
 
 ### allowRanges
@@ -356,14 +345,12 @@ Allows and disallows range request.
 		r.allowRanges = true
 
 
-
 ### internal
 
 Indicates if the request is “internal” in terms of nginx. We can switch it if we want.
 
 	// do some security checks
 	r.internal = true
-
 
 
 Methods
@@ -388,7 +375,6 @@ On success returns `Nginx.OK`.
 	r.print('Hello, World!')
 
 
-
 ### flush()
 
 This method is pretty simple, it just flushes the request output chain. In terms of nginx it sends a special buffer with a `flush` field set on.
@@ -399,7 +385,6 @@ On success returns `Nginx.OK` (the same as `print()`).
 	r.print('Hello')
 	r.flush()
 	r.print(', World!')
-
 
 
 ### sendString(string [, contentType])
@@ -417,7 +402,6 @@ On success returns `Nginx.OK`. Due to the overcomplicating, this method may retu
 	r.sendString(body, 'text/plain')
 
 
-
 ### sendSpecial(number)
 
 Send a “special” value through the request. The only tested special value is `Nginx.HTTP_LAST` (the `NGX_HTTP_LAST` in terms of nginx).
@@ -428,7 +412,6 @@ On success returns `Nginx.OK`.
 	r.sendSpecial(Nginx.HTTP_LAST)
 
 AFAIK, sending the `Nginx.HTTP_LAST` signals nginx to send a last chunk in a chunked response, otherwise a connection will hang.
-
 
 
 ### getBody(callback)
@@ -468,7 +451,6 @@ The handler:
 	}
 
 
-
 ### discardBody()
 
 This method ask nginx to discard body with all the tenderness it has. It is not a trivial thing ignoring request body, but we can relax relying on nginx wisdom ;)
@@ -484,7 +466,6 @@ On success returns `Nginx.OK`.
 		
 		return Nginx.OK
 	}
-
 
 
 ### sendfile(path, offset, bytes)
@@ -519,7 +500,6 @@ the result:
 	can be split into: send, me, please!
 
 
-
 ### redirect(uri, args)
 
 Yes, it's kinda like rewrite :)
@@ -535,7 +515,6 @@ On success returns `Nginx.OK`.
 		r.redirect('/login', 'from=' + r.uri)
 		return Nginx.OK
 	}
-
 
 
 ### setTimer(callback, timeout)
@@ -586,11 +565,9 @@ produces (with 250ms delay for each line):
 In this example nginx will wait till all the `sayHello()`'s will fire and only after that finalize the request.
 
 
-
 ### clearTimer()
 
 Just clears the timer if set. There is no arguments as far as the only one timer can be set per request (without a third-party library as timers.js).
-
 
 
 ### subrequest(uri, callback)
@@ -636,7 +613,6 @@ the handler:
 		
 		r.subrequest(uri, callback)
 	}
-
 
 
 To be described
