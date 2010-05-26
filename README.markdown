@@ -1,4 +1,21 @@
-Some features:
+About
+=====
+
+This module main goal is to make nginx as scriptable as it could to be.
+
+Every scripting language known to me has its own standard library. This is a very good opportunity for a programmer that uses a language to write standart (i.e. multithreaded, synchronous, apache-based) web applications. But it is no good for the embedding into an async application like nginx. For example the [node.js][] developers have to re-implement almost all existing libraries from scratch (and they do so). If you don't fully understand the difference between the applications based on sync and async principles please read about [asynchronous I/O][asynchronous] first.
+
+And SpiderMonkey doesn't have any library. And nobody expect to have it in this language. More of that, the browser interface is also async and event-based. So we can relax and just script nginx instead of making another Web 2.0 framework.
+
+In other words the nxg_http_js_module tries to reflect the nginx functionality in JS.
+
+[node.js]: http://nodejs.org/
+[asynchronous]: http://en.wikipedia.org/wiki/Asynchronous_I/O
+
+
+
+Features
+=============
 
 * full port of ngx_http_perl_module;
 * support for native Nginx subrequests with JS callback for the the response and its body;
