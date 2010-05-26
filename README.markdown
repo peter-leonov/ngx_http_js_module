@@ -678,7 +678,7 @@ nginx version as a string. `""0.8.38""` for example.
 
 ### log levels
 
-Reflects `NGX_LOG*` constants:
+Reflects `NGX_LOG_*` constants:
 
 * LOG_STDERR
 * LOG_EMERG
@@ -701,7 +701,7 @@ See more about [error_log][].
 
 ### HTTP response codes
 
-Reflects `NGX_HTTP*` constants:
+Reflects `NGX_HTTP_*` constants:
 
 * HTTP_OK
 * HTTP_CREATED
