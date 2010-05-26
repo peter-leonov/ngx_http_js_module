@@ -615,10 +615,79 @@ the handler:
 	}
 
 
+
+Nginx
+=====
+
+This is all-in-one variable. It collects those things doesn't fit anywhere else. `Nginx.md5sum()` is a good example of that kind of things.
+
+
+Properties
+----------
+
+
+### time
+
+Every call to `new Date()` issues a syscal and gives the most current date time available. nginx in its turn caches time for a performance reasons. It stores it in the every event process “cycle” so the time can be optained without a syscall. `Nginx.time` takes that cached time for us.
+
+Return a number with millisecconds from the epoch (like `+new Date()` does).
+
+
+### prefix
+
+Gives a string with a current nginx prefix. Prefix is the path to the “home direcroy” of nginx configuration. It may be set with different ways see the [configuration time prefix][] and [`-p` option][p option]. Note that some versions of nginx may take the prefix from the configuration file path.
+
+[configuration time prefix]: http://wiki.nginx.org/NginxInstallOptions
+[p option]: http://wiki.nginx.org/NginxCommandLine#Options
+
+
+### pid
+
+To pid or not to pid? It is just a process id. AFAIK is also cached as a time.
+
+
+### version
+
+nginx version as a number. `8038` for example.
+
+	if (Nginx.version >= 8038)
+		// do sime crazy stuff
+
+
+### VERSION
+
+nginx version as a string. `""0.8.38""` for example.
+
+	r.print('we are using nginx ' + Nginx.VERSION + ', and you?')
+
+
+### log levels
+
+Reflects `NGX_LOG*` constants.
+
+* LOG_STDERR
+* LOG_EMERG
+* LOG_ALERT
+* LOG_CRIT
+* LOG_ERR
+* LOG_WARN
+* LOG_NOTICE
+* LOG_INFO
+* LOG_DEBUG
+
+
+Methods
+-------
+
+
+### md5sum(str)
+
+Calculates a MD5 sum of the given string `str`. As far as nobody expect it to be calculated on the raw UTF-16 bytes vector of the string, `md5sum()` first converts the string to a UTF-8 representation and then does the main work. The can be some issues with this method applied on a real unicode string. If you encounter some call me anytime ;)
+
+
 To be described
 ===============
 
-* Nginx
 * Nginx.HeadersIn
 * Nginx.HeadersOut
 * Nginx.Cookies
