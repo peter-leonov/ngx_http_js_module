@@ -36,7 +36,7 @@ The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debuggi
 Installation
 ============
 
-The installation is straightforward. Just this module with a familiar --add-module configuration directive in [nginx wiki][].
+The installation is straightforward. Just add this module with a familiar --add-module configuration directive in [nginx wiki][].
 
 [nginx wiki]: http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
 
