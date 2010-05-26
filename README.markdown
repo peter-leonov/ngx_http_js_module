@@ -663,7 +663,7 @@ nginx version as a string. `""0.8.38""` for example.
 
 ### log levels
 
-Reflects `NGX_LOG*` constants.
+Reflects `NGX_LOG*` constants:
 
 * LOG_STDERR
 * LOG_EMERG
@@ -675,6 +675,99 @@ Reflects `NGX_LOG*` constants.
 * LOG_INFO
 * LOG_DEBUG
 
+Log at debug level:
+
+	Nginx.logError(this.LOG_WARN, 'do not forget to buy some milk!')
+
+See more about [error_log][].
+
+[error_log]: http://wiki.nginx.org/NginxHttpMainModule#error_log
+
+
+### HTTP response codes
+
+Reflects `NGX_HTTP*` constants:
+
+* HTTP_OK
+* HTTP_CREATED
+* HTTP_NO_CONTENT
+* HTTP_PARTIAL_CONTENT
+* HTTP_SPECIAL_RESPONSE
+* HTTP_MOVED_PERMANENTLY
+* HTTP_MOVED_TEMPORARILY
+* HTTP_NOT_MODIFIED
+* HTTP_BAD_REQUEST
+* HTTP_UNAUTHORIZED
+* HTTP_FORBIDDEN
+* HTTP_NOT_FOUND
+* HTTP_NOT_ALLOWED
+* HTTP_REQUEST_TIME_OUT
+* HTTP_CONFLICT
+* HTTP_LENGTH_REQUIRED
+* HTTP_PRECONDITION_FAILED
+* HTTP_REQUEST_ENTITY_TOO_LARGE
+* HTTP_REQUEST_URI_TOO_LARGE
+* HTTP_UNSUPPORTED_MEDIA_TYPE
+* HTTP_RANGE_NOT_SATISFIABLE
+* HTTP_CLOSE
+* HTTP_OWN_CODES
+* HTTPS_CERT_ERROR
+* HTTPS_NO_CERT
+* HTTP_TO_HTTPS
+* HTTP_CLIENT_CLOSED_REQUEST
+* HTTP_INTERNAL_SERVER_ERROR
+* HTTP_NOT_IMPLEMENTED
+* HTTP_BAD_GATEWAY
+* HTTP_SERVICE_UNAVAILABLE
+* HTTP_GATEWAY_TIME_OUT
+* HTTP_INSUFFICIENT_STORAGE
+
+Indicate a bad request:
+
+	function handler (r) {
+		if (r.args.length > 100)
+			return Nginx.HTTP_BAD_REQUEST
+	}
+
+
+### specials
+
+Reflects some `NGX_HTTP_*` flags:
+
+* HTTP_LAST
+* HTTP_FLUSH
+
+For example send the last chunk:
+
+	function handler (r) {
+		r.sendHttpHeader('text/plain')
+		
+		r.print('Hello, World!')
+		r.sendSpecial(Nginx.HTTP_LAST)
+		
+		return Nginx.OK
+	}
+
+
+### nginx internal response codes
+
+Reflects some `NGX_*` constants:
+
+* OK
+* ERROR
+* AGAIN
+* BUSY
+* DONE
+* DECLINED
+* ABORT
+
+Tell a caller that all is OK:
+
+	function handler (r) {
+		r.sendString('All is OK!')
+		return Nginx.OK
+	}
+
 
 Methods
 -------
@@ -683,6 +776,16 @@ Methods
 ### md5sum(str)
 
 Calculates a MD5 sum of the given string `str`. As far as nobody expect it to be calculated on the raw UTF-16 bytes vector of the string, `md5sum()` first converts the string to a UTF-8 representation and then does the main work. The can be some issues with this method applied on a real unicode string. If you encounter some call me anytime ;)
+
+
+### logError(level, message)
+
+Writes a `message` to the global nginx error log at the `level`.
+
+	Nginx.logError(this.LOG_EMERG, 'forgot to buy the milk!!!')
+
+See more about [error_log][].
+
 
 
 To be described
