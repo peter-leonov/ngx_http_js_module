@@ -209,8 +209,20 @@ method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_file_info(\"%s\")", name);
-	*rval = ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR ? JSVAL_FALSE : JSVAL_TRUE;
 	
+	if (ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR)
+	{
+		*rval = JSVAL_FALSE;
+		return JS_TRUE;
+	}
+	
+	if (ngx_is_file(&fi))
+	{
+		*rval = JSVAL_TRUE;
+		return JS_TRUE;
+	}
+	
+	*rval = JSVAL_FALSE;
 	return JS_TRUE;
 }
 

@@ -27,6 +27,8 @@ NginxTests.file = function (r)
 		{
 			var fname = prefix + 'nginx-file-create.txt'
 			
+			t.no(File.exists(prefix), 'directory exists')
+			
 			t.no(File.exists(fname), 'not exists')
 			
 			var file = File.open(fname)
@@ -48,7 +50,7 @@ NginxTests.file = function (r)
 		
 		t.test('failing create', function (t)
 		{
-			var file = File.open(Nginx.prefix)
+			var file = File.open(prefix)
 			t.eq(file, null, 'File.open(dir)')
 		})
 		
