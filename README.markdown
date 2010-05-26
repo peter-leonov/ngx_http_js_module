@@ -3,7 +3,7 @@ About
 
 This module main goal is to make nginx as scriptable as it could to be.
 
-Every scripting language known to me has its own standard library. This is a very good opportunity for a programmer that uses a language to write standart (i.e. multithreaded, synchronous, apache-based) web applications. But it is no good for the embedding into an async application like nginx. For example the [node.js][] developers have to re-implement almost all existing libraries from scratch (and they do so). If you don't fully understand the difference between the applications based on sync and async principles please read about [asynchronous I/O][asynchronous] first.
+Every scripting language known to me has its own standard library. This is a very good opportunity for a programmer that uses a language to write standard (i.e. multithreaded, synchronous, apache-based) web applications. But it is no good for the embedding into an async application like nginx. For example the [node.js][] developers have to re-implement almost all existing libraries from scratch (and they do so). If you don't fully understand the difference between the applications based on sync and async principles please read about [asynchronous I/O][asynchronous] first.
 
 And SpiderMonkey doesn't have any library. And nobody expect to have it in this language. More of that, the browser interface is also async and event-based. So we can relax and just script nginx instead of making another Web 2.0 framework.
 
@@ -581,19 +581,19 @@ Just clears the timer if set. There is no arguments as far as the only one timer
 
 ### subrequest(uri, callback)
 
-Subrequests in nginx are by no means an AJAX requests. Subrequests are quite useless at the point as far as they share the same headers and variables set in the main request, in the same time requests are processed in parallel. In short use this if and only if you know what you are doing ;)
+Sub-requests in nginx are by no means an AJAX requests. Sub-requests are quite useless at the point as far as they share the same headers and variables set in the main request, in the same time requests are processed in parallel. In short use this if and only if you know what you are doing ;)
 
-This methods creates a subrequest (a dependent request with shared almost everything) and directs it to the `uri`. After the subrequest is complete (always asynchronous) nginx will invoke the `callback`.
+This methods creates a sub-request (a dependent request with shared almost everything) and directs it to the `uri`. After the sub-request is complete (always asynchronous) nginx will invoke the `callback`.
 
-On the successful subrequest creation the method return a subrequest object (actually a `Nginx.Request` instance). It looks like a general request but it is not, be careful with it as far as we do not know all the cases in which it can crash ;)
+On the successful sub-request creation the method return a sub-request object (actually a `Nginx.Request` instance). It looks like a general request but it is not, be careful with it as far as we do not know all the cases in which it can crash ;)
 
 The callback itself is very interesting part:
 
 	function callback (sr, body, rc) { /* ... */ }
 
-The callback takes three parameters: subrequest (`sr`) in which context it was invoked, the response body data (`body`) and the subrequest “result code” (`rc`). The last one is an internal nginx code and now is used for test purposes only.
+The callback takes three parameters: sub-request (`sr`) in which context it was invoked, the response body data (`body`) and the sub-request “result code” (`rc`). The last one is an internal nginx code and now is used for test purposes only.
 
-This is a good idea to issue a subrequest through the `proxy_passs` even to the nginx itself. This trick helps to deal with other modules in cost of establishing a loopback connection from nginx to nginx itself.
+This is a good idea to issue a sub-request through the `proxy_passs` even to the nginx itself. This trick helps to deal with other modules in cost of establishing a loopback connection from nginx to nginx itself.
 
 In nginx.conf:
 
@@ -637,14 +637,14 @@ Properties
 
 ### time
 
-Every call to `new Date()` issues a syscal and gives the most current date time available. nginx in its turn caches time for a performance reasons. It stores it in the every event process “cycle” so the time can be optained without a syscall. `Nginx.time` takes that cached time for us.
+Every call to `new Date()` issues a syscal and gives the most current date time available. nginx in its turn caches time for a performance reasons. It stores it in the every event process “cycle” so the time can be obtained without a syscall. `Nginx.time` takes that cached time for us.
 
-Return a number with millisecconds from the epoch (like `+new Date()` does).
+Return a number with milliseconds from the epoch (like `+new Date()` does).
 
 
 ### prefix
 
-Gives a string with a current nginx prefix. Prefix is the path to the “home direcroy” of nginx configuration. It may be set with different ways see the [configuration time prefix][] and [`-p` option][p option]. Note that some versions of nginx may take the prefix from the configuration file path.
+Gives a string with a current nginx prefix. Prefix is the path to the “home directory” of nginx configuration. It may be set with different ways see the [configuration time prefix][] and [`-p` option][p option]. Note that some versions of nginx may take the prefix from the configuration file path.
 
 [configuration time prefix]: http://wiki.nginx.org/NginxInstallOptions
 [p option]: http://wiki.nginx.org/NginxCommandLine#Options
