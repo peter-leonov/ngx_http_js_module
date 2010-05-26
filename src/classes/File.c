@@ -212,7 +212,7 @@ method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	if (ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR)
 	{
-		*rval = JSVAL_FALSE;
+		*rval = JSVAL_NULL;
 		return JS_TRUE;
 	}
 	

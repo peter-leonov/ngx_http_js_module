@@ -27,25 +27,25 @@ NginxTests.file = function (r)
 		{
 			var fname = prefix + 'nginx-file-create.txt'
 			
-			t.no(File.exists(prefix), 'directory exists')
+			t.eq(File.exists(prefix), false, 'directory exists')
 			
-			t.no(File.exists(fname), 'not exists')
+			t.eq(File.exists(fname), null, 'not exists')
 			
 			var file = File.open(fname)
 			t.ok(file, 'create')
 			t.instance(file, File, 'file object')
 			
-			t.ok(File.exists(fname), 'exists')
+			t.eq(File.exists(fname), true, 'exists')
 			
 			var rc = File.remove(fname)
 			t.ne(rc, File.ERROR, 'delete')
 			
-			t.no(File.exists(fname), 'not exists')
+			t.eq(File.exists(fname), null, 'not exists')
 			
 			var rc = File.remove(fname)
 			t.eq(rc, File.ERROR, 'second delete')
 			
-			t.no(File.exists(fname), 'not exists')
+			t.eq(File.exists(fname), null, 'not exists')
 		})
 		
 		t.test('failing create', function (t)
