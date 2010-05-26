@@ -46,6 +46,13 @@ NginxTests.file = function (r)
 			t.no(File.exists(fname), 'not exists')
 		})
 		
+		t.test('failing create', function (t)
+		{
+			var file = File.open(Nginx.prefix)
+			t.eq(file, null, 'File.open(dir)')
+		})
+		
+		
 		t.test('unicode read/write', function (t)
 		{
 			var fname = prefix + 'nginx-file-write.txt',

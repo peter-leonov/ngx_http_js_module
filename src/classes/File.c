@@ -83,7 +83,7 @@ method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	
 	if (fd == NGX_INVALID_FILE)
 	{
-		*rval = JSVAL_VOID;
+		*rval = JSVAL_NULL;
 		return JS_TRUE;
 	}
 	
