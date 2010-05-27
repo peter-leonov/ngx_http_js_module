@@ -8,7 +8,8 @@ NginxTests.requestBodyFile = function (r)
 	{
 		t.expect(8)
 		
-		var args = UrlEncode.parse(r.args)
+		var args = UrlEncode.parse(r.args),
+			received = false
 		
 		t.eq(r.method, 'POST', 'hasBody')
 		t.eq(r.hasBody, true, 'hasBody')
@@ -27,9 +28,16 @@ NginxTests.requestBodyFile = function (r)
 		}
 		
 		var rc = r.getBody(body)
-		t.eq(rc, Nginx.AGAIN, 'Nginx.AGAIN')
 		
-		t.wait(5000)
+		if (t.finished)
+		{
+			t.warn('strangely fast body receiving')
+		}
+		else
+		{
+			t.eq(rc, Nginx.AGAIN, 'Nginx.AGAIN')
+			t.wait(5000)
+		}
 	})
 	Tests.oncomplete = function ()
 	{
