@@ -92,7 +92,10 @@ var sup = Super.prototype,
 		
 		var results = this.results, expect = this.conf.expect
 		
-		if (expect !== undefined && expect != results.length)
+		if (typeof expect == 'number')
+			expect = [expect]
+		
+		if (expect !== undefined && expect.indexOf(results.length) == -1)
 			this.fail(new Me.Label(expect + ' expected but ' + results.length + ' run'))
 		
 		var ok = true
