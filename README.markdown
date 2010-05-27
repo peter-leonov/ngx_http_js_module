@@ -88,6 +88,16 @@ This could create the following in `prefix`:
 
 ngx_http_js_module relies only on `libmozjs.(so|dylib)` library and on `include/js/*` headers.
 
+### troubleshoot
+
+If you get an error like the following:
+
+	[error]: reserved slot index out of range at <no filename>:0
+	[error]: Can`t JS_InitStandardClasses() at <no filename>:0
+	[emerg]: global object initialization failed in /www/ngx_http_js_module/nginx.conf:24
+
+it means you have a wrong `libjs` version installed. Try to uninstall it first (with kinda like `sudo apt-get remove libmozjs-dev`) and then install the latest version.
+
 
 configure
 ---------
