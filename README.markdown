@@ -377,7 +377,7 @@ Indicates does the client expect a body in the response or not. It will be true 
 
 ### bodyFilename
 
-Tell us in which file nginx have the request body stored. We have to `getBody()` before use this property to be sure that nginx has the body received already. Nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the `[client_body_in_file_only][]` directive.
+Tell us in which file nginx have the request body stored. We have to `getBody()` before use this property to be sure that nginx has the body received already. Nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the [client_body_in_file_only][] directive.
 
 [client_body_in_file_only]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_in_file_only
 
@@ -389,7 +389,7 @@ Indicates the presence of the request body. It is a sister of the `headerOnly` p
 
 ### body
 
-If the request body fits in memory (can be tweaked with [`client_body_buffer_size`][]) we can get it with the `body` property. Otherwise use the `bodyFilename` property.
+If the request body fits in memory (can be tweaked with [client_body_buffer_size][]) we can get it with the `body` property. Otherwise use the `bodyFilename` property.
 
 [client_body_buffer_size]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_buffer_size
 
