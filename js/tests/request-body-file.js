@@ -4,7 +4,7 @@ NginxTests.requestBodyFile = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
-	Tests.test('tests for body receiving', function (t)
+	Tests.test('tests for body in file receiving', function (t)
 	{
 		t.expect(8)
 		
