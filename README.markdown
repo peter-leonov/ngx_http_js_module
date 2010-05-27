@@ -59,6 +59,8 @@ Notes on SpiderMonkey support (2010-05-27):
 * MacPorts is [no good too][on mac];
 * FreeBSD got [the same][on freebsd] as MacPorts.
 
+In short the Debian lenny and greater SpiderMonkey port is useful ATM.
+
 [JSAPI]: https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference
 [on ubuntu]: http://packages.ubuntu.com/search?keywords=spidermonkey&searchon=names&suite=all&section=all
 [on debian]: http://packages.debian.org/search?keywords=spidermonkey&searchon=names&suite=all&section=all
