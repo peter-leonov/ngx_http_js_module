@@ -79,7 +79,6 @@ If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to b
 
 This could create the following in `prefix`:
 
-* bin/js
 * bin/js-config
 * include/js/*
 * lib/libmozjs.(so|dylib)
