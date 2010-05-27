@@ -2,7 +2,8 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <nginx.h>
-#include <js/jsapi.h>
+
+#include <ngx_http_jsapi.h>
 
 #include <nginx_js_macroses.h>
 

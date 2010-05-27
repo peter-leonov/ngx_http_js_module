@@ -3,6 +3,7 @@ HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
 HTTP_AUX_FILTER_MODULES="$HTTP_AUX_FILTER_MODULES $ngx_addon_name"
 
 NGX_ADDON_DEPS="$ngx_addon_dir/src/nginx_js_macroses.h"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/ngx_http_jsapi.h"
 
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/ngx_http_js_module.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/ngx_http_js_module.h"
