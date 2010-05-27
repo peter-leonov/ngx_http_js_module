@@ -16,9 +16,11 @@
 #define TRACE_STATIC_METHOD() \
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "File.%s" COLOR_CLEAR "()", __FUNCTION__ + 7);
 
-// according to http://nginx.org/pipermail/nginx-devel/2010-April/000200.html
-#define FD_TO_PTR(fd)  ((void *) (uintptr_t) fd)
-#define PTR_TO_FD(p)  ((ngx_fd_t) (uintptr_t) p)
+// According to http://nginx.org/pipermail/nginx-devel/2010-April/000200.html.
+// Binary >> and << is used to avoid JS_ASSERT((v & jsval(1)) == jsval(0));
+// at jsobj.h:255 in debug mode.
+#define FD_TO_PTR(fd)   ((void *) ((uintptr_t) fd << 1))
+#define PTR_TO_FD(p)  ((ngx_fd_t) ((uintptr_t) p >> 1))
 
 
 JSObject *ngx_http_js__nginx_file__prototype;
