@@ -6,7 +6,7 @@ NginxTests.requestBodyFile = function (r)
 	
 	Tests.test('tests for body in file receiving', function (t)
 	{
-		t.expect(8)
+		t.expect([7,8])
 		
 		var args = UrlEncode.parse(r.args),
 			received = false
