@@ -1,4 +1,79 @@
 ngx_addon_name=ngx_http_js_module
+
+# feature check stolen from ngx_postgres_module
+
+ngx_feature_name=
+ngx_feature_run=no
+
+
+# js headers
+NGX_JS_HEADERS_DIR="js"
+ngx_feature_incs="#include <$NGX_JS_HEADERS_DIR/jsapi.h>"
+ngx_feature_test=
+ngx_feature="js/jsapi.h"
+ngx_feature_path=
+ngx_feature_libs=
+. auto/feature
+
+if [ $ngx_found = no ]; then
+	# mozjs headers
+	have=NGX_HTTP_JS_MOZJS_HEADERS . auto/have
+	NGX_JS_HEADERS_DIR="mozjs"
+	ngx_feature_incs="#include <$NGX_JS_HEADERS_DIR/jsapi.h>"
+	ngx_feature_test=
+	ngx_feature="mozjs/jsapi.h"
+	ngx_feature_path=
+	ngx_feature_libs=
+	. auto/feature
+fi
+
+if [ $ngx_found = no ]; then
+	echo
+	echo $0: error: the $ngx_addon_name addon requires the jsapi headers.
+	echo
+	
+	exit 1
+fi
+
+
+# js lib
+ngx_feature_incs=
+ngx_feature_test=
+ngx_feature="libjs"
+ngx_feature_path=
+ngx_feature_libs="-ljs"
+. auto/feature
+
+if [ $ngx_found = no ]; then
+	# mozjs headers
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libmozjs"
+	ngx_feature_path=
+	ngx_feature_libs="-lmozjs"
+	. auto/feature
+fi
+
+if [ $ngx_found = no ]; then
+	echo
+	echo $0: error: the $ngx_addon_name addon requires the js library.
+	echo
+	
+	exit 1
+fi
+
+CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
+
+
+CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
+
+# have=NGX_HTTP_JS_HEADERS_DIR value="\"$NGX_JS_HEADERS_DIR\"" . auto/define
+
+if [ "$HTTP_JS_COLOR" = "yes" ]; then
+	have=NGX_HTTP_JS_COLORED . auto/have
+fi
+
+
 HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
 HTTP_AUX_FILTER_MODULES="$HTTP_AUX_FILTER_MODULES $ngx_addon_name"
 
@@ -44,35 +119,4 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Chain.h"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/File.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/File.h"
 
-
-echo "checking for JavaScript"
-NGX_JS_CONFIG="js-config"
-NGX_JS_VER=$($NGX_JS_CONFIG --version | sed 's/^\([0-9]*\)\.\([0-9]*\)\..*/\1.\2/')
-if [ "v$NGX_JS_VER" = "v" ]; then
-    NGX_JS_VER="1.9"
-fi
-if [ "$NGX_JS_VER" = "1.9" ]; then
-    echo " + SpiderMonkey version: $NGX_JS_VER"
-    
-    # NGX_JS_CONFIG_CFLAGS=$($NGX_JS_CONFIG --cflags)
-    # CFLAGS="$NGX_JS_CONFIG_CFLAGS $CFLAGS"
-    CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
-    
-    # NGX_JS_CONFIG_LIBS=$($NGX_JS_CONFIG --libs)
-    # CORE_LIBS="$CORE_LIBS $NGX_JS_CONFIG_LIBS"
-    CORE_LIBS="$CORE_LIBS -lmozjs"
-else
-    if [[ -z $NGX_JS_VER ]]; then
-        $NGX_JS_VER="(none)"
-    fi
-    
-    echo
-    echo "$0: error: SpiderMonkey 1.9.0 or higher is required: $NGX_JS_VER was found"
-    echo
-    
-    exit 1;
-fi
-
-if [ "$HTTP_JS_COLOR" = "yes" ]; then
-	have=NGX_HTTP_JS_COLORED value="1" . auto/define
-fi
+have=NGX_HTTP_JS_MODULE . auto/have
