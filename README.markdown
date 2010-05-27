@@ -44,8 +44,9 @@ The installation is straightforward. Just add this module with a familiar --add-
 Requirements
 ------------
 
-* nginx version 0.8.37 and greater is required.
-* SpiderMonkey 1.9.0 and greater is required.
+* nginx version 0.8.37 and greater is required;
+* SpiderMonkey 1.9.0 and greater is required;
+* curl near 7.19 for automated testing.
 
 
 ### installing SpiderMonkey
