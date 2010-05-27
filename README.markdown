@@ -46,9 +46,20 @@ Requirements
 
 nginx version 0.8.37 and greater is required.
 
-This module requires the SpiderMonkey (or TraceMonkey, or JaegerMonkey, or anything else with [JSAPI][]) to be properly installed in your system. Plan to make the sources of SpiderMonkey a part of the module tree to provide the latest mozjs version right with the module.
+This module requires the SpiderMonkey 1.9+ (or TraceMonkey, or JaegerMonkey, or anything else with [JSAPI][]) to be properly installed in your system.
+
+Notes on SpiderMonkey support (2010-05-27):
+
+* Ubuntu has relatively bad support for SpiderMonkey at the moment: [1.5 and 1.8 versions][on ubuntu] only;
+* Debian [has much greater][on debian] SpiderMonkey in it and may be useful;
+* MacPorts is [no good too][on mac];
+* FreeBSD got [the same][on freebsd] as MacPorts.
 
 [JSAPI]: https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference
+[on ubuntu]: http://packages.ubuntu.com/search?keywords=spidermonkey&searchon=names&suite=all&section=all
+[on debian]: http://packages.debian.org/search?keywords=spidermonkey&searchon=names&suite=all&section=all
+[on mac]: http://www.macports.org/ports.php?by=name&substr=spidermonkey
+[on freebsd]: http://www.FreeBSD.org/cgi/ports.cgi?query=spidermonkey&stype=all
 
 
 configure
