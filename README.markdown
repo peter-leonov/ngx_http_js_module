@@ -61,6 +61,28 @@ Notes on SpiderMonkey support (2010-05-27):
 [on mac]: http://www.macports.org/ports.php?by=name&substr=spidermonkey
 [on freebsd]: http://www.FreeBSD.org/cgi/ports.cgi?query=spidermonkey&stype=all
 
+Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 sources][firefox sources] (or my [github mirror][spidermonkey mirror] of the `js/` subfolder) ships with an independent SpiderMonkey source tree. This means we can build a SpiderMonkey library and install it with all the header files without even touching the Firefox source code. All we have to do is the following:
+
+[firefox sources]: https://developer.mozilla.org/en/Download_Mozilla_Source_Code
+[spidermonkey mirror]: http://github.com/kung-fu-tzu/spidermonkey
+
+	cd firefox-sources/js/src
+	./configure [--prefix=/usr/] [--disable-jit]
+	make
+	sudo make install
+
+If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to be able to `make` SpiderMonkey. If you are on Ubuntu please use `--prefix=/usr/`, otherwise SpiderMonkey installs itself to `/usr/local/` and `libmozjs.so` becomes unreachable.
+
+This could create the following in `prefix`:
+
+* bin/js
+* bin/js-config
+* include/js/*
+* lib/libmozjs.(so|dylib)
+* lib/libjs_static.a
+
+ngx_http_js_module relies only on `libmozjs.(so|dylib)` library and on `include/js/*` headers.
+
 
 configure
 ---------
