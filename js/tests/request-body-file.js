@@ -29,7 +29,7 @@ NginxTests.requestBodyFile = function (r)
 		
 		var rc = r.getBody(body)
 		
-		if (t.finished)
+		if (t.finished())
 		{
 			t.warn('strangely fast body receiving')
 		}
