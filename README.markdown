@@ -44,9 +44,13 @@ The installation is straightforward. Just add this module with a familiar --add-
 Requirements
 ------------
 
-nginx version 0.8.37 and greater is required.
+* nginx version 0.8.37 and greater is required.
+* SpiderMonkey 1.9.0 and greater is required.
 
-This module requires the SpiderMonkey 1.9+ (or TraceMonkey, or JaegerMonkey, or anything else with [JSAPI][]) to be properly installed in your system.
+
+### installing SpiderMonkey
+
+This module requires the SpiderMonkey 1.9+ (or TraceMonkey, or JaegerMonkey, or anything else with the [JSAPI][] on 2010-03.26) to be properly installed in your system.
 
 Notes on SpiderMonkey support (2010-05-27):
 
