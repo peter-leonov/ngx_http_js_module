@@ -16,6 +16,8 @@ var prototype =
 	warn: function (m) { return this.parent.reporter.warn(m) },
 	parallel: function (v) { return this.parent.parallel = v },
 	
+	finished: function () { return this.parent.finished },
+	
 	ok: function (v, d)
 	{
 		if (v)
