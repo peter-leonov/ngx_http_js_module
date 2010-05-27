@@ -71,11 +71,11 @@ Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 so
 [spidermonkey mirror]: http://github.com/kung-fu-tzu/spidermonkey
 
 	cd firefox-sources/js/src
-	./configure [--prefix=/usr/] [--disable-jit]
+	./configure [--prefix=/usr/] [--disable-jit] [--disable-tests] [--enable-debug]
 	make
 	sudo make install
 
-If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to be able to `make` SpiderMonkey. If you are on Ubuntu please use `--prefix=/usr/`, otherwise SpiderMonkey installs itself to `/usr/local/` and `libmozjs.so` becomes unreachable.
+If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to be able to `make` SpiderMonkey. If you are on Ubuntu please use `--prefix=/usr/`, otherwise SpiderMonkey installs itself to `/usr/local/` and `libmozjs.so` becomes unreachable. Use `--disable-tests` to get `make` ended shortly. Use `--enable-debug` if you plan to develop a little ;)
 
 This could create the following in `prefix`:
 
