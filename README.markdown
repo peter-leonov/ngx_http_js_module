@@ -9,8 +9,12 @@ And SpiderMonkey doesn't have any library. And nobody expect to have it in this 
 
 In other words the nxg_http_js_module tries to reflect the nginx functionality in JS.
 
+You can touch the ground running if you have ever seen [ngx_http_perl_module][] or [mod_perl][] before.
+
 [node.js]: http://nodejs.org/
 [asynchronous]: http://en.wikipedia.org/wiki/Asynchronous_I/O
+[ngx_http_perl_module]: http://wiki.nginx.org/NginxEmbeddedPerlModule
+[mod_perl]: http://perl.apache.org/
 
 
 
