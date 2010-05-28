@@ -371,7 +371,7 @@ Returns a wrapper object (of class Nginx.HeadersIn) for the input headers struct
 
 Return a wrapper object (of class Nginx.HeadersOut) for the output headers structure. This wrapper gives us a chance to set (and get, for example in the header/body filter) the output headers.
 
-	r.headersIn['X-Powered-By'] = 'MegaGigaAwesome CMS'
+	r.headersOut['X-Powered-By'] = 'MegaGigaAwesome CMS'
 
 
 ### args
