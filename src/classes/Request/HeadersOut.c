@@ -1082,7 +1082,7 @@ static JSPropertySpec props[] =
 	{"Date",                         0,  0,                    getter_date,                  setter_date},
 	{"$dateTime",                    0,  JSPROP_READONLY,      getter_dateTime,              NULL},
 	{"Content-Length",               0,  0,                    getter_contentLength,         setter_contentLength},
-	{"$contentLength",               0,  JSPROP_READONLY,      getter_contentLengthN,        NULL},
+	{"$contentLengthN",              0,  JSPROP_READONLY,      getter_contentLengthN,        NULL},
 	{"Content-Encoding",             0,  0,                    getter_contentEncoding,       setter_contentEncoding},
 	{"Location",                     0,  0,                    getter_location,              setter_location},
 	{"Refresh",                      0,  0,                    getter_refresh,               setter_refresh},
