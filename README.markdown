@@ -381,7 +381,7 @@ Stores the arguments (nginx handles request URI and arguments separately).
 
 ### headerOnly
 
-Indicates does the client expect a body in the response or not. It will be true for a `HEAD` request for example.
+Indicates does the client expect a body in the response or not. It will be `true` for a `HEAD` request for example.
 
 
 ### bodyFilename
