@@ -27,7 +27,7 @@ Features
 * fast native cookies support with the same code nginx uses itself (via `Nginx.HeadersIn.cookies`);
 * environment variables handling with the code taken from Mozilla's JS interpreter;
 * lots of useful properties of Nginx object (`Nginx.time`, `Nginx.prefix`, `Nginx.version`, etc);
-* plain `require()` function that finds JS files walking through `Nginx.prefix` + `JSLIB` env variable (like `RUBYLIB` and `PERL5LIB`);
+* plain `require()` function that finds JS files walking through `Nginx.prefix` + `JSLIB` environment variable (like `RUBYLIB` and `PERL5LIB`);
 * initial support for files via `Nginx.File` (create/delete/rename, simple open/close/read/write, all in UTF-8);
 * handy tests suit written in plain JavaScript (using asynchronous test framework from [Programica.js][])
 
@@ -66,7 +66,7 @@ Notes on SpiderMonkey support (2010-05-27):
 * MacPorts is [no good too][on mac];
 * FreeBSD got [the same][on freebsd] as MacPorts.
 
-In short the Debian lenny and greater SpiderMonkey port is useful ATM.
+In short the Debian Lenny and greater SpiderMonkey port is useful ATM.
 
 [JSAPI]: https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference
 [on ubuntu]: http://packages.ubuntu.com/search?keywords=spidermonkey&searchon=names&suite=all&section=all
@@ -120,7 +120,7 @@ If you want to look into the guts and do something there, please configure like 
 in which:
 
 * `--with-debug` flag compiles nginx with all the debug features ([debugging log][] for example);
-* `HTTP_JS_COLOR=yes` env variable enables the colored logging for the JS module.
+* `HTTP_JS_COLOR=yes` environment variable enables the colored logging for the JS module.
 
 [debugging log]: http://nginx.org/en/docs/debugging_log.html
 
@@ -146,13 +146,13 @@ If you get the following error:
 
 	.../objs/nginx: error while loading shared libraries: libmozjs.so: cannot open shared object file: No such file or directory
 
-please, try to set `LD_LIBRARY_PATH` env variable like so:
+please, try to set `LD_LIBRARY_PATH` environment variable like so:
 
 	export LD_LIBRARY_PATH="/usr/local/lib/"
 
 and then run `make test-js` again.
 
-`make test-js` (calling `run-tests` from the module sources) tries to set the `LD_LIBRARY_PATH` env variable for you.
+`make test-js` (calling `run-tests` from the module sources) tries to set the `LD_LIBRARY_PATH` environment variable for you.
 
 
 install
@@ -311,7 +311,7 @@ Defines a variable read handler (write handler is planned). The request object i
 Request object
 ==============
 
-This object of class Nginx.Request is the most important one. It let us do almost everything we could expect in the HTTP server: read and write headers of both a request and a response, check and then get or reject a request body, send data back to the client with over keep-alived connection, set a timer on a request,  redirect a request and so on.
+This object of class Nginx.Request is the most important one. It let us do almost everything we could expect in the HTTP server: read and write headers of both a request and a response, check and then get or reject a request body, send data back to the client with over keep-alive connection, set a timer on a request,  redirect a request and so on.
 
 
 Note about GC
@@ -703,7 +703,7 @@ Properties
 
 ### time
 
-Every call to `new Date()` issues a syscal and gives the most current date time available. nginx in its turn caches time for a performance reasons. It stores it in the every event process “cycle” so the time can be obtained without a syscall. `Nginx.time` takes that cached time for us.
+Every call to `new Date()` issues a syscall and gives the most current date time available. nginx in its turn caches time for a performance reasons. It stores it in the every event process “cycle” so the time can be obtained without a syscall. `Nginx.time` takes that cached time for us.
 
 Return a number with milliseconds from the epoch (like `+new Date()` does).
 
@@ -1032,12 +1032,12 @@ or like so:
 
 the result could be the same.
 
-See the `Nginx.Cookies` class description for details (comming soon).
+See the `Nginx.Cookies` class description for details (coming soon).
 
 
 ### $contentLength
 
-This property is used for test porposes only. It reflects the multilevel cache arcitecture of headers in nginx.
+This property is used for test purposes only. It reflects the multilevel cache architecture of headers in nginx.
 
 We can set the `Content-Length` header with this:
 
@@ -1052,7 +1052,7 @@ This property is just a reader for `r->headers_in.content_length`.
 
 ### $contentLengthN
 
-Like the `$contentLength` rhis property is used for test porposes only.
+Like the `$contentLength` this property is used for test purposes only.
 
 We can set the `Content-Length` header with this:
 
@@ -1067,7 +1067,7 @@ Note that type of `$contentLengthN` is number here. nginx does the same (with `r
 
 ### $range
 
-Like the `$contentLength` this property is used for test porposes only.
+Like the `$contentLength` this property is used for test purposes only.
 
 It does fully duplicate the logic of `$contentLength` but for the `Range` header.
 
