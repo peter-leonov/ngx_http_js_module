@@ -40,7 +40,7 @@ The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debuggi
 Installation
 ============
 
-The installation is straightforward. Just add this module with a familiar --add-module configuration directive in [nginx wiki][].
+The installation is straightforward. Just add this module with a familiar `--add-module` configuration directive in [nginx wiki][].
 
 This module was successfully tested on: 32-bit Ubuntu 8.04.3 (2.6.18-virtuozzo and 2.6.24-23-openvz), 32-bit and 64-bit Mac OS 10.6.3.
 
