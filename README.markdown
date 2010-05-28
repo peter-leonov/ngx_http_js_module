@@ -993,10 +993,83 @@ Converts `string` to the UTF-8 bytes sequence and writes to the file from the cu
 Closes the corresponding `ngx_fd_t` stored within this `Nginx.File` instance and marks the instance as deactivated. Do not use a closed file at all, it would throw an exception.
 
 
+
+Nginx.HeadersIn
+===============
+
+`Nginx.HeadersIn` with `Nginx.HeadersOut` do all the job with headers. It is useful to learn [how does headers work][] under the hood.
+
+We can't create `Nginx.HeadersIn` instance directly but only with `r.headersIn`. That's because of the headers instance have to know to which request object (and `headers_in` structure in terms of nginx) it belongs.
+
+[how does headers work]: http://wiki.nginx.org/HeadersManagement
+
+
+Properties
+----------
+
+All the properties we set or get with `Nginx.headersIn` instance will be map to the native request headers. So we can not set any property on the instance without nginx knowing about it. Think of it as a hash implementation with some smart logic behind it.
+
+	r.headersIn['Content-Length']
+
+There are a few special read-only properties described below.
+
+
+### cookies
+
+It is another wrapper to the request headers just like `headersIn` itself, but it focuses on the request cookies directly. We can read the cookie value by its key like so:
+
+	r.headersIn.cookies['session']
+
+or like so:
+
+	var cookies = r.headersIn.cookies
+	cookies.session
+
+the result could be the same.
+
+See the `Nginx.Cookies` class description for details (comming soon).
+
+
+### $contentLength
+
+This property is used for test porposes only. It reflects the multilevel cache arcitecture of headers in nginx.
+
+We can set the `Content-Length` header with this:
+
+	r.headersIn['Content-Length] = '555'
+
+and then check:
+
+	r.headersIn.$contentLength === '555'
+
+This property is just a reader for `r->headers_in.content_length`.
+
+
+### $contentLengthN
+
+Like the `$contentLength` rhis property is used for test porposes only.
+
+We can set the `Content-Length` header with this:
+
+	r.headersIn['Content-Length] = '555'
+
+and then check:
+
+	r.headersIn.$contentLengthN === 555
+
+Note that type of `$contentLengthN` is number here. nginx does the same (with `r->headers_in.content_length_n`) on the native side.
+
+
+### $range
+
+Like the `$contentLength` this property is used for test porposes only.
+
+It does fully duplicate the logic of `$contentLength` but for the `Range` header.
+
+
 To be described
 ===============
 
-* Nginx.HeadersIn
 * Nginx.HeadersOut
 * Nginx.Cookies
 * Nginx.Variables
