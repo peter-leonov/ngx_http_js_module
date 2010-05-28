@@ -9,6 +9,7 @@ NginxTests.requestHeadersInSetGet = function (r)
 		var h = r.headersIn
 		
 		t.ok(h, 'headersIn')
+		t.eq(r.headersIn, r.headersIn, 'same headersIn wrapper')
 		
 		t.eq(h['Content-Length'], undefined, 'Content-Length')
 		t.eq(h.$contentLength, null, '$contentLength')

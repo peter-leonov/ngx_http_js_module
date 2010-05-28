@@ -10,6 +10,7 @@ NginxTests.requestHeadersOutSetGet = function (r)
 		var h = r.headersOut
 		
 		t.ok(h, 'headersOut')
+		t.eq(r.headersOut, r.headersOut, 'same headersOut wrapper')
 		
 		function testHeader (t, h, header)
 		{
