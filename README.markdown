@@ -124,6 +124,11 @@ in which:
 
 [debugging log]: http://nginx.org/en/docs/debugging_log.html
 
+If you want to have both the vanilla and JS-flavored nginx use `--prefix=`
+
+	./configure --prefix=/usr/local/nginx-js/ --add-module=/absolute/path/to/the/ngx_http_js_module/
+
+
 make
 ----
 
