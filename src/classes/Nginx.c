@@ -285,9 +285,9 @@ static JSClass nginx_class =
 
 static JSFunctionSpec nginx_class_funcs[] =
 {
-	{"logError",    method_logError,         1, 0, 0},
-	{"md5",         method_md5,              1, 0, 0},
-	{0, NULL, 0, 0, 0}
+	JS_FS("logError",    method_logError,         1, 0, 0),
+	JS_FS("md5",         method_md5,              1, 0, 0),
+	JS_FS_END
 };
 
 JSBool

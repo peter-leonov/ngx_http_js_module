@@ -1103,7 +1103,7 @@ static JSPropertySpec props[] =
 
 static JSFunctionSpec funcs[] =
 {
-	{0, NULL, 0, 0, 0}
+	JS_FS_END
 };
 
 JSClass ngx_http_js__nginx_headers_out__class =

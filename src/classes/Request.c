@@ -1339,21 +1339,21 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 
 JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 {
-	{"sendHttpHeader",    method_sendHttpHeader,       2, 0, 0},
-	{"print",             method_print,                1, 0, 0},
-	{"flush",             method_flush,                0, 0, 0},
-	{"sendString",        method_sendString,           1, 0, 0},
-	{"subrequest",        method_subrequest,           2, 0, 0},
-	{"sendSpecial",       method_sendSpecial,          1, 0, 0},
-	{"discardBody",       method_discardBody,          0, 0, 0},
-	{"getBody",           method_getBody,              1, 0, 0},
-	{"sendfile",          method_sendfile,             3, 0, 0},
-	{"redirect",          method_redirect,             2, 0, 0},
-	{"setTimer",          method_setTimer,             2, 0, 0},
-	{"clearTimer",        method_clearTimer,           0, 0, 0},
-	{"nextBodyFilter",    method_nextBodyFilter,       1, 0, 0},
-	{"rootMe",            method_rootMe,               0, 0, 0},
-	{0, NULL, 0, 0, 0}
+	JS_FS("sendHttpHeader",    method_sendHttpHeader,       2, 0, 0),
+	JS_FS("print",             method_print,                1, 0, 0),
+	JS_FS("flush",             method_flush,                0, 0, 0),
+	JS_FS("sendString",        method_sendString,           1, 0, 0),
+	JS_FS("subrequest",        method_subrequest,           2, 0, 0),
+	JS_FS("sendSpecial",       method_sendSpecial,          1, 0, 0),
+	JS_FS("discardBody",       method_discardBody,          0, 0, 0),
+	JS_FS("getBody",           method_getBody,              1, 0, 0),
+	JS_FS("sendfile",          method_sendfile,             3, 0, 0),
+	JS_FS("redirect",          method_redirect,             2, 0, 0),
+	JS_FS("setTimer",          method_setTimer,             2, 0, 0),
+	JS_FS("clearTimer",        method_clearTimer,           0, 0, 0),
+	JS_FS("nextBodyFilter",    method_nextBodyFilter,       1, 0, 0),
+	JS_FS("rootMe",            method_rootMe,               0, 0, 0),
+	JS_FS_END
 };
 
 JSClass ngx_http_js__nginx_request__class =
