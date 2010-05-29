@@ -1004,9 +1004,9 @@ Nginx.HeadersIn
 
 `Nginx.HeadersIn` with `Nginx.HeadersOut` do all the job with headers. It is useful to learn [how does headers work][] under the hood.
 
-We can't create `Nginx.HeadersIn` instance directly but only with `r.headersIn`. That's because of the headers instance have to know to which request object (and `headers_in` structure in terms of nginx) it belongs.
-
 [how does headers work]: http://wiki.nginx.org/HeadersManagement
+
+We can't create `Nginx.HeadersIn` instance directly but only with `r.headersIn`. That's because of the headers instance have to know to which request object (and `headers_in` structure in terms of nginx) it belongs.
 
 
 Properties
