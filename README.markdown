@@ -1145,7 +1145,20 @@ Marks the cookies headers array as empty. This method does not try to fully dele
 
 
 
-To be described
+Nginx.Variables
 ===============
 
-* Nginx.Variables
+Variables in nginx are even more complicated thing then the headers. AFAIK, variable may be cached or not, indexed or not, has getter/setter or not. Every module that adds a variable may handle its value with different ways: share the value between different variables, invalidate cache or change the setter and getter function. Huge amount of flexibility! And all this is a subject to change (the last one was in 0.8.36).
+
+We can access all the nginx variables defined by variouse modules with a simple hash-like inteface (yeap, like headers and cookies):
+
+	r.variables.limit_rate = "4096" // 4k
+
+and it should work ;)
+
+On an attempt to set inexistent variable this class could throw an exception (`can't find variable …`). On getting inexistent variable just returns `undefined`.
+
+In short we can safely get a variable value as far as it is supported by nginx. Setting a value is much more complicated thing. This module tries to duplicate the logic from the [rewrite module][].
+
+[rewrite module]: http://wiki.nginx.org/NginxHttpRewriteModule
+
