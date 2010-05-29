@@ -1072,9 +1072,50 @@ Like the `$contentLength` this property is used for test purposes only.
 It does fully duplicate the logic of `$contentLength` but for the `Range` header.
 
 
+
+Nginx.HeadersOut
+================
+
+Again, as for `Nginx.HeadersIn` we can not create `Nginx.HeadersOut` instance directly but only with `r.headersOut` request property. That's because of the output headers instance have to know to which request object (and `headers_out` structure in terms of nginx) it belongs.
+
+	r.headersOut['WWW-Authenticate'] = 'Basic realm="Nginx Area"'
+
+This class is almost the same as `Nginx.HeadersIn`, except in some special properties.
+
+
+Properties
+----------
+
+All properties are proxied to or from the native request output headers.
+
+
+### $dateTime
+
+Number (in seconds) representation of `Date-Time` output header. Reflects `r->headers_out.date_time` of the native side.
+
+
+### $contentLengthN
+
+Number (in bytes) representation of `Content-Length` output header. Reflects `r->headers_out.content_length_n` of the native side.
+
+
+### $lastModified
+
+Number (in seconds) representation of `Last-Modified` output header. Reflects `r->headers_out.last_modified_time` of the native side.
+
+
+### $contentTypeLen
+
+Number (in bytes) representation of `Content-Type` output header. Reflects `r->headers_out.content_type_len` of the native side.
+
+
+### $contentTypeLowcase
+
+Lowercased string representation of `Content-Type` output header. Reflects `r->headers_out.content_type_lowcase` of the native side.
+
+
 To be described
 ===============
 
-* Nginx.HeadersOut
 * Nginx.Cookies
 * Nginx.Variables
