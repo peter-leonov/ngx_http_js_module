@@ -109,7 +109,6 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
 		if (name == NULL)
 		{
-			JS_ReportError(cx, "can't get the C string of the property name");
 			return JS_FALSE;
 		}
 		
