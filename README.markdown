@@ -1086,7 +1086,7 @@ This class is almost the same as `Nginx.HeadersIn`, except in some special prope
 Properties
 ----------
 
-All properties are proxied to or from the native request output headers.
+All properties are proxies to or from the native request output headers.
 
 
 ### $dateTime
@@ -1118,7 +1118,7 @@ Lowercased string representation of `Content-Type` output header. Reflects `r->h
 Nginx.Cookies
 =============
 
-This class is just a fast and lightweight wrapper for cookies in nginx. It does not parse `Cookie` hader only search trough it if we read a property. This way of access to the cookies is not very fast if we have to read many values many times. Cookie names can not be enumerated. If you need a full-featured cookie management experience you may just parse the `Cookie` header and store its data in a simple object.
+This class is just a fast and lightweight wrapper for cookies in nginx. It does not parse `Cookie` header only search trough it if we read a property. This way of access to the cookies is not very fast if we have to read many values many times. Cookie names can not be enumerated. If you need a full-featured cookie management experience you may just parse the `Cookie` header and store its data in a simple object.
 
 In short use this class if you want to do only few lookups and go.
 
@@ -1139,7 +1139,7 @@ Return a count of cookies.
 Methods
 -------
 
-### emtpy()
+### empty()
 
 Marks the cookies headers array as empty. This method does not try to fully delete cookies headers, just marks the native array as empty.
 
