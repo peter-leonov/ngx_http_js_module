@@ -1114,8 +1114,38 @@ Number (in bytes) representation of `Content-Type` output header. Reflects `r->h
 Lowercased string representation of `Content-Type` output header. Reflects `r->headers_out.content_type_lowcase` of the native side.
 
 
+
+Nginx.Cookies
+=============
+
+This class is just a fast and lightweight wrapper for cookies in nginx. It does not parse `Cookie` hader only search trough it if we read a property. This way of access to the cookies is not very fast if we have to read many values many times. Cookie names can not be enumerated. If you need a full-featured cookie management experience you may just parse the `Cookie` header and store its data in a simple object.
+
+In short use this class if you want to do only few lookups and go.
+
+
+Properties
+----------
+
+As in headers wrappers all the properties in `Nginx.Cookie` instance are mapped to the content of `Cookie` header with a functions built in nginx.
+At the moment we can't delete or add or edit cookies value with this class (try to use `r.headersOut['Cookie'] = 'all cokies here'` instead).
+
+This class instances have some additional functionality good for test purposes only.
+
+### length
+
+Return a count of cookies.
+
+
+Methods
+-------
+
+### emtpy()
+
+Marks the cookies headers array as empty. This method does not try to fully delete cookies headers, just marks the native array as empty.
+
+
+
 To be described
 ===============
 
-* Nginx.Cookies
 * Nginx.Variables
