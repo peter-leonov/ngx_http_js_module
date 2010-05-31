@@ -461,10 +461,10 @@ static_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 static JSFunctionSpec funcs[] =
 {
-	{"write",           method_write,               1, 0, 0},
-	{"read",            method_read,                1, 0, 0},
-	{"close",           method_close,               0, 0, 0},
-	{0, NULL, 0, 0, 0}
+	JS_FS("write",           method_write,               1, 0, 0),
+	JS_FS("read",            method_read,                1, 0, 0),
+	JS_FS("close",           method_close,               0, 0, 0),
+	JS_FS_END
 };
 
 static JSPropertySpec props[] =
@@ -476,11 +476,11 @@ static JSPropertySpec props[] =
 
 static JSFunctionSpec static_funcs[] =
 {
-	{"rename",           method_rename,               2, 0, 0},
-	{"open",             method_open,                 1, 0, 0},
-	{"remove",           method_remove,               1, 0, 0},
-	{"exists",           method_exists,               1, 0, 0},
-	{0, NULL, 0, 0, 0}
+	JS_FS("rename",           method_rename,               2, 0, 0),
+	JS_FS("open",             method_open,                 1, 0, 0),
+	JS_FS("remove",           method_remove,               1, 0, 0),
+	JS_FS("exists",           method_exists,               1, 0, 0),
+	JS_FS_END
 };
 
 static JSPropertySpec static_props[] =

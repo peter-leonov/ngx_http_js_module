@@ -1004,9 +1004,9 @@ Nginx.HeadersIn
 
 `Nginx.HeadersIn` with `Nginx.HeadersOut` do all the job with headers. It is useful to learn [how does headers work][] under the hood.
 
-We can't create `Nginx.HeadersIn` instance directly but only with `r.headersIn`. That's because of the headers instance have to know to which request object (and `headers_in` structure in terms of nginx) it belongs.
-
 [how does headers work]: http://wiki.nginx.org/HeadersManagement
+
+We can't create `Nginx.HeadersIn` instance directly but only with `r.headersIn`. That's because of the headers instance have to know to which request object (and `headers_in` structure in terms of nginx) it belongs.
 
 
 Properties
@@ -1072,9 +1072,93 @@ Like the `$contentLength` this property is used for test purposes only.
 It does fully duplicate the logic of `$contentLength` but for the `Range` header.
 
 
-To be described
+
+Nginx.HeadersOut
+================
+
+Again, as for `Nginx.HeadersIn` we can not create `Nginx.HeadersOut` instance directly but only with `r.headersOut` request property. That's because of the output headers instance have to know to which request object (and `headers_out` structure in terms of nginx) it belongs.
+
+	r.headersOut['WWW-Authenticate'] = 'Basic realm="Nginx Area"'
+
+This class is almost the same as `Nginx.HeadersIn`, except in some special properties.
+
+
+Properties
+----------
+
+All properties are proxies to or from the native request output headers.
+
+
+### $dateTime
+
+Number (in seconds) representation of `Date-Time` output header. Reflects `r->headers_out.date_time` of the native side.
+
+
+### $contentLengthN
+
+Number (in bytes) representation of `Content-Length` output header. Reflects `r->headers_out.content_length_n` of the native side.
+
+
+### $lastModified
+
+Number (in seconds) representation of `Last-Modified` output header. Reflects `r->headers_out.last_modified_time` of the native side.
+
+
+### $contentTypeLen
+
+Number (in bytes) representation of `Content-Type` output header. Reflects `r->headers_out.content_type_len` of the native side.
+
+
+### $contentTypeLowcase
+
+Lowercased string representation of `Content-Type` output header. Reflects `r->headers_out.content_type_lowcase` of the native side.
+
+
+
+Nginx.Cookies
+=============
+
+This class is just a fast and lightweight wrapper for cookies in nginx. It does not parse `Cookie` header only search trough it if we read a property. This way of access to the cookies is not very fast if we have to read many values many times. Cookie names can not be enumerated. If you need a full-featured cookie management experience you may just parse the `Cookie` header and store its data in a simple object.
+
+In short use this class if you want to do only few lookups and go.
+
+
+Properties
+----------
+
+As in headers wrappers all the properties in `Nginx.Cookie` instance are mapped to the content of `Cookie` header with a functions built in nginx.
+At the moment we can't delete or add or edit cookies value with this class (try to use `r.headersOut['Cookie'] = 'all cokies here'` instead).
+
+This class instances have some additional functionality good for test purposes only.
+
+### length
+
+Return a count of cookies.
+
+
+Methods
+-------
+
+### empty()
+
+Marks the cookies headers array as empty. This method does not try to fully delete cookies headers, just marks the native array as empty.
+
+
+
+Nginx.Variables
 ===============
 
-* Nginx.HeadersOut
-* Nginx.Cookies
-* Nginx.Variables
+Variables in nginx are even more complicated thing then the headers. AFAIK, variable may be cached or not, indexed or not, has getter/setter or not. Every module that adds a variable may handle its value with different ways: share the value between different variables, invalidate cache or change the setter and getter function. Huge amount of flexibility! And all this is a subject to change (the last one was in 0.8.36).
+
+We can access all the nginx variables defined by variouse modules with a simple hash-like inteface (yeap, like headers and cookies):
+
+	r.variables.limit_rate = "4096" // 4k
+
+and it should work ;)
+
+On an attempt to set inexistent variable this class could throw an exception (`can't find variable …`). On getting inexistent variable just returns `undefined`.
+
+In short we can safely get a variable value as far as it is supported by nginx. Setting a value is much more complicated thing. This module tries to duplicate the logic from the [rewrite module][].
+
+[rewrite module]: http://wiki.nginx.org/NginxHttpRewriteModule
+

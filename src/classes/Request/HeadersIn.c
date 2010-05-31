@@ -361,8 +361,8 @@ JSPropertySpec ngx_http_js__nginx_headers_in__props[] =
 
 JSFunctionSpec ngx_http_js__nginx_headers_in__funcs[] =
 {
-	// {"empty",       method_empty,          1, 0, 0},
-	{0, NULL, 0, 0, 0}
+	// JS_FS("empty",       method_empty,          1, 0, 0),
+	JS_FS_END
 };
 
 JSClass ngx_http_js__nginx_headers_in__class =

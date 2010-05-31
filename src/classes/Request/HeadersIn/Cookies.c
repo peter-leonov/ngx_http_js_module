@@ -109,7 +109,6 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
 		if (name == NULL)
 		{
-			JS_ReportError(cx, "can't get the C string of the property name");
 			return JS_FALSE;
 		}
 		
@@ -152,8 +151,8 @@ static JSPropertySpec ngx_http_js__nginx_cookies__props[] =
 
 static JSFunctionSpec ngx_http_js__nginx_cookies__funcs[] =
 {
-	{"empty",       method_empty,          0, 0, 0},
-	{0, NULL, 0, 0, 0}
+	JS_FS("empty",       method_empty,          0, 0, 0),
+	JS_FS_END
 };
 
 JSClass ngx_http_js__nginx_cookies__class =

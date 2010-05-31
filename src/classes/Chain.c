@@ -132,8 +132,8 @@ JSPropertySpec ngx_http_js__nginx_chain__props[] =
 
 
 JSFunctionSpec ngx_http_js__nginx_chain__funcs[] = {
-    {"toString",       method_toString,          0, 0, 0},
-    {0, NULL, 0, 0, 0}
+    JS_FS("toString",       method_toString,          0, 0, 0),
+    JS_FS_END
 };
 
 JSClass ngx_http_js__nginx_chain__class =
