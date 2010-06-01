@@ -1166,7 +1166,16 @@ In short we can safely get a variable value as far as it is supported by nginx. 
 Author
 ======
 
-Peter Leonov (Пётр Леонов) <gojpeg@gmail.com>.
+Peter Leonov (Пётр Леонов) <gojpeg@gmail.com> with a help from:
+
+* [Yichun Zhang][]
+* [Maxim Dounin][]
+* [Igor Sysoev][]
+
+[Yichun Zhang]: http://github.com/agentzh
+[Maxim Dounin]: http://github.com/mdounin
+[Igor Sysoev]: http://sysoev.ru/en/
+
 
 Initially developed for fun and [Inshaker, the cocktail site][inshaker] (in Russian, very AJAXy, best viewed with Google Chrome [in-browser translation][]).
 
