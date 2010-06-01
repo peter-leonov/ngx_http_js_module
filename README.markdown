@@ -1223,7 +1223,7 @@ See Also
 
 * [nginx Lua module][] – embed power of Lua into nginx;
 * [nginx echo module][] – brings "echo", "sleep", "time", "exec" and more shell-style goodies to nginx config file;
-* [node.js][] – Evented I/O for V8 javascript.
+* [node.js][] – evented I/O for V8 javascript.
 
 [nginx Lua module]: http://github.com/chaoslawful/lua-nginx-module
 [nginx echo module]: http://github.com/agentzh/echo-nginx-module
