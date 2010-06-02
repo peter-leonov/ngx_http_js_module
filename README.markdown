@@ -585,7 +585,7 @@ On success returns `Nginx.OK`.
 
 	var cookies = r.headersIn.cookies
 	
-	if (Nginx.md5hash(cookies.username + ':a secret') != cookies.signature)
+	if (Nginx.md5(cookies.username + ':a secret') != cookies.signature)
 	{
 		r.redirect('/login', 'from=' + r.uri)
 		return Nginx.OK
@@ -694,7 +694,7 @@ the handler:
 Nginx
 =====
 
-This is all-in-one variable. It collects those things doesn't fit anywhere else. `Nginx.md5sum()` is a good example of that kind of things.
+This is all-in-one variable. It collects those things doesn't fit anywhere else. `Nginx.md5()` is a good example of that kind of things.
 
 
 Properties
@@ -848,9 +848,9 @@ Methods
 -------
 
 
-### md5sum(str)
+### md5(str)
 
-Calculates a MD5 sum of the given string `str`. As far as nobody expect it to be calculated on the raw UTF-16 bytes vector of the string, `md5sum()` first converts the string to a UTF-8 representation and then does the main work. The can be some issues with this method applied on a real unicode string. If you encounter some call me anytime ;)
+Calculates a MD5 sum of the given string `str`. As far as nobody expect it to be calculated on the raw UTF-16 bytes vector of the string, `md5()` first converts the string to a UTF-8 representation and then does the main work. The can be some issues with this method applied on a real unicode string. If you encounter some call me anytime ;)
 
 
 ### logError(level, message)
