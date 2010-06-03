@@ -67,6 +67,48 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 
 
 static JSBool
+method_createPath(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_uint_t       access;
+	JSString        *jss_path;
+	jsdouble         dp;
+	const char      *path;
+	u_char           fullpath[NGX_MAX_PATH];
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 2, "Nginx.Dir#createPath takes 2 mandatory arguments: path:String and access:Number");
+	
+	jss_path = JS_ValueToString(cx, argv[0]);
+	if (jss_path == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	path = JS_GetStringBytes(jss_path);
+	if (path == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	// ngx_create_full_path() needs a writable copy of the path
+	ngx_cpystrn(fullpath, (u_char *) path, NGX_MAX_PATH);
+	
+	if (!JS_ValueToNumber(cx, argv[1], &dp))
+	{
+		return JS_FALSE;
+	}
+	
+	access = dp;
+	
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_create_full_path(\"%s\", %d)", fullpath, access);
+	*rval = INT_TO_JSVAL(ngx_create_full_path(fullpath, access));
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString        *jss_name;
@@ -124,6 +166,7 @@ static JSPropertySpec props[] =
 static JSFunctionSpec static_funcs[] =
 {
 	JS_FS("create",             method_create,               2, 0, 0),
+	JS_FS("createPath",         method_createPath,           2, 0, 0),
 	JS_FS("remove",             method_remove,               2, 0, 0),
 	JS_FS_END
 };

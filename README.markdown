@@ -1204,6 +1204,16 @@ Creates a directory with `path` if all the path except the last part is already 
 Removes the last directory specified by `path`. Acts just like `rm` shell command.
 
 
+### createPath(path, access)
+
+Creates full `path` step by step. It acts like `mkdir -p` shell command.
+
+On success return `Nginx.OK`. On error returns `errno`.
+
+	Nginx.Dir.createPath('/a/b/c/ddd/', 0755)
+
+Note that `createPath()` expects absolute path or relative path starting with `'./'`. The trailing slash is required also. Expecting absolute path it ignores one leading char (i.e. `'/'`) on Unices and tree leading chars (i.e. `C:/`) on windows.
+
 
 Author
 ======
