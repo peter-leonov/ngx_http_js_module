@@ -862,161 +862,6 @@ Writes a `message` to the global nginx error log at the `level`.
 See more about [error_log][].
 
 
-
-Nginx.File
-==========
-
-This class is a tiny wrapper around `ngx_fd_t`. File descriptor (`ngx_fd_t`) has such a value that [fits in a pointer][uintptr_t]. This makes a work with `Nginx.File` object relatively fast and its memory footprint almost nothing.
-
-[uintptr_t]: http://nginx.org/pipermail/nginx-devel/2010-April/000200.html
-
-
-TODO
-----
-
-There are some simple things left for future:
-
-* [full support for `File.open`][#32]: now we can open a file only one way;
-* [add support for open file cache][#33]: for now the `Nginx.File` is just a lightweight wrapper for `fd`;
-* [File#seek][#34].
-
-[#32]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/32
-[#33]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/33
-[#34]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/34
-
-
-Static properties
------------------
-
-
-### openFiles
-
-Gives a count of files open with `Nginx.File`. Very useful for debugging. See “close and openFiles” test in [tests/file.js][].
-
-[tests/file.js]: http://github.com/kung-fu-tzu/ngx_http_js_module/blob/master/js/tests/file.js
-
-
-### open modes
-
-Reflects some `NGX_FILE_*` constants:
-
-* RDONLY
-* WRONLY
-* RDWR
-* CREATE_OR_OPEN
-* OPEN
-* TRUNCATE
-* APPEND
-* NONBLOCK
-* DEFAULT_ACCESS
-* OWNER_ACCESS
-
-
-### return codes
-
-Reflects some `NGX_FILE_*` constants:
-
-* INVALID
-* ERROR
-
-
-### useful stuff
-
-Reflects some `NGX_FILE_*` constants:
-
-* HAVE_CASELESS_FILESYSTEM
-
-
-Static methods
---------------
-
-
-### open
-
-Tries to open file and on success return an instance of `Nginx.File`.
-
-	var file = Nginx.File.open(Nginx.prefix + 'nginx.conf')
-
-For now file will be created or opened (`Nginx.File.CREATE_OR_OPEN`), with read/write access (`Nginx.File.RDWR`) and with a default file access (`Nginx.File.DEFAULT_ACCESS`).
-
-On failure return `null`.
-
-
-### rename(src, dst)
-
-Just renames file `src` to file `dst`.
-
-
-### remove(path)
-
-Just removes file this `path`.
-
-
-### exists(path)
-
-Checks if `path` directs to a file.
-
-Return `null` if path does not exist at all, `false` if there is something but not a file and return `true` on an existent plain file.
-
-
-### getAccess(fname)
-
-Returns an access code of `fname`. If `fname` points to inexistent entry this mthod returns `null`.
-
-	var access = Nginx.File.getAccess('db.json')
-	if (access != 0644)
-		return Nginx.ERROR
-
-
-### setAccess(fname, access)
-
-Returns an access code of `fname`. As simple as it could to be.
-
-	if (Nginx.File.setAccess('db.json', 0644) == Nginx.ERROR)
-		return Nginx.HTTP_INTERNAL_SERVER_ERROR
-
-
-Instance properties
--------------------
-
-
-### size
-
-Return a size of a file in bytes.
-
-An equivalent to the Ruby's `File.read` (reads the entire file in memory):
-
-	Nginx.File.read = function (name) {
-		var file = this.open(name)
-		if (!file)
-			return null
-		
-		return file.read(file.size)
-	}
-
-
-Instance methods
-----------------
-
-
-### read(count)
-
-Reads `count` of bytes from the current file position and tries to convert the bytes to a string.
-
-On success returns a string with the content of the file. Otherwise return `null`.
-
-
-### write(string)
-
-Converts `string` to the UTF-8 bytes sequence and writes to the file from the current position.
-
-
-### close()
-
-Closes the corresponding `ngx_fd_t` stored within this `Nginx.File` instance and marks the instance as deactivated. Do not use a closed file at all, it would throw an exception.
-
-
-
 Nginx.HeadersIn
 ===============
 
@@ -1179,6 +1024,161 @@ On an attempt to set inexistent variable this class could throw an exception (`c
 In short we can safely get a variable value as far as it is supported by nginx. Setting a value is much more complicated thing. This module tries to duplicate the logic from the [rewrite module][].
 
 [rewrite module]: http://wiki.nginx.org/NginxHttpRewriteModule
+
+
+
+Nginx.File
+==========
+
+This class is a tiny wrapper around `ngx_fd_t`. File descriptor (`ngx_fd_t`) has such a value that [fits in a pointer][uintptr_t]. This makes a work with `Nginx.File` object relatively fast and its memory footprint almost nothing.
+
+[uintptr_t]: http://nginx.org/pipermail/nginx-devel/2010-April/000200.html
+
+
+TODO
+----
+
+There are some simple things left for future:
+
+* [full support for `File.open`][#32]: now we can open a file only one way;
+* [add support for open file cache][#33]: for now the `Nginx.File` is just a lightweight wrapper for `fd`;
+* [File#seek][#34].
+
+[#32]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/32
+[#33]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/33
+[#34]: http://github.com/kung-fu-tzu/ngx_http_js_module/issues/issue/34
+
+
+Static properties
+-----------------
+
+
+### openFiles
+
+Gives a count of files open with `Nginx.File`. Very useful for debugging. See “close and openFiles” test in [tests/file.js][].
+
+[tests/file.js]: http://github.com/kung-fu-tzu/ngx_http_js_module/blob/master/js/tests/file.js
+
+
+### open modes
+
+Reflects some `NGX_FILE_*` constants:
+
+* RDONLY
+* WRONLY
+* RDWR
+* CREATE_OR_OPEN
+* OPEN
+* TRUNCATE
+* APPEND
+* NONBLOCK
+* DEFAULT_ACCESS
+* OWNER_ACCESS
+
+
+### return codes
+
+Reflects some `NGX_FILE_*` constants:
+
+* INVALID
+* ERROR
+
+
+### useful stuff
+
+Reflects some `NGX_FILE_*` constants:
+
+* HAVE_CASELESS_FILESYSTEM
+
+
+Static methods
+--------------
+
+
+### open
+
+Tries to open file and on success return an instance of `Nginx.File`.
+
+	var file = Nginx.File.open(Nginx.prefix + 'nginx.conf')
+
+For now file will be created or opened (`Nginx.File.CREATE_OR_OPEN`), with read/write access (`Nginx.File.RDWR`) and with a default file access (`Nginx.File.DEFAULT_ACCESS`).
+
+On failure return `null`.
+
+
+### rename(src, dst)
+
+Just renames file `src` to file `dst`.
+
+
+### remove(path)
+
+Just removes file this `path`.
+
+
+### exists(path)
+
+Checks if `path` directs to a file.
+
+Return `null` if path does not exist at all, `false` if there is something but not a file and return `true` on an existent plain file.
+
+
+### getAccess(fname)
+
+Returns an access code of `fname`. If `fname` points to inexistent entry this mthod returns `null`.
+
+	var access = Nginx.File.getAccess('db.json')
+	if (access != 0644)
+		return Nginx.ERROR
+
+
+### setAccess(fname, access)
+
+Returns an access code of `fname`. As simple as it could to be.
+
+	if (Nginx.File.setAccess('db.json', 0644) == Nginx.ERROR)
+		return Nginx.HTTP_INTERNAL_SERVER_ERROR
+
+
+Instance properties
+-------------------
+
+
+### size
+
+Return a size of a file in bytes.
+
+An equivalent to the Ruby's `File.read` (reads the entire file in memory):
+
+	Nginx.File.read = function (name) {
+		var file = this.open(name)
+		if (!file)
+			return null
+		
+		return file.read(file.size)
+	}
+
+
+Instance methods
+----------------
+
+
+### read(count)
+
+Reads `count` of bytes from the current file position and tries to convert the bytes to a string.
+
+On success returns a string with the content of the file. Otherwise return `null`.
+
+
+### write(string)
+
+Converts `string` to the UTF-8 bytes sequence and writes to the file from the current position.
+
+
+### close()
+
+Closes the corresponding `ngx_fd_t` stored within this `Nginx.File` instance and marks the instance as deactivated. Do not use a closed file at all, it would throw an exception.
+
 
 
 Author
