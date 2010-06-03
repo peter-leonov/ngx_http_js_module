@@ -1181,6 +1181,30 @@ Closes the corresponding `ngx_fd_t` stored within this `Nginx.File` instance and
 
 
 
+Nginx.Dir
+=========
+
+Very simple interface to file system directories.
+
+
+Static methods
+--------------
+
+
+### create(path, access)
+
+Creates a directory with `path` if all the path except the last part is already exists.
+
+	if (Dir.create('users/' + uname, 0700) == File.ERROR)
+		throw new Error('could not create user home dir')
+
+
+### remove(path)
+
+Removes the last directory specified by `path`. Acts just like `rm` shell command.
+
+
+
 Author
 ======
 
