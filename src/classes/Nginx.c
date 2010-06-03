@@ -86,6 +86,81 @@ method_md5(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	return JS_TRUE;
 }
 
+#define SET_INT(name, val) \
+v = INT_TO_JSVAL(val); \
+if (!JS_SetProperty(cx, obj, name, &v)) \
+{ \
+	return JS_FALSE; \
+}
+
+static JSBool
+setup_constants(JSContext *cx, JSObject *obj)
+{
+	jsval      v;
+	
+	// NGX_LOG_*
+	SET_INT("LOG_STDERR",                      NGX_LOG_STDERR);
+	SET_INT("LOG_EMERG",                       NGX_LOG_EMERG);
+	SET_INT("LOG_ALERT",                       NGX_LOG_ALERT);
+	SET_INT("LOG_CRIT",                        NGX_LOG_CRIT);
+	SET_INT("LOG_ERR",                         NGX_LOG_ERR);
+	SET_INT("LOG_WARN",                        NGX_LOG_WARN);
+	SET_INT("LOG_NOTICE",                      NGX_LOG_NOTICE);
+	SET_INT("LOG_INFO",                        NGX_LOG_INFO);
+	SET_INT("LOG_DEBUG",                       NGX_LOG_DEBUG);
+	
+	// NGX_HTTP_*
+	SET_INT("HTTP_OK",                         NGX_HTTP_OK);
+	SET_INT("HTTP_CREATED",                    NGX_HTTP_CREATED);
+	SET_INT("HTTP_NO_CONTENT",                 NGX_HTTP_NO_CONTENT);
+	SET_INT("HTTP_PARTIAL_CONTENT",            NGX_HTTP_PARTIAL_CONTENT);
+	SET_INT("HTTP_SPECIAL_RESPONSE",           NGX_HTTP_SPECIAL_RESPONSE);
+	SET_INT("HTTP_MOVED_PERMANENTLY",          NGX_HTTP_MOVED_PERMANENTLY);
+	SET_INT("HTTP_MOVED_TEMPORARILY",          NGX_HTTP_MOVED_TEMPORARILY);
+	SET_INT("HTTP_NOT_MODIFIED",               NGX_HTTP_NOT_MODIFIED);
+	SET_INT("HTTP_BAD_REQUEST",                NGX_HTTP_BAD_REQUEST);
+	SET_INT("HTTP_UNAUTHORIZED",               NGX_HTTP_UNAUTHORIZED);
+	SET_INT("HTTP_FORBIDDEN",                  NGX_HTTP_FORBIDDEN);
+	SET_INT("HTTP_NOT_FOUND",                  NGX_HTTP_NOT_FOUND);
+	SET_INT("HTTP_NOT_ALLOWED",                NGX_HTTP_NOT_ALLOWED);
+	SET_INT("HTTP_REQUEST_TIME_OUT",           NGX_HTTP_REQUEST_TIME_OUT);
+	SET_INT("HTTP_CONFLICT",                   NGX_HTTP_CONFLICT);
+	SET_INT("HTTP_LENGTH_REQUIRED",            NGX_HTTP_LENGTH_REQUIRED);
+	SET_INT("HTTP_PRECONDITION_FAILED",        NGX_HTTP_PRECONDITION_FAILED);
+	SET_INT("HTTP_REQUEST_ENTITY_TOO_LARGE",   NGX_HTTP_REQUEST_ENTITY_TOO_LARGE);
+	SET_INT("HTTP_REQUEST_URI_TOO_LARGE",      NGX_HTTP_REQUEST_URI_TOO_LARGE);
+	SET_INT("HTTP_UNSUPPORTED_MEDIA_TYPE",     NGX_HTTP_UNSUPPORTED_MEDIA_TYPE);
+	SET_INT("HTTP_RANGE_NOT_SATISFIABLE",      NGX_HTTP_RANGE_NOT_SATISFIABLE);
+	SET_INT("HTTP_CLOSE",                      NGX_HTTP_CLOSE);
+	SET_INT("HTTP_OWN_CODES",                  NGX_HTTP_OWN_CODES);
+	SET_INT("HTTPS_CERT_ERROR",                NGX_HTTPS_CERT_ERROR);
+	SET_INT("HTTPS_NO_CERT",                   NGX_HTTPS_NO_CERT);
+	SET_INT("HTTP_TO_HTTPS",                   NGX_HTTP_TO_HTTPS);
+	SET_INT("HTTP_CLIENT_CLOSED_REQUEST",      NGX_HTTP_CLIENT_CLOSED_REQUEST);
+	SET_INT("HTTP_INTERNAL_SERVER_ERROR",      NGX_HTTP_INTERNAL_SERVER_ERROR);
+	SET_INT("HTTP_NOT_IMPLEMENTED",            NGX_HTTP_NOT_IMPLEMENTED);
+	SET_INT("HTTP_BAD_GATEWAY",                NGX_HTTP_BAD_GATEWAY);
+	SET_INT("HTTP_SERVICE_UNAVAILABLE",        NGX_HTTP_SERVICE_UNAVAILABLE);
+	SET_INT("HTTP_GATEWAY_TIME_OUT",           NGX_HTTP_GATEWAY_TIME_OUT);
+	SET_INT("HTTP_INSUFFICIENT_STORAGE",       NGX_HTTP_INSUFFICIENT_STORAGE);
+	
+	// NGX_*
+	SET_INT("OK",                              NGX_OK);
+	SET_INT("ERROR",                           NGX_ERROR);
+	SET_INT("AGAIN",                           NGX_AGAIN);
+	SET_INT("BUSY",                            NGX_BUSY);
+	SET_INT("DONE",                            NGX_DONE);
+	SET_INT("DECLINED",                        NGX_DECLINED);
+	SET_INT("ABORT",                           NGX_ABORT);
+	
+	// flags NGX_HTTP_*
+	SET_INT("HTTP_LAST",                       NGX_HTTP_LAST);
+	SET_INT("HTTP_FLUSH",                      NGX_HTTP_FLUSH);
+	
+	
+	return JS_TRUE;
+}
+
 static JSBool
 js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
@@ -99,66 +174,6 @@ js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	{
 		switch (JSVAL_TO_INT(id))
 		{
-			// NGX_LOG*
-			case 1: *vp = INT_TO_JSVAL(NGX_LOG_STDERR); break;
-			case 2: *vp = INT_TO_JSVAL(NGX_LOG_EMERG); break;
-			case 3: *vp = INT_TO_JSVAL(NGX_LOG_ALERT); break;
-			case 4: *vp = INT_TO_JSVAL(NGX_LOG_CRIT); break;
-			case 5: *vp = INT_TO_JSVAL(NGX_LOG_ERR); break;
-			case 6: *vp = INT_TO_JSVAL(NGX_LOG_WARN); break;
-			case 7: *vp = INT_TO_JSVAL(NGX_LOG_NOTICE); break;
-			case 8: *vp = INT_TO_JSVAL(NGX_LOG_INFO); break;
-			case 9: *vp = INT_TO_JSVAL(NGX_LOG_DEBUG); break;
-			
-			// NGX_HTTP*
-			case 10: *vp = INT_TO_JSVAL(NGX_HTTP_OK); break;
-			case 11: *vp = INT_TO_JSVAL(NGX_HTTP_CREATED); break;
-			case 12: *vp = INT_TO_JSVAL(NGX_HTTP_NO_CONTENT); break;
-			case 13: *vp = INT_TO_JSVAL(NGX_HTTP_PARTIAL_CONTENT); break;
-			case 14: *vp = INT_TO_JSVAL(NGX_HTTP_SPECIAL_RESPONSE); break;
-			case 15: *vp = INT_TO_JSVAL(NGX_HTTP_MOVED_PERMANENTLY); break;
-			case 16: *vp = INT_TO_JSVAL(NGX_HTTP_MOVED_TEMPORARILY); break;
-			case 17: *vp = INT_TO_JSVAL(NGX_HTTP_NOT_MODIFIED); break;
-			case 18: *vp = INT_TO_JSVAL(NGX_HTTP_BAD_REQUEST); break;
-			case 19: *vp = INT_TO_JSVAL(NGX_HTTP_UNAUTHORIZED); break;
-			case 20: *vp = INT_TO_JSVAL(NGX_HTTP_FORBIDDEN); break;
-			case 21: *vp = INT_TO_JSVAL(NGX_HTTP_NOT_FOUND); break;
-			case 22: *vp = INT_TO_JSVAL(NGX_HTTP_NOT_ALLOWED); break;
-			case 23: *vp = INT_TO_JSVAL(NGX_HTTP_REQUEST_TIME_OUT); break;
-			case 24: *vp = INT_TO_JSVAL(NGX_HTTP_CONFLICT); break;
-			case 25: *vp = INT_TO_JSVAL(NGX_HTTP_LENGTH_REQUIRED); break;
-			case 26: *vp = INT_TO_JSVAL(NGX_HTTP_PRECONDITION_FAILED); break;
-			case 27: *vp = INT_TO_JSVAL(NGX_HTTP_REQUEST_ENTITY_TOO_LARGE); break;
-			case 28: *vp = INT_TO_JSVAL(NGX_HTTP_REQUEST_URI_TOO_LARGE); break;
-			case 29: *vp = INT_TO_JSVAL(NGX_HTTP_UNSUPPORTED_MEDIA_TYPE); break;
-			case 30: *vp = INT_TO_JSVAL(NGX_HTTP_RANGE_NOT_SATISFIABLE); break;
-			case 31: *vp = INT_TO_JSVAL(NGX_HTTP_CLOSE); break;
-			case 32: *vp = INT_TO_JSVAL(NGX_HTTP_OWN_CODES); break;
-			case 33: *vp = INT_TO_JSVAL(NGX_HTTPS_CERT_ERROR); break;
-			case 34: *vp = INT_TO_JSVAL(NGX_HTTPS_NO_CERT); break;
-			case 35: *vp = INT_TO_JSVAL(NGX_HTTP_TO_HTTPS); break;
-			case 36: *vp = INT_TO_JSVAL(NGX_HTTP_CLIENT_CLOSED_REQUEST); break;
-			case 37: *vp = INT_TO_JSVAL(NGX_HTTP_INTERNAL_SERVER_ERROR); break;
-			case 38: *vp = INT_TO_JSVAL(NGX_HTTP_NOT_IMPLEMENTED); break;
-			case 39: *vp = INT_TO_JSVAL(NGX_HTTP_BAD_GATEWAY); break;
-			case 40: *vp = INT_TO_JSVAL(NGX_HTTP_SERVICE_UNAVAILABLE); break;
-			case 41: *vp = INT_TO_JSVAL(NGX_HTTP_GATEWAY_TIME_OUT); break;
-			case 42: *vp = INT_TO_JSVAL(NGX_HTTP_INSUFFICIENT_STORAGE); break;
-			
-			// NGX_*
-			case 43: *vp = INT_TO_JSVAL(NGX_OK); break;
-			case 44: *vp = INT_TO_JSVAL(NGX_ERROR); break;
-			case 45: *vp = INT_TO_JSVAL(NGX_AGAIN); break;
-			case 46: *vp = INT_TO_JSVAL(NGX_BUSY); break;
-			case 47: *vp = INT_TO_JSVAL(NGX_DONE); break;
-			case 48: *vp = INT_TO_JSVAL(NGX_DECLINED); break;
-			case 49: *vp = INT_TO_JSVAL(NGX_ABORT); break;
-			
-			// flags NGX_HTTP_
-			case 50: *vp = INT_TO_JSVAL(NGX_HTTP_LAST); break;
-			case 51: *vp = INT_TO_JSVAL(NGX_HTTP_FLUSH); break;
-			
-			
 			case 101:
 			{
 				if (!ngx_cycle->conf_prefix.len)
@@ -206,65 +221,6 @@ getter_time(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 static JSPropertySpec nginx_class_props[] =
 {
-	// NGX_LOG*
-	{"LOG_STDERR",                         1,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_EMERG",                          2,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_ALERT",                          3,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_CRIT",                           4,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_ERR",                            5,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_WARN",                           6,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_NOTICE",                         7,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_INFO",                           8,  JSPROP_READONLY, NULL, NULL},
-	{"LOG_DEBUG",                          9,  JSPROP_READONLY, NULL, NULL},
-	
-	// NGX_HTTP*
-	{"HTTP_OK",                            10, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_CREATED",                       11, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_NO_CONTENT",                    12, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_PARTIAL_CONTENT",               13, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_SPECIAL_RESPONSE",              14, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_MOVED_PERMANENTLY",             15, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_MOVED_TEMPORARILY",             16, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_NOT_MODIFIED",                  17, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_BAD_REQUEST",                   18, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_UNAUTHORIZED",                  19, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_FORBIDDEN",                     20, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_NOT_FOUND",                     21, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_NOT_ALLOWED",                   22, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_REQUEST_TIME_OUT",              23, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_CONFLICT",                      24, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_LENGTH_REQUIRED",               25, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_PRECONDITION_FAILED",           26, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_REQUEST_ENTITY_TOO_LARGE",      27, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_REQUEST_URI_TOO_LARGE",         28, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_UNSUPPORTED_MEDIA_TYPE",        29, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_RANGE_NOT_SATISFIABLE",         30, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_CLOSE",                         31, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_OWN_CODES",                     32, JSPROP_READONLY, NULL, NULL},
-	{"HTTPS_CERT_ERROR",                   33, JSPROP_READONLY, NULL, NULL},
-	{"HTTPS_NO_CERT",                      34, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_TO_HTTPS",                      35, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_CLIENT_CLOSED_REQUEST",         36, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_INTERNAL_SERVER_ERROR",         37, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_NOT_IMPLEMENTED",               38, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_BAD_GATEWAY",                   39, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_SERVICE_UNAVAILABLE",           40, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_GATEWAY_TIME_OUT",              41, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_INSUFFICIENT_STORAGE",          42, JSPROP_READONLY, NULL, NULL},
-	
-	// NGX_*
-	{"OK",                                 43, JSPROP_READONLY, NULL, NULL},
-	{"ERROR",                              44, JSPROP_READONLY, NULL, NULL},
-	{"AGAIN",                              45, JSPROP_READONLY, NULL, NULL},
-	{"BUSY",                               46, JSPROP_READONLY, NULL, NULL},
-	{"DONE",                               47, JSPROP_READONLY, NULL, NULL},
-	{"DECLINED",                           48, JSPROP_READONLY, NULL, NULL},
-	{"ABORT",                              49, JSPROP_READONLY, NULL, NULL},
-	
-	// flags NGX_HTTP_
-	{"HTTP_LAST",                          50, JSPROP_READONLY, NULL, NULL},
-	{"HTTP_FLUSH",                         51, JSPROP_READONLY, NULL, NULL},
-	
 	{"time",                                0, JSPROP_READONLY, getter_time, NULL},
 	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
 	{"pid",                               102, JSPROP_READONLY, NULL, NULL},
@@ -303,6 +259,8 @@ ngx_http_js__nginx__init(JSContext *cx, JSObject *global)
 		JS_ReportError(cx, "Can`t JS_DefineObject(Nginx)");
 		return JS_FALSE;
 	}
+	
+	setup_constants(cx, nginxobj);
 	
 	JS_DefineProperties(cx, nginxobj, nginx_class_props);
 	JS_DefineFunctions(cx, nginxobj, nginx_class_funcs);
