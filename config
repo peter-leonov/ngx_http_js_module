@@ -119,4 +119,7 @@ NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Chain.h"
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/File.c"
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/File.h"
 
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/classes/Dir.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/classes/Dir.h"
+
 have=NGX_HTTP_JS_MODULE . auto/have
