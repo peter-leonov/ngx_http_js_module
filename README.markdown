@@ -958,6 +958,24 @@ Checks if `path` directs to a file.
 
 Return `null` if path does not exist at all, `false` if there is something but not a file and return `true` on an existent plain file.
 
+
+### getAccess(fname)
+
+Returns an access code of `fname`. If `fname` points to inexistent entry this mthod returns `null`.
+
+	var access = Nginx.File.getAccess('db.json')
+	if (access != 0644)
+		return Nginx.ERROR
+
+
+### setAccess(fname, access)
+
+Returns an access code of `fname`. As simple as it could to be.
+
+	if (Nginx.File.setAccess('db.json', 0644) == Nginx.ERROR)
+		return Nginx.HTTP_INTERNAL_SERVER_ERROR
+
+
 Instance properties
 -------------------
 

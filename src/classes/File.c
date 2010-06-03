@@ -228,6 +228,80 @@ method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	return JS_TRUE;
 }
 
+
+static JSBool
+method_getAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	JSString        *jss_name;
+	const char      *name;
+	ngx_file_info_t  fi;
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 1, "Nginx.File#getAccess takes 1 mandatory argument: name:String");
+	
+	jss_name = JS_ValueToString(cx, argv[0]);
+	if (jss_name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	name = JS_GetStringBytes(jss_name);
+	if (name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_file_info(\"%s\")", name);
+	if (ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR)
+	{
+		*rval = JSVAL_NULL;
+		return JS_TRUE;
+	}
+	
+	*rval = INT_TO_JSVAL(ngx_file_access(&fi));
+	return JS_TRUE;
+}
+
+
+static JSBool
+method_setAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_uint_t       access;
+	JSString        *jss_name;
+	jsdouble         dp;
+	const char      *name;
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 2, "Nginx.File#setAccess takes 2 mandatory arguments: name:String and access:Number");
+	
+	jss_name = JS_ValueToString(cx, argv[0]);
+	if (jss_name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	name = JS_GetStringBytes(jss_name);
+	if (name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	if (!JS_ValueToNumber(cx, argv[1], &dp))
+	{
+		return JS_FALSE;
+	}
+	
+	access = dp;
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_change_file_access(\"%s\", %d)", name, access);
+	*rval = INT_TO_JSVAL(ngx_change_file_access((const char *) name, access));
+	
+	return JS_TRUE;
+}
+
+
 static JSBool
 method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
@@ -480,6 +554,8 @@ static JSFunctionSpec static_funcs[] =
 	JS_FS("open",             method_open,                 1, 0, 0),
 	JS_FS("remove",           method_remove,               1, 0, 0),
 	JS_FS("exists",           method_exists,               1, 0, 0),
+	JS_FS("getAccess",        method_getAccess,            1, 0, 0),
+	JS_FS("setAccess",        method_setAccess,            2, 0, 0),
 	JS_FS_END
 };
 

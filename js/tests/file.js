@@ -136,6 +136,35 @@ NginxTests.file = function (r)
 		})
 		
 		
+		t.test('access', function (t)
+		{
+			var fname = prefix + 'nginx-file-access.txt'
+			
+			var file = File.open(fname)
+			t.ok(file, 'create')
+			
+			function checkAccess (access)
+			{
+				var rc = File.setAccess(fname, access)
+				t.ne(rc, File.ERROR, 'setAccess()')
+				
+				var rc = File.getAccess(fname)
+				t.ne(rc, File.ERROR, 'getAccess()')
+				
+				t.eq(rc, access, 'access')
+			}
+			
+			checkAccess(0777)
+			checkAccess(0765)
+			checkAccess(0)
+			checkAccess(0123)
+			checkAccess(0666)
+			
+			var rc = File.remove(fname)
+			t.ne(rc, File.ERROR, 'delete')
+		})
+		
+		
 		t.test('private protection', function (t)
 		{
 			var file = new File()
