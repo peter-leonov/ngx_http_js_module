@@ -43,6 +43,7 @@ curl $OPTS --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090
 curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body?body=some+text+body,+ля-ля-ля"
 curl $OPTS --http1.0 --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-file?body=some+text+body,+ля-ля-ля"
 curl $OPTS http://127.0.0.1:19090/run/file
+curl $OPTS http://127.0.0.1:19090/run/dir
 if [ "$WITH_MASTER"  == "yes" ]; then
 curl $OPTS "http://127.0.0.1:19090/run/process-cycle?fname=process-cycle-worker-exited-$TIME.txt"
 fi
