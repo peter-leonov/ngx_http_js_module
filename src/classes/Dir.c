@@ -59,7 +59,7 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	access = dp;
 	
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_create_dir(\"%s\", %d)", path, access);
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_create_dir(\"%s\", %d)", path, access);
 	*rval = INT_TO_JSVAL(ngx_create_dir(path, access));
 	
 	return JS_TRUE;
