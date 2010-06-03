@@ -393,7 +393,7 @@ constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	return JS_TRUE;
 }
 
-void
+static void
 finalizer(JSContext *cx, JSObject *self)
 {
 	ngx_fd_t         fd;
