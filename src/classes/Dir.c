@@ -66,6 +66,30 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 }
 
 
+static JSBool
+method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	JSString        *jss_name;
+	const char      *name;
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 1, "Nginx.Dir#remove takes 1 mandatory argument: name:String");
+	
+	jss_name = JS_ValueToString(cx, argv[0]);
+	if (jss_name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	name = JS_GetStringBytes(jss_name);
+	if (name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_delete_dir(\"%s\")", name);
+	*rval = INT_TO_JSVAL(ngx_delete_dir(name));
 	
 	return JS_TRUE;
 }
@@ -100,6 +124,7 @@ static JSPropertySpec props[] =
 static JSFunctionSpec static_funcs[] =
 {
 	JS_FS("create",             method_create,               2, 0, 0),
+	JS_FS("remove",             method_remove,               2, 0, 0),
 	JS_FS_END
 };
 
