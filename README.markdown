@@ -1215,6 +1215,14 @@ On success return `Nginx.OK`. On error returns `errno`.
 Note that `createPath()` expects absolute path or relative path starting with `'./'`. The trailing slash is required also. Expecting absolute path it ignores one leading char (i.e. `'/'`) on Unices and tree leading chars (i.e. `C:/`) on windows.
 
 
+### removeTree(path)
+
+Walks trough the directories starting at `path` and deletes everithing it meets: files, directories, sockets, fifos, etc.
+
+On success returns `Nginx.OK`. Otherwise `errno`.
+
+USE WITH CARE! `ngx_walk_tree()` (on which `removeTree()` is based) is very a very smart function, much smarter than me ;)
+
 Author
 ======
 

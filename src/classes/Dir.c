@@ -108,6 +108,103 @@ method_createPath(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 }
 
 
+static ngx_int_t
+tree_noop(ngx_tree_ctx_t *ctx, ngx_str_t *path)
+{
+	return NGX_OK;
+}
+
+
+static ngx_int_t
+tree_delete_file(ngx_tree_ctx_t *ctx, ngx_str_t *path)
+{
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "ngx_delete_file(\"%s\")", path->data);
+	
+	if (ngx_delete_file(path->data) == NGX_FILE_ERROR)
+	{
+		ngx_log_error(NGX_LOG_CRIT, ctx->log, ngx_errno, ngx_delete_file_n " \"%s\" failed", path->data);
+	}
+	
+	return NGX_OK;
+}
+
+
+static ngx_int_t
+tree_delete_dir(ngx_tree_ctx_t *ctx, ngx_str_t *path)
+{
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "ngx_delete_dir(\"%s\")", path->data);
+	
+	if (ngx_delete_dir(path->data) == NGX_FILE_ERROR)
+	{
+		ngx_log_error(NGX_LOG_CRIT, ctx->log, ngx_errno, ngx_delete_dir_n " \"%s\" failed", path->data);
+	}
+	
+	return NGX_OK;
+}
+
+
+static JSBool
+method_removeTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_tree_ctx_t   tree;
+	ngx_int_t        rc;
+	ngx_str_t        path_ns;
+	JSString        *jss_path;
+	const char      *path;
+	u_char           fullpath[NGX_MAX_PATH];
+	
+	TRACE_STATIC_METHOD();
+	
+	E(argc == 1, "Nginx.Dir#removeTree takes 1 mandatory argument: path:String");
+	
+	jss_path = JS_ValueToString(cx, argv[0]);
+	if (jss_path == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	path = JS_GetStringBytes(jss_path);
+	if (path == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	// prepare a writable copy of the path
+	ngx_cpystrn(fullpath, (u_char *) path, NGX_MAX_PATH);
+	
+	path_ns.len = ngx_strlen(fullpath);
+	path_ns.data = fullpath;
+	
+	tree.init_handler = NULL;
+	tree.file_handler = tree_delete_file;
+	tree.pre_tree_handler = tree_noop;
+	tree.post_tree_handler = tree_delete_dir;
+	tree.spec_handler = tree_delete_file;
+	tree.data = NULL;
+	tree.alloc = 0;
+	tree.log = js_log();
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_walk_tree(\"%s\")", fullpath);
+	rc = ngx_walk_tree(&tree, &path_ns);
+	if (rc == NGX_ABORT)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
+	if (rc != NGX_OK)
+	{
+		*rval = INT_TO_JSVAL(rc);
+		return JS_TRUE;
+	}
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_delete_dir(\"%s\")", fullpath);
+	*rval = INT_TO_JSVAL(ngx_delete_dir(fullpath));
+	
+	return JS_TRUE;
+}
+
+
 static JSBool
 method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
@@ -168,6 +265,7 @@ static JSFunctionSpec static_funcs[] =
 	JS_FS("create",             method_create,               2, 0, 0),
 	JS_FS("createPath",         method_createPath,           2, 0, 0),
 	JS_FS("remove",             method_remove,               2, 0, 0),
+	JS_FS("removeTree",         method_removeTree,           1, 0, 0),
 	JS_FS_END
 };
 

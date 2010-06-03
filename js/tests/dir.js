@@ -39,6 +39,9 @@ NginxTests.dir = function (r)
 		{
 			var rc = Dir.createPath(prefix + 'a/b/c/ddd/', 0755)
 			t.eq(rc, Nginx.OK, 'createPath()')
+			
+			var rc = Dir.removeTree(prefix + 'a/')
+			t.eq(rc, Nginx.OK, 'removeTree()')
 		})
 	})
 	Tests.oncomplete = function ()
