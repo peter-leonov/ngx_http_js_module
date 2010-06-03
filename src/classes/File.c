@@ -159,7 +159,7 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	TRACE_STATIC_METHOD();
 	
-	E(argc == 1, "Nginx.File#delete takes 1 mandatory argument: name:String");
+	E(argc == 1, "Nginx.File#remove takes 1 mandatory argument: name:String");
 	
 	
 	// converting smth. to a string is a very common and rather simple operation,
