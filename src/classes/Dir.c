@@ -25,6 +25,7 @@ JSClass ngx_http_js__nginx_dir__class;
 static JSBool
 method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
+	ngx_uint_t       access;
 	JSString        *jss_path;
 	jsdouble         dp;
 	const char      *path;
@@ -50,15 +51,21 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	
-	if (!JS_ValueToNumber(cx, argv[0], &dp))
+	if (!JS_ValueToNumber(cx, argv[1], &dp))
 	{
 		// forward exception if any
 		return JS_FALSE;
 	}
 	
+	access = dp;
 	
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_create_dir(\"%s\", %d)", path, (int) dp);
-	*rval = INT_TO_JSVAL(ngx_create_dir(path, dp));
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_create_dir(\"%s\", %d)", path, access);
+	*rval = INT_TO_JSVAL(ngx_create_dir(path, access));
+	
+	return JS_TRUE;
+}
+
+
 	
 	return JS_TRUE;
 }
