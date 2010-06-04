@@ -43,6 +43,54 @@ NginxTests.dir = function (r)
 			var rc = Dir.removeTree(prefix + 'a/')
 			t.eq(rc, Nginx.OK, 'removeTree()')
 		})
+		
+		t.test('tree arguments', function (t)
+		{
+			var path = prefix + 'src/'
+			
+			function noop () {}
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree()
+			})
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree(path, 2, 3, 4, 5, 6)
+			})
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree(path, 2, 3, 4, 5)
+			})
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree(path, noop, 3, 4, 5)
+			})
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree(path, noop, noop, 4, 5)
+			})
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree(path, noop, noop, noop, 5)
+			})
+			
+			t.exception(function (t)
+			{
+				Dir.walkTree(path, null, null, null, 5)
+			})
+			
+			t.eq(Dir.walkTree(path), Nginx.OK, 'path only')
+			
+			t.eq(Dir.walkTree(path, null, null, null, null), Nginx.OK, 'path with four nulls')
+		})
+		
+		
 	})
 	Tests.oncomplete = function ()
 	{
