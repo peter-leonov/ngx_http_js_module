@@ -150,5 +150,6 @@ Reporter.prototype =
 	log:  function (m, d) { this.line('log', m, d) }
 }
 
+Tests.Reporter = Reporter
 
 })();
