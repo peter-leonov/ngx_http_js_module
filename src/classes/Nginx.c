@@ -176,37 +176,6 @@ setup_constants(JSContext *cx, JSObject *obj)
 	return JS_TRUE;
 }
 
-static JSBool
-js_nginx_class_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-#ifdef NGX_DEBUG
-	TRACE_S(js_debug_value_to_cstring(cx, id));
-#else
-	TRACE();
-#endif
-	
-	if (JSVAL_IS_INT(id))
-	{
-		switch (JSVAL_TO_INT(id))
-		{
-			case 101:
-			{
-				if (!ngx_cycle->conf_prefix.len)
-				{
-					JS_ReportError(cx, "conf_prefix is an empty string");
-					return JS_FALSE;
-				}
-				
-				NGX_STRING_to_JS_STRING_to_JSVAL(cx, ngx_cycle->conf_prefix, *vp);
-			}
-			break;
-			
-			case 102: *vp = INT_TO_JSVAL(ngx_pid); break;
-		}
-	}
-	return JS_TRUE;
-}
-
 
 static JSBool
 getter_time(JSContext *cx, JSObject *self, jsval id, jsval *vp)
@@ -222,11 +191,41 @@ getter_time(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	return JS_TRUE;
 }
 
+
+static JSBool
+getter_prefix(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	TRACE_STATIC_GETTER()
+	
+	if (!ngx_cycle->conf_prefix.len)
+	{
+		JS_ReportError(cx, "ngx_cycle->conf_prefix is an empty string");
+		return JS_FALSE;
+	}
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, ngx_cycle->conf_prefix, *vp);
+	
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
+getter_pid(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	TRACE_STATIC_GETTER()
+	
+	*vp = INT_TO_JSVAL(ngx_pid);
+	
+	return JS_TRUE;
+}
+
+
 static JSPropertySpec nginx_class_props[] =
 {
-	{"time",                                0, JSPROP_READONLY, getter_time, NULL},
-	{"prefix",                            101, JSPROP_READONLY, NULL, NULL},
-	{"pid",                               102, JSPROP_READONLY, NULL, NULL},
+	{"time",                                0, JSPROP_READONLY, getter_time,   NULL},
+	{"prefix",                            101, JSPROP_READONLY, getter_prefix, NULL},
+	{"pid",                               102, JSPROP_READONLY, getter_pid,    NULL},
 	
 	{0, 0, 0, NULL, NULL}
 };
@@ -235,7 +234,7 @@ static JSClass nginx_class =
 {
 	"Nginx",
 	0,
-	JS_PropertyStub, JS_PropertyStub, js_nginx_class_getProperty, JS_PropertyStub,
+	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
