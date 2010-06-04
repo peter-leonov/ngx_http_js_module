@@ -131,6 +131,9 @@ NginxTests.dir = function (r)
 			Dir.walkTree(prefix + 'src/', file, enterDir, leaveDir, special)
 			
 			t.info(root.entrs)
+			// log the full info
+			Tests.Reporter.prototype.truncateSlice = 3000
+			Test.Inspector.prototype.deep = 10
 		})
 		
 	})
