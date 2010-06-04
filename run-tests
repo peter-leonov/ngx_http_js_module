@@ -43,15 +43,13 @@ curl $OPTS --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090
 curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body?body=some+text+body,+ля-ля-ля"
 curl $OPTS --http1.0 --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-file?body=some+text+body,+ля-ля-ля"
 curl $OPTS http://127.0.0.1:19090/run/file
-mkdir -p -m 755 $MODULE_ROOT/dir-tests/a/b/c
-touch           $MODULE_ROOT/dir-tests/a/b/f1
-chmod       644 $MODULE_ROOT/dir-tests/a/b/f1
-touch           $MODULE_ROOT/dir-tests/a/b/c/f2
-chmod       644 $MODULE_ROOT/dir-tests/a/b/c/f2
-mkfifo          $MODULE_ROOT/dir-tests/a/fifo1
-chmod       644 $MODULE_ROOT/dir-tests/a/fifo1
+mkdir -p   $MODULE_ROOT/nginx-dir-tests/a/b/c
+echo 123 > $MODULE_ROOT/nginx-dir-tests/a/b/f123
+echo 2   > $MODULE_ROOT/nginx-dir-tests/a/b/c/f2
+mkfifo     $MODULE_ROOT/nginx-dir-tests/a/fifo1
+mkfifo     $MODULE_ROOT/nginx-dir-tests/a/b/fifo2
 curl $OPTS http://127.0.0.1:19090/run/dir
-rm -rf   $MODULE_ROOT/dir-tests/
+rm -rf     $MODULE_ROOT/nginx-dir-tests/
 if [ "$WITH_MASTER"  == "yes" ]; then
 curl $OPTS "http://127.0.0.1:19090/run/process-cycle?fname=process-cycle-worker-exited-$TIME.txt"
 fi
