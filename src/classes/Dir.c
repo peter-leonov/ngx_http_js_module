@@ -247,7 +247,10 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	args[2] = INT_TO_JSVAL(ctx->access);
 	
 	// bake the file mtime
-	args[3] = INT_TO_JSVAL(ctx->mtime);
+	if (!JS_NewNumberValue(cx, ctx->mtime, &args[3]))
+	{
+		return NGX_ABORT;
+	}
 	
 	// cal the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->file), 4, args, &rval))
@@ -295,7 +298,10 @@ walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	args[1] = INT_TO_JSVAL(ctx->access);
 	
 	// bake the dir mtime
-	args[2] = INT_TO_JSVAL(ctx->mtime);
+	if (!JS_NewNumberValue(cx, ctx->mtime, &args[2]))
+	{
+		return NGX_ABORT;
+	}
 	
 	// cal the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->enter), 3, args, &rval))
@@ -343,7 +349,10 @@ walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	args[1] = INT_TO_JSVAL(ctx->access);
 	
 	// bake the dir mtime
-	args[2] = INT_TO_JSVAL(ctx->mtime);
+	if (!JS_NewNumberValue(cx, ctx->mtime, &args[2]))
+	{
+		return NGX_ABORT;
+	}
 	
 	// cal the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->leave), 3, args, &rval))
