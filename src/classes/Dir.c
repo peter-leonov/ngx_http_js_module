@@ -21,7 +21,10 @@ JSObject *ngx_http_js__nginx_dir__prototype;
 JSClass ngx_http_js__nginx_dir__class;
 // static JSClass *private_class = &ngx_http_js__nginx_dir__class;
 
-typedef struct { JSObject  *file, *enter, *leave, *special; } walkTree_ctx;
+typedef struct
+{
+	JSObject     *file, *enter, *leave, *special;
+} walkTree_ctx;
 
 
 
@@ -211,9 +214,54 @@ method_removeTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 static ngx_int_t
 walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 {
+	JSString         *path_jss;
+	JSContext        *cx;
+	jsval             args[4], rval;
+	walkTree_ctx     *wt_ctx;
+	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "walkTree_file_handler(\"%s\")", path->data);
 	
-	return NGX_OK;
+	wt_ctx = ctx->data;
+	cx = js_cx;
+	
+	if (wt_ctx->file == NULL)
+	{
+		return NGX_OK;
+	}
+	
+	// bake the file path
+	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
+	if (path_jss == NULL)
+	{
+		return NGX_ABORT;
+	}
+	args[0] = STRING_TO_JSVAL(path_jss);
+	
+	// bake the file size
+	if (!JS_NewNumberValue(cx, ctx->size, &args[1]))
+	{
+		return NGX_ABORT;
+	}
+	
+	// bake the file access
+	args[2] = INT_TO_JSVAL(ctx->access);
+	
+	// bake the file mtime
+	args[3] = INT_TO_JSVAL(ctx->mtime);
+	
+	// cal the handler and hope for best ;)
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->file), 4, args, &rval))
+	{
+		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
+		return NGX_ABORT;
+	}
+	
+	if (JSVAL_IS_VOID(rval))
+	{
+		return NGX_OK;
+	}
+	
+	return JSVAL_TO_INT(rval);
 }
 
 
@@ -348,7 +396,7 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	tree.pre_tree_handler = walkTree_pre_tree_handler;
 	tree.post_tree_handler = walkTree_post_tree_handler;
 	tree.spec_handler = walkTree_spec_handler;
-	tree.data = NULL;
+	tree.data = &ctx;
 	tree.alloc = 0;
 	tree.log = js_log();
 	
