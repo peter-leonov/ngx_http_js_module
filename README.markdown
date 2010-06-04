@@ -1217,7 +1217,7 @@ Note that `createPath()` expects absolute path or relative path starting with `'
 
 ### removeTree(path)
 
-Walks trough the directories starting at `path` and deletes everithing it meets: files, directories, sockets, fifos, etc.
+Walks trough the directories starting at `path` and deletes everything it meets: files, directories, sockets, fifos, etc.
 
 On success returns `Nginx.OK`. Otherwise `errno`.
 
@@ -1226,14 +1226,14 @@ USE WITH CARE! `ngx_walk_tree()` (on which `removeTree()` is based) is very a ve
 
 ### walkTree(path, onfile, ondirenter, ondirleave, onspecial)
 
-This method is a streight forward interface to the smart `ngx_walk_tree()` function. It takes four callbacks:
+This method is a straight forward interface to the smart `ngx_walk_tree()` function. It takes four callbacks:
 
 * `onfile` is called if file is met; takes four parameters: path, size, access, and mtime;
 * `ondirenter` is called on entering a directory; takes three parameters: path, access, mtime;
 * `ondirleave` is called on leaving a directory; takes three parameters: path, access, mtime (the same as in `ondirenter`);
-* `onspecial` is calles if some special entry is met (like socket or fifo); takes only one parameter: path.
+* `onspecial` is called if some special entry is met (like socket or fifo); takes only one parameter: path.
 
-Note that all the additional parameters like `mtime` and `size` are taken from the directory entry, so thay costs almost nothing. For more detailed definition please see [the source of `ngx_walk_tree()`][ngx_walk_tree].
+Note that all the additional parameters like `mtime` and `size` are taken from the directory entry, so it costs almost nothing. For more detailed definition please see [the source of `ngx_walk_tree()`][ngx_walk_tree].
 
 On success returns `Nginx.OK`. Otherwise `errno` or the value returned by a callback.
 
