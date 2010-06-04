@@ -374,7 +374,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->file == NULL)
+	if (wt_ctx->special == NULL)
 	{
 		return NGX_OK;
 	}
@@ -388,7 +388,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	args[0] = STRING_TO_JSVAL(path_jss);
 	
 	// cal the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->file), 1, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->special), 1, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
