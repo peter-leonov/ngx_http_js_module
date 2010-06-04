@@ -88,6 +88,13 @@ NginxTests.dir = function (r)
 			t.eq(Dir.walkTree(path), Nginx.OK, 'path only')
 			
 			t.eq(Dir.walkTree(path, null, null, null, null), Nginx.OK, 'path with four nulls')
+			
+			t.eq(Dir.walkTree(path, noop, noop, noop, noop), Nginx.OK, 'all noops')
+			
+			t.eq(Dir.walkTree(path, null, noop, noop, noop), Nginx.OK, 'onfile is null')
+			t.eq(Dir.walkTree(path, noop, null, noop, noop), Nginx.OK, 'onenter is null')
+			t.eq(Dir.walkTree(path, noop, noop, null, noop), Nginx.OK, 'onleave is null')
+			t.eq(Dir.walkTree(path, noop, noop, noop, null), Nginx.OK, 'onspecial is null')
 		})
 		
 		
