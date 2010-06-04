@@ -93,31 +93,44 @@ NginxTests.dir = function (r)
 		
 		t.test('tree', function (t)
 		{
-			var files = [], dirEnters = [], dirLeaves = [], specials = []
+			var stack = [],
+				root = {name: 'root', type: 'dir', entrs: []},
+				cur = root
+			
+			function fname (path)
+			{
+				var m = /([^\/]+)$/.exec(path)
+				return m ? m[1] : '[error]'
+			}
 			
 			function file (path)
 			{
-				files.push(path)
+				cur.entrs.push({name: fname(path), type: 'file'})
 			}
 			
 			function enterDir (path)
 			{
-				dirEnters.push(path)
+				var dir = {name: fname(path), type: 'dir', entrs: []}
+				cur.entrs.push(dir)
+				
+				stack.push(cur)
+				cur = dir
 			}
 			
 			function leaveDir (path)
 			{
-				dirLeaves.push(path)
+				cur.name2 = fname(path)
+				cur = stack.pop()
 			}
 			
 			function special (path)
 			{
-				specials.push(path)
+				cur.entrs.push({name: fname(path), type: 'special'})
 			}
 			
 			Dir.walkTree(prefix + 'src/', file, enterDir, leaveDir, special)
 			
-			t.info(files.join(':'))
+			t.info(root.entrs)
 		})
 		
 	})
