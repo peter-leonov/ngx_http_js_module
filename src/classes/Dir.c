@@ -21,6 +21,9 @@ JSObject *ngx_http_js__nginx_dir__prototype;
 JSClass ngx_http_js__nginx_dir__class;
 // static JSClass *private_class = &ngx_http_js__nginx_dir__class;
 
+typedef struct { JSObject  *file, *enter, *leave, *special; } walkTree_ctx;
+
+
 
 static JSBool
 method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
@@ -250,10 +253,11 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	JSString        *jss_path;
 	const char      *path;
 	u_char           fullpath[NGX_MAX_PATH];
+	walkTree_ctx     ctx;
 	
 	TRACE_STATIC_METHOD();
 	
-	E(argc == 1, "Nginx.Dir#walkTree takes 1 mandatory argument: path:String");
+	E(argc >= 1 && argc <= 5, "Nginx.Dir#walkTree takes 1 mandatory argument: path:String, and four optional callbacks");
 	
 	jss_path = JS_ValueToString(cx, argv[0]);
 	if (jss_path == NULL)
@@ -272,6 +276,72 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	path_ns.len = ngx_strlen(fullpath);
 	path_ns.data = fullpath;
+	
+	
+	// file callback
+	if (argc >= 2 && !JSVAL_IS_NULL(argv[1]))
+	{
+		if (!JSVAL_IS_OBJECT(argv[1]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1])))
+		{
+			JS_ReportError(cx, "file callback must be a function or a null");
+			return JS_FALSE;
+		}
+		
+		ctx.file = JSVAL_TO_OBJECT(argv[1]);
+	}
+	else
+	{
+		ctx.file = NULL;
+	}
+	
+	// dir enter callback
+	if (argc >= 3 && !JSVAL_IS_NULL(argv[2]))
+	{
+		if (!JSVAL_IS_OBJECT(argv[2]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[2])))
+		{
+			JS_ReportError(cx, "directory enter callback must be a function or a null");
+			return JS_FALSE;
+		}
+		
+		ctx.enter = JSVAL_TO_OBJECT(argv[2]);
+	}
+	else
+	{
+		ctx.enter = NULL;
+	}
+	
+	// dir leave callback
+	if (argc >= 4 && !JSVAL_IS_NULL(argv[3]))
+	{
+		if (!JSVAL_IS_OBJECT(argv[3]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[3])))
+		{
+			JS_ReportError(cx, "directory leave callback must be a function or a null");
+			return JS_FALSE;
+		}
+		
+		ctx.leave = JSVAL_TO_OBJECT(argv[3]);
+	}
+	else
+	{
+		ctx.leave = NULL;
+	}
+	
+	// special entry callback
+	if (argc >= 5 && !JSVAL_IS_NULL(argv[4]))
+	{
+		if (!JSVAL_IS_OBJECT(argv[4]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[4])))
+		{
+			JS_ReportError(cx, "special entry callback must be a function or a null");
+			return JS_FALSE;
+		}
+		
+		ctx.special = JSVAL_TO_OBJECT(argv[4]);
+	}
+	else
+	{
+		ctx.special = NULL;
+	}
+	
 	
 	tree.init_handler = NULL;
 	tree.file_handler = walkTree_file_handler;
