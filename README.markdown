@@ -31,7 +31,7 @@ Features
 * initial support for files via `Nginx.File` (create/delete/rename, simple open/close/read/write, all in UTF-8);
 * handy tests suit written in plain JavaScript (using asynchronous test framework from [Programica.js][])
 
-The code uses ngx_assert() and ngx_log_debug() almost everywhere, so the debugging must not be a pain.
+The code uses `ngx_assert()` and `ngx_log_debug()` almost everywhere, so the debugging must not be a pain.
 
 [Programica.js]: http://github.com/kung-fu-tzu/programica.js
 
