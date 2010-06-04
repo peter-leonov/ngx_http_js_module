@@ -295,7 +295,7 @@ method_setAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *
 	
 	access = dp;
 	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_change_file_access(\"%s\", %d)", name, access);
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_change_file_access(\"%s\", %d)", name, access);
 	*rval = INT_TO_JSVAL(ngx_change_file_access((const char *) name, access));
 	
 	return JS_TRUE;
