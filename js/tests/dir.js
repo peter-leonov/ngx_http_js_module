@@ -91,6 +91,35 @@ NginxTests.dir = function (r)
 		})
 		
 		
+		t.test('tree', function (t)
+		{
+			var files = [], dirEnters = [], dirLeaves = [], specials = []
+			
+			function file (path)
+			{
+				files.push(path)
+			}
+			
+			function enterDir (path)
+			{
+				dirEnters.push(path)
+			}
+			
+			function leaveDir (path)
+			{
+				dirLeaves.push(path)
+			}
+			
+			function special (path)
+			{
+				specials.push(path)
+			}
+			
+			Dir.walkTree(prefix + 'src/', file, enterDir, leaveDir, special)
+			
+			t.info(files.join(':'))
+		})
+		
 	})
 	Tests.oncomplete = function ()
 	{
