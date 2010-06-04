@@ -268,27 +268,138 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 static ngx_int_t
 walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 {
+	JSString         *path_jss;
+	JSContext        *cx;
+	jsval             args[3], rval;
+	walkTree_ctx     *wt_ctx;
+	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "walkTree_pre_tree_handler(\"%s\")", path->data);
 	
-	return NGX_OK;
+	wt_ctx = ctx->data;
+	cx = js_cx;
+	
+	if (wt_ctx->enter == NULL)
+	{
+		return NGX_OK;
+	}
+	
+	// bake the dir path
+	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
+	if (path_jss == NULL)
+	{
+		return NGX_ABORT;
+	}
+	args[0] = STRING_TO_JSVAL(path_jss);
+	
+	// bake the dir access
+	args[1] = INT_TO_JSVAL(ctx->access);
+	
+	// bake the dir mtime
+	args[2] = INT_TO_JSVAL(ctx->mtime);
+	
+	// cal the handler and hope for best ;)
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->enter), 3, args, &rval))
+	{
+		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
+		return NGX_ABORT;
+	}
+	
+	if (JSVAL_IS_VOID(rval))
+	{
+		return NGX_OK;
+	}
+	
+	return JSVAL_TO_INT(rval);
 }
 
 
 static ngx_int_t
 walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 {
+	JSString         *path_jss;
+	JSContext        *cx;
+	jsval             args[3], rval;
+	walkTree_ctx     *wt_ctx;
+	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "walkTree_post_tree_handler(\"%s\")", path->data);
 	
-	return NGX_OK;
+	wt_ctx = ctx->data;
+	cx = js_cx;
+	
+	if (wt_ctx->leave == NULL)
+	{
+		return NGX_OK;
+	}
+	
+	// bake the dir path
+	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
+	if (path_jss == NULL)
+	{
+		return NGX_ABORT;
+	}
+	args[0] = STRING_TO_JSVAL(path_jss);
+	
+	// bake the dir access
+	args[1] = INT_TO_JSVAL(ctx->access);
+	
+	// bake the dir mtime
+	args[2] = INT_TO_JSVAL(ctx->mtime);
+	
+	// cal the handler and hope for best ;)
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->leave), 3, args, &rval))
+	{
+		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
+		return NGX_ABORT;
+	}
+	
+	if (JSVAL_IS_VOID(rval))
+	{
+		return NGX_OK;
+	}
+	
+	return JSVAL_TO_INT(rval);
 }
 
 
 static ngx_int_t
 walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 {
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "walkTree_spec_handler(\"%s\")", path->data);
+	JSString         *path_jss;
+	JSContext        *cx;
+	jsval             args[1], rval;
+	walkTree_ctx     *wt_ctx;
 	
-	return NGX_OK;
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ctx->log, 0, "walkTree_file_handler(\"%s\")", path->data);
+	
+	wt_ctx = ctx->data;
+	cx = js_cx;
+	
+	if (wt_ctx->file == NULL)
+	{
+		return NGX_OK;
+	}
+	
+	// bake the file path
+	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
+	if (path_jss == NULL)
+	{
+		return NGX_ABORT;
+	}
+	args[0] = STRING_TO_JSVAL(path_jss);
+	
+	// cal the handler and hope for best ;)
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->file), 1, args, &rval))
+	{
+		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
+		return NGX_ABORT;
+	}
+	
+	if (JSVAL_IS_VOID(rval))
+	{
+		return NGX_OK;
+	}
+	
+	return JSVAL_TO_INT(rval);
 }
 
 
