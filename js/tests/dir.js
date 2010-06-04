@@ -103,14 +103,25 @@ NginxTests.dir = function (r)
 				return m ? m[1] : '[error]'
 			}
 			
+			
 			function file (path, size, access, mtime)
 			{
-				cur.e.push({n: fname(path), t: 'f', s: size, a: access, m: mtime})
+				var name = fname(path)
+				
+				t.gt(mtime, 1262304000, name + ' mtime')
+				t.ok(access, name + ' access')
+				cur.e.push({n: name, t: 'f', s: size})
 			}
 			
 			function enterDir (path, access, mtime)
 			{
-				var dir = {n: fname(path), t: 'd', a: access, m: mtime, e: []}
+				var name = fname(path)
+				
+				t.gt(mtime, 1262304000, name + ' mtime')
+				t.ok(access, name + ' access')
+				
+				
+				var dir = {n: name, t: 'd', a: access, m: mtime, e: []}
 				cur.e.push(dir)
 				
 				stack.push(cur)
@@ -119,9 +130,16 @@ NginxTests.dir = function (r)
 			
 			function leaveDir (path, access, mtime)
 			{
-				cur.n2 = fname(path)
-				cur.a2 = access
-				cur.m2 = mtime
+				var name = fname(path)
+				
+				t.eq(cur.n, name, name + ' name leave')
+				t.eq(cur.a, access, name + ' access leave')
+				t.eq(cur.m, mtime, name + ' mtime leave')
+				
+				// YAGNI
+				delete cur.a
+				delete cur.m
+				
 				cur = stack.pop()
 			}
 			
@@ -130,12 +148,18 @@ NginxTests.dir = function (r)
 				cur.e.push({n: fname(path), t: 's'})
 			}
 			
-			Dir.walkTree(prefix + 'dir-tests/', file, enterDir, leaveDir, special)
+			Dir.walkTree(prefix + 'nginx-dir-tests/', file, enterDir, leaveDir, special)
 			
-			// log the full info
-			Tests.Reporter.prototype.truncateSlice = 3000
-			Test.Inspector.prototype.deep = 10
-			t.info(root.e)
+			
+			var tree = [{"e":[{"e":[{"e":[{"n":"f2","s":2,"t":"f"}],"n":"c","t":"d"}, {"n":"f123","s":4,"t":"f"}, {"n":"fifo2","t":"s"}],"n":"b","t":"d"}, {"n":"fifo1","t":"s"}], "n":"a","t":"d"}]
+			
+			t.like(root.e, tree, 'tree')
+			
+			// // log the full tree
+			// Tests.Reporter.prototype.truncateSlice = 3000
+			// Test.Inspector.prototype.deep = 10
+			// t.info(root.e)
+			// t.info(tree)
 		})
 		
 	})
