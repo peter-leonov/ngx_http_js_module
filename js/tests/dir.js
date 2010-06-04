@@ -94,7 +94,7 @@ NginxTests.dir = function (r)
 		t.test('tree', function (t)
 		{
 			var stack = [],
-				root = {name: 'root', type: 'dir', entrs: []},
+				root = {name: 'root', type: 'dir', e: []},
 				cur = root
 			
 			function fname (path)
@@ -103,37 +103,39 @@ NginxTests.dir = function (r)
 				return m ? m[1] : '[error]'
 			}
 			
-			function file (path)
+			function file (path, size, access, mtime)
 			{
-				cur.entrs.push({name: fname(path), type: 'file'})
+				cur.e.push({n: fname(path), t: 'f', s: size, a: access, m: mtime})
 			}
 			
-			function enterDir (path)
+			function enterDir (path, access, mtime)
 			{
-				var dir = {name: fname(path), type: 'dir', entrs: []}
-				cur.entrs.push(dir)
+				var dir = {n: fname(path), t: 'd', a: access, m: mtime, e: []}
+				cur.e.push(dir)
 				
 				stack.push(cur)
 				cur = dir
 			}
 			
-			function leaveDir (path)
+			function leaveDir (path, access, mtime)
 			{
-				cur.name2 = fname(path)
+				cur.n2 = fname(path)
+				cur.a2 = access
+				cur.m2 = mtime
 				cur = stack.pop()
 			}
 			
 			function special (path)
 			{
-				cur.entrs.push({name: fname(path), type: 'special'})
+				cur.e.push({n: fname(path), t: 's'})
 			}
 			
-			Dir.walkTree(prefix + 'src/', file, enterDir, leaveDir, special)
+			Dir.walkTree(prefix + 'dir-tests/', file, enterDir, leaveDir, special)
 			
-			t.info(root.entrs)
 			// log the full info
 			Tests.Reporter.prototype.truncateSlice = 3000
 			Test.Inspector.prototype.deep = 10
+			t.info(root.e)
 		})
 		
 	})
