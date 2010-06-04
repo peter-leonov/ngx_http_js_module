@@ -23,7 +23,7 @@ JSClass ngx_http_js__nginx_dir__class;
 
 typedef struct
 {
-	JSObject     *file, *enter, *leave, *special;
+	JSObject     *onfile, *onenter, *onleave, *onspecial;
 } walkTree_ctx;
 
 
@@ -224,7 +224,7 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->file == NULL)
+	if (wt_ctx->onfile == NULL)
 	{
 		return NGX_OK;
 	}
@@ -253,7 +253,7 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	
 	// cal the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->file), 4, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onfile), 4, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -281,7 +281,7 @@ walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->enter == NULL)
+	if (wt_ctx->onenter == NULL)
 	{
 		return NGX_OK;
 	}
@@ -304,7 +304,7 @@ walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	
 	// cal the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->enter), 3, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onenter), 3, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -332,7 +332,7 @@ walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->leave == NULL)
+	if (wt_ctx->onleave == NULL)
 	{
 		return NGX_OK;
 	}
@@ -355,7 +355,7 @@ walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	
 	// cal the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->leave), 3, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onleave), 3, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -383,7 +383,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->special == NULL)
+	if (wt_ctx->onspecial == NULL)
 	{
 		return NGX_OK;
 	}
@@ -397,7 +397,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	args[0] = STRING_TO_JSVAL(path_jss);
 	
 	// cal the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->special), 1, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onspecial), 1, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -455,11 +455,11 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 			return JS_FALSE;
 		}
 		
-		ctx.file = JSVAL_TO_OBJECT(argv[1]);
+		ctx.onfile = JSVAL_TO_OBJECT(argv[1]);
 	}
 	else
 	{
-		ctx.file = NULL;
+		ctx.onfile = NULL;
 	}
 	
 	// dir enter callback
@@ -471,11 +471,11 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 			return JS_FALSE;
 		}
 		
-		ctx.enter = JSVAL_TO_OBJECT(argv[2]);
+		ctx.onenter = JSVAL_TO_OBJECT(argv[2]);
 	}
 	else
 	{
-		ctx.enter = NULL;
+		ctx.onenter = NULL;
 	}
 	
 	// dir leave callback
@@ -487,11 +487,11 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 			return JS_FALSE;
 		}
 		
-		ctx.leave = JSVAL_TO_OBJECT(argv[3]);
+		ctx.onleave = JSVAL_TO_OBJECT(argv[3]);
 	}
 	else
 	{
-		ctx.leave = NULL;
+		ctx.onleave = NULL;
 	}
 	
 	// special entry callback
@@ -503,11 +503,11 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 			return JS_FALSE;
 		}
 		
-		ctx.special = JSVAL_TO_OBJECT(argv[4]);
+		ctx.onspecial = JSVAL_TO_OBJECT(argv[4]);
 	}
 	else
 	{
-		ctx.special = NULL;
+		ctx.onspecial = NULL;
 	}
 	
 	
