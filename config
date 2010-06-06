@@ -4,25 +4,52 @@ ngx_addon_name=ngx_http_js_module
 
 ngx_feature_name=
 ngx_feature_run=no
+ngx_found=no
 
 
-# js headers
-NGX_JS_HEADERS_DIR="js"
-ngx_feature_incs="#include <$NGX_JS_HEADERS_DIR/jsapi.h>"
-ngx_feature_test=
-ngx_feature="js/jsapi.h"
-ngx_feature_path=
-ngx_feature_libs=
-. auto/feature
+# look for headers in js/*
 
 if [ $ngx_found = no ]; then
-	# mozjs headers
+	ngx_feature_incs="#include <js/jsapi.h>"
+	ngx_feature_test=
+	ngx_feature="js/jsapi.h"
+	ngx_feature_path=
+	ngx_feature_libs=
+	. auto/feature
+fi
+
+# FreeBSD
+if [ $ngx_found = no ]; then
+	ngx_feature_incs="#include <js/jsapi.h>"
+	ngx_feature_test=
+	ngx_feature="js/jsapi.h in /usr/local/include"
+	ngx_feature_path="/usr/local/include"
+	ngx_feature_libs=
+	. auto/feature
+fi
+
+
+# look for headers in mozjs/*
+
+if [ $ngx_found = no ]; then
 	have=NGX_HTTP_JS_MOZJS_HEADERS . auto/have
-	NGX_JS_HEADERS_DIR="mozjs"
-	ngx_feature_incs="#include <$NGX_JS_HEADERS_DIR/jsapi.h>"
+fi
+
+if [ $ngx_found = no ]; then
+	ngx_feature_incs="#include <mozjs/jsapi.h>"
 	ngx_feature_test=
 	ngx_feature="mozjs/jsapi.h"
 	ngx_feature_path=
+	ngx_feature_libs=
+	. auto/feature
+fi
+
+# FreeBSD
+if [ $ngx_found = no ]; then
+	ngx_feature_incs="#include <mozjs/jsapi.h>"
+	ngx_feature_test=
+	ngx_feature="mozjs/jsapi.h /usr/local/include"
+	ngx_feature_path="/usr/local/include"
 	ngx_feature_libs=
 	. auto/feature
 fi
@@ -35,22 +62,50 @@ if [ $ngx_found = no ]; then
 	exit 1
 fi
 
+CORE_INCS="$CORE_INCS $ngx_feature_path"
 
-# js lib
-ngx_feature_incs=
-ngx_feature_test=
-ngx_feature="libjs"
-ngx_feature_path=
-ngx_feature_libs="-ljs"
-. auto/feature
+
+ngx_found=no
+
+# look for js library
 
 if [ $ngx_found = no ]; then
-	# mozjs headers
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libjs"
+	ngx_feature_path=
+	ngx_feature_libs="-ljs"
+	. auto/feature
+fi
+
+# FreeBSD
+if [ $ngx_found = no ]; then
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libjs in /usr/local/lib"
+	ngx_feature_path=
+	ngx_feature_libs="-L/usr/local/lib -ljs"
+	. auto/feature
+fi
+
+# look for mozjs library
+
+if [ $ngx_found = no ]; then
 	ngx_feature_incs=
 	ngx_feature_test=
 	ngx_feature="libmozjs"
 	ngx_feature_path=
 	ngx_feature_libs="-lmozjs"
+	. auto/feature
+fi
+
+# FreeBSD
+if [ $ngx_found = no ]; then
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libmozjs in /usr/local/lib"
+	ngx_feature_path=
+	ngx_feature_libs="-L/usr/local/lib -lmozjs"
 	. auto/feature
 fi
 
@@ -66,8 +121,6 @@ CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
 
 
 CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
-
-# have=NGX_HTTP_JS_HEADERS_DIR value="\"$NGX_JS_HEADERS_DIR\"" . auto/define
 
 if [ "$HTTP_JS_COLOR" = "yes" ]; then
 	have=NGX_HTTP_JS_COLORED . auto/have
