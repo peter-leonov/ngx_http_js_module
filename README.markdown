@@ -42,7 +42,11 @@ Installation
 
 The installation is straightforward. Just add this module with a familiar `--add-module` configuration directive in [nginx wiki][].
 
-This module was successfully tested on: 32-bit Ubuntu 8.04.3 (2.6.18-virtuozzo and 2.6.24-23-openvz), 32-bit and 64-bit Mac OS 10.6.3.
+This module was successfully tested on:
+
+* Ubuntu 8.04.3 32-bit (2.6.18-virtuozzo and 2.6.24-23-openvz)
+* FreeBSD 8.0 32-bit
+* Mac OS 10.6.3 32-bit and 64-bit
 
 [nginx wiki]: http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
 
