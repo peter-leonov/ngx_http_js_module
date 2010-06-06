@@ -27,7 +27,6 @@ JSObject *ngx_http_js__nginx_file__prototype;
 JSClass ngx_http_js__nginx_file__class;
 static JSClass *private_class = &ngx_http_js__nginx_file__class;
 
-static ngx_pool_t   *static_pool;
 static size_t        read_leaks;
 static size_t        open_files;
 
@@ -347,6 +346,7 @@ static JSBool
 method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_fd_t         fd;
+	JSString        *value;
 	void            *p;
 	size_t           len;
 	char            *buf;
@@ -363,10 +363,9 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_TRUE;
 	}
 	
-	buf = ngx_pnalloc(static_pool, len);
+	buf = JS_malloc(cx, len);
 	if (buf == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -376,24 +375,14 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_TRUE;
 	}
 	
-	if (static_pool->d.last == (u_char *) buf + len)
+	value = JS_NewString(cx, (char *) (buf), len);
+	if (value == NULL)
 	{
-		// reflects p->d.last = m + size; at ngx_palloc.c:159
-		static_pool->d.last -= len;
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf has been freed by d.last");
-	}
-	else if (ngx_pfree(static_pool, buf) == NGX_OK)
-	{
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf has been freed by ngx_pfree()");
-	}
-	else
-	{
-		read_leaks++;
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "buf hasn't been freed");
+		JS_free(cx, buf);
+		return JS_FALSE;
 	}
 	
-	DATA_LEN_to_JS_STRING_to_JSVAL(cx, buf, len, *rval);
-	
+	*rval = STRING_TO_JSVAL(value);
 	return JS_TRUE;
 }
 
@@ -622,13 +611,6 @@ ngx_http_js__nginx_file__init(JSContext *cx, JSObject *global)
 	if (inited)
 	{
 		JS_ReportError(cx, "Nginx.File is already inited");
-		return JS_FALSE;
-	}
-	
-	static_pool = ngx_create_pool(NGX_DEFAULT_POOL_SIZE, ngx_cycle->log);
-	if (static_pool == NULL)
-	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
