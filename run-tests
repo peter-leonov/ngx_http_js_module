@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 MODULE_ROOT="$1"
 NGX_OBJS="$2"
@@ -8,27 +8,24 @@ TIME=$(date +%s)
 PADDING="$MODULE_ROOT/padding.txt"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib/"
 
-if [ "$WITH_MASTER"  == "yes" ]; then
+if [ "$WITH_MASTER" = "yes" ]; then
 	NGINX_OPTS=""
 else
 	NGINX_OPTS="daemon off; master_process off;"
 fi
 
-function kill_process {
-	if [ -f $PIDFILE ]; then
-		PID=$(cat $PIDFILE)
-		kill -QUIT $PID
-		sleep 1
-		if [ -f $PIDFILE ]; then
-			kill -KILL $PID
-		fi
-	fi
-}
-
 mkdir -p $MODULE_ROOT/logs
 cat $PADDING >> $MODULE_ROOT/logs/error.log
 
-kill_process
+if [ -f $PIDFILE ]; then
+	PID=$(cat $PIDFILE)
+	kill -QUIT $PID
+	sleep 1
+	if [ -f $PIDFILE ]; then
+		kill -KILL $PID
+	fi
+fi
+
 
 # gdb --args
 $NGINX -p $MODULE_ROOT -c nginx.conf -g "$NGINX_OPTS" &
@@ -50,7 +47,7 @@ mkfifo     $MODULE_ROOT/nginx-dir-tests/a/fifo1
 mkfifo     $MODULE_ROOT/nginx-dir-tests/a/b/fifo2
 curl $OPTS http://127.0.0.1:19090/run/dir
 rm -rf     $MODULE_ROOT/nginx-dir-tests/
-if [ "$WITH_MASTER"  == "yes" ]; then
+if [ "$WITH_MASTER"  = "yes" ]; then
 curl $OPTS "http://127.0.0.1:19090/run/process-cycle?fname=process-cycle-worker-exited-$TIME.txt"
 fi
 curl $OPTS --cookie "foo1=bar1; foo2=bar2" "http://127.0.0.1:19090/run/request-cookies?count=2&name1=foo1&value1=bar1&name2=foo2&value2=bar2"
@@ -90,9 +87,17 @@ curl $OPTS "http://127.0.0.1:19090/run/request-send-string"
 
 MASTER_PID=$(cat $PIDFILE)
 
-kill_process
+if [ -f $PIDFILE ]; then
+	PID=$(cat $PIDFILE)
+	kill -QUIT $PID
+	sleep 1
+	if [ -f $PIDFILE ]; then
+		kill -KILL $PID
+	fi
+fi
 
-if [ "$WITH_MASTER"  == "yes" ]; then
+
+if [ "$WITH_MASTER" = "yes" ]; then
 	if [ -f "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt" ]; then
 		echo "exitWorker() worked"
 		rm "$MODULE_ROOT/process-cycle-worker-exited-$TIME.txt"
