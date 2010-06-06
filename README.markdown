@@ -63,7 +63,7 @@ Notes on SpiderMonkey support (2010-05-27):
 
 * Ubuntu has relatively bad support for SpiderMonkey at the moment: [1.5 and 1.8 versions][on ubuntu] only;
 * Debian [has much greater][on debian] SpiderMonkey in it and may be useful;
-* MacPorts is [no good too][on mac];
+* MacPorts is [no good][on mac];
 * FreeBSD got [the same][on freebsd] as MacPorts.
 
 In short the Debian Lenny and greater SpiderMonkey port is useful ATM.
