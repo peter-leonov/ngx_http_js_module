@@ -86,6 +86,8 @@ Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 so
 
 If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to be able to `make` SpiderMonkey. If you are on Ubuntu please use `--prefix=/usr/`, otherwise SpiderMonkey installs itself to `/usr/local/` and `libmozjs.so` becomes unreachable. Use `--disable-tests` to get `make` ended shortly. Use `--enable-debug` if you plan to develop a little ;)
 
+On a clear FreeBSD 8.0 at least the following have to be installed from ports: gmake, perl, python, zip. Run `gmake` and `gmake install` after `./configure`.
+
 This could create the following in `prefix`:
 
 * bin/js-config
