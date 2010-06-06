@@ -398,6 +398,25 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 }
 
 static JSBool
+method_seek(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_fd_t         fd;
+	void            *p;
+	size_t           offset;
+	
+	GET_PRIVATE(p);
+	fd = PTR_TO_FD(p);
+	TRACE_METHOD();
+	
+	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.File#seek takes 1 mandatory argument: offset:Number");
+	
+	offset = JSVAL_TO_INT(argv[0]);
+	
+	*rval = INT_TO_JSVAL(lseek(fd, offset, SEEK_SET));
+	return JS_TRUE;
+}
+
+static JSBool
 method_close(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_fd_t         fd;
@@ -537,6 +556,7 @@ static JSFunctionSpec funcs[] =
 {
 	JS_FS("write",           method_write,               1, 0, 0),
 	JS_FS("read",            method_read,                1, 0, 0),
+	JS_FS("seek",            method_seek,                1, 0, 0),
 	JS_FS("close",           method_close,               0, 0, 0),
 	JS_FS_END
 };

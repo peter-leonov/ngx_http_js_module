@@ -1177,6 +1177,11 @@ On success returns a string with the content of the file. Otherwise return `null
 Converts `string` to the UTF-8 bytes sequence and writes to the file from the current position.
 
 
+### seek(offset)
+
+Set a position in the file to `offset`. For now `SEEK_SET` is supported only.
+
+
 ### close()
 
 Closes the corresponding `ngx_fd_t` stored within this `Nginx.File` instance and marks the instance as deactivated. Do not use a closed file at all, it would throw an exception.

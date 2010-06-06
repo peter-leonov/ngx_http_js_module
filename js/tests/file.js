@@ -84,7 +84,7 @@ NginxTests.file = function (r)
 		t.test('large read/write', function (t)
 		{
 			// 50 * 2000 = 100'000
-			var str = new Array(2000).join('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+			var str = new Array(2000).join('aaaaaaaaaabbbbbbbbbbcccccccccceeeeeeeeeeffffffffff'),
 				fname = prefix + 'nginx-file-write.txt'
 			
 			var file = File.open(fname)
@@ -93,14 +93,15 @@ NginxTests.file = function (r)
 			var rc = file.write(str)
 			t.ok(rc, 'write')
 			
-			var file = File.open(fname)
-			t.ok(file, 'open')
-			
 			var size = file.size
 			t.gte(size, str.length, 'size')
 			
+			var res = file.seek(0)
+			t.eq(res, Nginx.OK, 'seek(0)')
+			
 			var res = file.read(size)
-			t.eq(res, str, 'read')
+			t.eq(res.length, str.length, 'read length')
+			t.eq(res, str, 'read data')
 			
 			var rc = File.remove(fname)
 			t.ne(rc, File.ERROR, 'delete')
