@@ -371,6 +371,7 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	
 	if (ngx_read_fd(fd, buf, len) != (ssize_t) len)
 	{
+		JS_free(cx, buf);
 		*rval = JSVAL_NULL;
 		return JS_TRUE;
 	}
