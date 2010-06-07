@@ -64,6 +64,7 @@ self[myName] = Me
 require('tests/nginx-object.js')
 require('tests/request-object.js')
 require('tests/request-body.js')
+require('tests/request-body-plain.js')
 require('tests/request-body-file.js')
 require('tests/request-body-discard.js')
 require('tests/file.js')
