@@ -40,15 +40,19 @@ The code uses `ngx_assert()` and `ngx_log_debug()` almost everywhere, so the deb
 Installation
 ============
 
-The installation is straightforward. Just add this module with a familiar `--add-module` configuration directive in [nginx wiki][].
+The installation is straightforward. Just add this module with a familiar `--add-module` configuration directive in [nginx wiki][compiling modules].
+
+[compiling modules]: http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
+
 
 This module was successfully tested on:
 
-* Ubuntu 8.04.3 32-bit (2.6.18-virtuozzo and 2.6.24-23-openvz)
-* FreeBSD 8.0 32-bit
-* Mac OS 10.6.3 32-bit and 64-bit
+* Ubuntu 8.04.3 32-bit (2.6.18-virtuozzo; 2.6.24-23-openvz in VirtualBox)
+* FreeBSD 8.0 32-bit (Parallels Desktop 5.0 Mac)
+* Debian 5.0 32-bit PowerPC (Mac mini G4)
+* Mac OS 10.6.3 32-bit and 64-bit (Core Duo and Core 2 Duo iMacs)
 
-[nginx wiki]: http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
+Note that the latest SpiderMonkey was manually built and installed on thees systems.
 
 
 Requirements
