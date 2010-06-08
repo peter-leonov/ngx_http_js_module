@@ -403,7 +403,6 @@ static ngx_int_t
 ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
 {
 	ngx_http_js_variable_t      *jv;
-	ngx_int_t                    rc;
 	ngx_str_t                    value;
 	jsval                        rval;
 	JSString                    *js_value;
@@ -414,10 +413,9 @@ ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v,
 	jv = (ngx_http_js_variable_t *) data;
 	cx = js_cx;
 	
-	rc = ngx_http_js__request__call_function(cx, r, jv->function, &rval);
-	if (rc != NGX_OK)
+	if (!ngx_http_js__request__call_function(cx, r, jv->function, &rval))
 	{
-		return rc;
+		return NGX_ERROR;
 	}
 	
 	// if the callback returns undefined we mark the variable as not_found
@@ -574,10 +572,9 @@ ngx_http_js__glue__call_handler(ngx_http_request_t *r)
 	
 	
 	// the callback function was set in config by ngx_http_js__glue__set_callback()
-	rc = ngx_http_js__request__call_function(js_cx, r, jslcf->handler_function, &rval);
-	if (rc != NGX_OK)
+	if (!ngx_http_js__request__call_function(js_cx, r, jslcf->handler_function, &rval))
 	{
-		return NGX_HTTP_INTERNAL_SERVER_ERROR;
+		return NGX_ERROR;
 	}
 	
 	if (JSVAL_IS_INT(rval))

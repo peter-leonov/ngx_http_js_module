@@ -315,7 +315,7 @@ method_rootMe(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 }
 
 
-ngx_int_t
+JSBool
 ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval)
 {
 	ngx_http_js_ctx_t       *ctx;
@@ -335,7 +335,8 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
 		if (ctx == NULL)
 		{
-			return NGX_ERROR;
+			JS_ReportOutOfMemory(cx);
+			return JS_FALSE;
 		}
 		
 		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
@@ -346,7 +347,8 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	request = ngx_http_js__nginx_request__wrap(cx, r);
 	if (request == NULL)
 	{
-		return NGX_ERROR;
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
 	}
 	
 	req = OBJECT_TO_JSVAL(request);
@@ -356,7 +358,8 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	{
 		ngx_http_js_module_log = last_log;
 		// it mat be OOM, so be brute
-		return NGX_ERROR;
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
 	}
 	ngx_http_js_module_log = last_log;
 	
@@ -376,7 +379,8 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, rooting wrapper");
 			if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
 			{
-				return NGX_ERROR;
+				JS_ReportOutOfMemory(cx);
+				return JS_FALSE;
 			}
 		}
 		// the request wrapper is no more needed to nginx
@@ -389,7 +393,7 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	
 	DEBUG_GC(cx);
 	
-	return NGX_OK;
+	return JS_TRUE;
 }
 
 
