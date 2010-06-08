@@ -217,16 +217,22 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 		return JS_FALSE;
 	}
 	
-	req = OBJECT_TO_JSVAL(request);
+	// set up current log
 	last_log = ngx_http_js_module_log;
 	ngx_http_js_module_log = r->connection->log;
+	
+	req = OBJECT_TO_JSVAL(request);
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
 	{
+		// restore previouse log
 		ngx_http_js_module_log = last_log;
+		
 		// it may be OOM, so be brute
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	
+	// restore previouse log
 	ngx_http_js_module_log = last_log;
 	
 	DEBUG_GC(cx);
