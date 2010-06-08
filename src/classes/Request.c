@@ -57,6 +57,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
 		if (ctx == NULL)
 		{
+			JS_ReportOutOfMemory(cx);
 			// or return an error
 			return NULL;
 		}
@@ -286,7 +287,6 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	request = ngx_http_js__nginx_request__wrap(cx, r);
 	if (request == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
