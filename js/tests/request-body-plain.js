@@ -4,7 +4,7 @@ NginxTests.requestBodyPlain = function (r)
 {
 	function body ()
 	{
-		r.sendString(new RegExp(RegExp.escape(args.body)).test(r.body))
+		r.sendString(r.body)
 	}
 	
 	r.getBody(body)
