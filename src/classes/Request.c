@@ -23,7 +23,7 @@ static JSClass *private_class = &ngx_http_js__nginx_request__class;
 static void
 cleanup_handler(void *data);
 
-static void
+static ngx_inline void
 cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
 
 static ngx_inline void
@@ -127,7 +127,7 @@ cleanup_handler(void *data)
 	cleanup_request(ctx, r, js_cx);
 }
 
-static void
+static ngx_inline void
 cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
