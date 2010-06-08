@@ -404,67 +404,6 @@ method_flush(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 
 
 static JSBool
-method_nextBodyFilter(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
-{
-	ngx_http_request_t  *r;
-	ngx_buf_t           *b;
-	size_t               len;
-	JSString            *str;
-	ngx_chain_t          out, *ch;
-	ngx_int_t            rc;
-	
-	GET_PRIVATE(r);
-	TRACE_REQUEST_METHOD();
-	
-	E(ngx_http_js_next_body_filter != NULL, "ngx_http_js_next_body_filter is NULL at this moment");
-	
-	if (argc == 1 && JSVAL_IS_STRING(argv[0]))
-	{
-		str = JSVAL_TO_STRING(argv[0]);
-		b = js_str2ngx_buf(cx, str, r->pool);
-		if (b == NULL)
-		{
-			JS_ReportOutOfMemory(cx);
-			return JS_FALSE;
-		}
-		len = b->last - b->pos;
-		if (len == 0)
-		{
-			return JS_TRUE;
-		}
-		
-		b->last_buf = 1;
-	
-		out.buf = b;
-		out.next = NULL;
-		rc = ngx_http_js_next_body_filter(r, &out);
-	}
-	else if (argc == 1 && JSVAL_IS_OBJECT(argv[0]))
-	{
-		if ( (ch = JS_GetInstancePrivate(cx, JSVAL_TO_OBJECT(argv[0]), &ngx_http_js__nginx_chain__class, NULL)) == NULL )
-		{
-			JS_ReportError(cx, "second parameter is object but not a chain or chain has NULL private pointer");
-			return JS_FALSE;
-		}
-		
-		rc = ngx_http_js_next_body_filter(r, ch);
-	}
-	else if (argc == 0 || (argc == 1 && JSVAL_IS_VOID(argv[0])))
-	{
-		rc = ngx_http_js_next_body_filter(r, NULL);
-	}
-	else
-	{
-		E(0, "Nginx.Request#nextBodyFilter takes 1 optional argument: str:(String|undefined)");
-	}
-	
-	*rval = INT_TO_JSVAL(rc);
-	
-	return JS_TRUE;
-}
-
-
-static JSBool
 method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t  *r;
@@ -1387,7 +1326,6 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 	JS_FS("redirect",          method_redirect,             2, 0, 0),
 	JS_FS("setTimer",          method_setTimer,             2, 0, 0),
 	JS_FS("clearTimer",        method_clearTimer,           0, 0, 0),
-	JS_FS("nextBodyFilter",    method_nextBodyFilter,       1, 0, 0),
 	JS_FS_END
 };
 
