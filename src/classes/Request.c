@@ -23,6 +23,12 @@ static JSClass *private_class = &ngx_http_js__nginx_request__class;
 static void
 cleanup_handler(void *data);
 
+static ngx_int_t
+ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request);
+
+static void
+ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
+
 static void
 method_setTimer_handler(ngx_event_t *ev);
 
@@ -82,7 +88,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	return request;
 }
 
-ngx_int_t
+static ngx_int_t
 ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request)
 {
 	ngx_http_js_ctx_t         *ctx;
@@ -190,7 +196,7 @@ call_cleanup_js_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 	}
 }
 
-void
+static void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");

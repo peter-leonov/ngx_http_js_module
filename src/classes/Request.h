@@ -21,17 +21,11 @@ extern JSObject *ngx_http_js__nginx_request__prototype;
 extern JSPropertySpec ngx_http_js__nginx_request__props[];
 extern JSFunctionSpec ngx_http_js__nginx_request__funcs[];
 
-extern JSBool
+JSBool
 ngx_http_js__nginx_request__init(JSContext *cx, JSObject *global);
 
-extern JSObject *
+JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r);
-
-extern void
-ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
-
-extern ngx_int_t
-ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request);
 
 JSBool
 ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval);
