@@ -32,7 +32,8 @@ self.ANSIColors =
 	Me.log   = function () { this.logError(this.LOG_WARN, ANSIColors.wrap(flat(arguments), 'GREEN')) } // LOG_DEBUG
 	Me.info  = function () { this.logError(this.LOG_INFO, ANSIColors.wrap(flat(arguments), 'CLEAR')) }
 	Me.warn  = function () { this.logError(this.LOG_WARN, ANSIColors.wrap(flat(arguments), 'CLEAR')) }
-	Me.error = function () { this.logError(this.LOG_ERR,  ANSIColors.wrap(flat(arguments), 'CLEAR')) }
+	Me.error = function () { this.logError(this.LOG_ERR,  ANSIColors.wrap(flat(arguments), 'RED')) }
+	Me.crit  = function () { this.logError(this.LOG_CRIT, ANSIColors.wrap(flat(arguments), 'RED')) }
 	self.log = function () { Me.log.apply(Me, arguments) }
 	
 	Me.resultNames = {}
