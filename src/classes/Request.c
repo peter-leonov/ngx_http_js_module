@@ -1071,10 +1071,11 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
-	subrequest = ngx_http_js__nginx_request__wrap(js_cx, sr);
+	subrequest = ctx->js_request;
 	if (subrequest == NULL)
 	{
-		return NGX_ERROR;
+		ngx_log_error(NGX_LOG_CRIT, sr->connection->log, 0, "subrequest handler with empty request wrapper");
+		return NGX_HTTP_INTERNAL_SERVER_ERROR;
 	}
 	
 	if (!JS_GetReservedSlot(js_cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, &callback))
