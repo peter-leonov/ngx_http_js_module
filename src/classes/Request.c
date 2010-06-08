@@ -624,7 +624,6 @@ method_getBody_handler(ngx_http_request_t *r)
 	ngx_http_js_ctx_t                *ctx;
 	JSObject                         *request;
 	jsval                             rval, callback;
-	ngx_int_t                         rc;
 	
 	TRACE_REQUEST_METHOD();
 	
@@ -645,26 +644,24 @@ method_getBody_handler(ngx_http_request_t *r)
 		return;
 	}
 	
-	if (JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
-	{
-		if (JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
-		{
-			rc = NGX_DONE;
-		}
-		else
-		{
-			// it may be OOM, so be brute
-			rc = NGX_ERROR;
-		}
-	}
-	else
+	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, &callback))
 	{
 		JS_ReportError(js_cx, "can't get slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
-		rc = NGX_ERROR;
+		// implies count--
+		ngx_http_finalize_request(r, NGX_ERROR);
+		return;
+	}
+	
+	if (!JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
+	{
+		// it may be OOM, so be brute
+		// implies count--
+		ngx_http_finalize_request(r, NGX_ERROR);
+		return;
 	}
 	
 	// implies count--
-	ngx_http_finalize_request(r, rc);
+	ngx_http_finalize_request(r, NGX_DONE);
 }
 
 
