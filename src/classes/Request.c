@@ -185,11 +185,13 @@ call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 		return;
 	}
 	
-	if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
+	if (JSVAL_IS_VOID(fun))
 	{
-		JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
-		DEBUG_GC(cx);
+		return;
 	}
+	
+	JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
+	DEBUG_GC(cx);
 }
 
 
@@ -233,6 +235,12 @@ setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	// get a js module context
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
+	
+	if (!JSVAL_IS_OBJECT(*vp) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(*vp)))
+	{
+		JS_ReportError(cx, "oncleanup has to be a function");
+		return JS_FALSE;
+	}
 	
 	if (!JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, *vp))
 	{
