@@ -314,6 +314,85 @@ method_rootMe(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	return JS_TRUE;
 }
 
+
+ngx_int_t
+ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval)
+{
+	ngx_http_js_ctx_t       *ctx;
+	ngx_log_t               *last_log;
+	JSObject                *request;
+	jsval                    req;
+	
+	TRACE();
+	
+	ngx_assert(function);
+	
+	// get a js module context or create a js module context or return an error
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
+	{
+		// ngx_pcalloc fills allocated memory with zeroes
+		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
+		if (ctx == NULL)
+		{
+			return NGX_ERROR;
+		}
+		
+		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
+	}
+	
+	
+	// create a wrapper object (not yet rooted) for native request struct
+	request = ngx_http_js__nginx_request__wrap(cx, r);
+	if (request == NULL)
+	{
+		return NGX_ERROR;
+	}
+	
+	req = OBJECT_TO_JSVAL(request);
+	last_log = ngx_http_js_module_log;
+	ngx_http_js_module_log = r->connection->log;
+	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
+	{
+		ngx_http_js_module_log = last_log;
+		// it mat be OOM, so be brute
+		return NGX_ERROR;
+	}
+	ngx_http_js_module_log = last_log;
+	
+	// root the request as soon as possible,
+	// in single threaded app no GC may take place in the middle,
+	// in multythreaded please use JS_EnterLocalRootScope() instead)
+	
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
+	
+	// check if the request hasn't been rooted already
+	if (ctx->js_request == NULL)
+	{
+		// if a timer was set, or a subrequest issued, or the request body is awaited
+		// the request wrapper must be preserved
+		if (r->main->count > 2)
+		{
+			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, rooting wrapper");
+			if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
+			{
+				return NGX_ERROR;
+			}
+		}
+		// the request wrapper is no more needed to nginx
+		else
+		{
+			// try to fully cleanup the request
+			ngx_http_js__nginx_request__cleanup(ctx, r, cx);
+		}
+	}
+	
+	DEBUG_GC(cx);
+	
+	return NGX_OK;
+}
+
+
 static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {

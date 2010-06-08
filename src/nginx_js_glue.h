@@ -21,9 +21,6 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 extern ngx_int_t
 ngx_http_js__glue__call_handler(ngx_http_request_t *r);
 
-ngx_int_t
-ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval);
-
 extern ngx_int_t
 ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
