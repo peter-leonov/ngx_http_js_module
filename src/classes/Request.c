@@ -981,9 +981,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	// This handler is called from the _subrequest_ finalizer
 	// which, AFAIK, implies count-- if and only if the subrequest
 	// is really finalized. Also, this handler may be called more
-	// then one time: for the header and for the body
-	// if the subrequest is “quick”: location /quick { return 403; }
-	// is an example of a quick subrequest.
+	// then once: for each call to ngx_http_finalize_request();
 	
 	r = sr->main;
 	TRACE_REQUEST_METHOD();
