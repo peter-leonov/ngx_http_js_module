@@ -90,6 +90,8 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	{
 		// mark as not wrapped
 		ctx->js_request = NULL;
+		// un-root
+		JS_RemoveRoot(cx, &ctx->js_request);
 		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
