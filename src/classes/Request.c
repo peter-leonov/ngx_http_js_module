@@ -242,6 +242,54 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 
 
 static JSBool
+method_log(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+{
+	ngx_http_request_t       *r;
+	ngx_uint_t                level;
+	JSString                 *str;
+	char                     *mes;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_METHOD();
+	
+	if (argc < 1 || argc > 2)
+	{
+		THROW("Nginx.Request#log takes 1 mandatory argument: message:String; and one optional level:Integer");
+	}
+	
+	if (argc < 2)
+	{
+		level = NGX_LOG_INFO;
+	}
+	else
+	{
+		if (!JSVAL_IS_INT(argv[1]))
+		{
+			THROW("level must be of type Integer");
+		}
+		
+		level = JSVAL_TO_INT(argv[1]);
+	}
+	
+	str = JS_ValueToString(cx, argv[0]);
+	if (str == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	mes = JS_GetStringBytes(str);
+	if (str == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	ngx_log_error(level, r->connection->log, 0, "%s", mes);
+	
+	return JS_TRUE;
+}
+
+
+static JSBool
 method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	ngx_http_request_t *r;
@@ -1326,6 +1374,7 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 
 JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 {
+	JS_FS("log",               method_log,                  2, 0, 0),
 	JS_FS("sendHttpHeader",    method_sendHttpHeader,       2, 0, 0),
 	JS_FS("print",             method_print,                1, 0, 0),
 	JS_FS("flush",             method_flush,                0, 0, 0),

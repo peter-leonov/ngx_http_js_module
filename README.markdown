@@ -442,6 +442,13 @@ Methods
 -------
 
 
+### log(message [, level])
+
+Logs a `message` through the nginx built-in log mechanism. Does the same as `Nginx.logError()` but with the request log context preserved.
+
+If `level` is omitted `Nginx.LOG_INFO` is used.
+
+
 ### sendHttpHeader(contentType)
 
 Sends the header. In addition this method sets the response status to `200` if not it set, and sets the `headersOut["Content-Type"]` to the value of argument `contentType`.
