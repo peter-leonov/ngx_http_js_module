@@ -202,7 +202,6 @@ call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 JSBool
 ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval)
 {
-	ngx_http_js_ctx_t       *ctx;
 	ngx_log_t               *last_log;
 	JSObject                *request;
 	jsval                    req;
@@ -210,22 +209,6 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	TRACE();
 	
 	ngx_assert(function);
-	
-	// get a js module context or create a js module context or return an error
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	if (ctx == NULL)
-	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
-		if (ctx == NULL)
-		{
-			JS_ReportOutOfMemory(cx);
-			return JS_FALSE;
-		}
-		
-		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
-	}
-	
 	
 	// create a wrapper object (already rooted) for native request struct
 	request = ngx_http_js__nginx_request__wrap(cx, r);
