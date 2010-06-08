@@ -937,9 +937,9 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	// implies count++
 	rc = ngx_http_subrequest(r, &uri, &args, &sr, psr, flags);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "after ngx_http_subrequest()");
-	if (sr == NULL || rc != NGX_OK)
+	if (rc != NGX_OK)
 	{
-		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
+		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	// sr->filter_need_in_memory = 1;
