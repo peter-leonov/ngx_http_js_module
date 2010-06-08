@@ -994,7 +994,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	psr = NULL;
 	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
 	psr->handler = method_subrequest_handler;
-	psr->data = r;
+	psr->data = NULL;
 	
 	flags |= NGX_HTTP_SUBREQUEST_IN_MEMORY;
 	
@@ -1006,8 +1006,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "after ngx_http_subrequest()");
 	if (sr == NULL || rc != NGX_OK)
 	{
-		// mark the handler as inactive
-		psr->data = NULL;
 		JS_ReportError(cx, "Can`t ngx_http_subrequest(...)");
 		return JS_FALSE;
 	}
@@ -1016,22 +1014,21 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
 	if (subrequest == NULL)
 	{
-		// mark the handler as inactive
-		psr->data = NULL;
 		// forward the exception
 		return JS_FALSE;
 	}
 	
 	if (!JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]))
 	{
-		// mark the handler as inactive
-		psr->data = NULL;
 		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
 		return JS_FALSE;
 	}
 	
 	// // to be able to manually call finalize at the subrequest handler
 	// r->main->count++;
+	
+	// mark the handler as active
+	psr->data = r;
 	
 	*rval = OBJECT_TO_JSVAL(subrequest);
 	return JS_TRUE;
