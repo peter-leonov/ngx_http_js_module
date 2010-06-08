@@ -64,9 +64,8 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		
 		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
 	}
-	
 	// check if the request is already wrapped
-	if (ctx->js_request != NULL)
+	else if (ctx->js_request != NULL)
 	{
 		return ctx->js_request;
 	}
