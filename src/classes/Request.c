@@ -830,11 +830,19 @@ method_setTimer_handler(ngx_event_t *timer)
 	r = timer->data;
 	TRACE_REQUEST_METHOD();
 	
-	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	ngx_assert(ctx);
+	if (ctx == NULL)
+	{
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "empty js module context");
+		return;
+	}
 	
 	request = ctx->js_request;
+	if (request == NULL)
+	{
+		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "context with empty request wrapper");
+		return;
+	}
 	
 	if (!JS_GetReservedSlot(js_cx, request, NGX_JS_REQUEST_SLOT__SET_TIMER, &callback))
 	{
