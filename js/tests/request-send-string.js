@@ -4,7 +4,7 @@ NginxTests.requestSendString = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
-	Tests.test('sendfile', function (t)
+	Tests.test('test sendString()', function (t)
 	{
 		function callback (sr, body, rc)
 		{
