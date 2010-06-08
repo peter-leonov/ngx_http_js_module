@@ -199,65 +199,6 @@ call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 }
 
 
-static JSBool
-getter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	ngx_http_request_t         *r;
-	ngx_http_js_ctx_t         *ctx;
-	
-	TRACE();
-	GET_PRIVATE(r);
-	
-	// get a js module context
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	ngx_assert(ctx);
-	
-	if (!ctx->js_cleanup_handler_set)
-	{
-		*vp = JSVAL_VOID;
-		return JS_TRUE;
-	}
-	
-	if (!JS_GetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, vp))
-	{
-		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
-		return JS_FALSE;
-	}
-	
-	return JS_TRUE;
-}
-
-static JSBool
-setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	ngx_http_request_t         *r;
-	ngx_http_js_ctx_t         *ctx;
-	
-	TRACE();
-	GET_PRIVATE(r);
-	
-	// get a js module context
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	ngx_assert(ctx);
-	
-	if (!JSVAL_IS_OBJECT(*vp) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(*vp)))
-	{
-		JS_ReportError(cx, "oncleanup has to be a function");
-		return JS_FALSE;
-	}
-	
-	if (!JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, *vp))
-	{
-		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
-		return JS_FALSE;
-	}
-	
-	ctx->js_cleanup_handler_set = 1;
-	
-	return JS_TRUE;
-}
-
-
 JSBool
 ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObject *function, jsval *rval)
 {
@@ -1314,6 +1255,66 @@ setter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	
 	return JS_TRUE;
 }
+
+
+static JSBool
+getter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_http_js_ctx_t         *ctx;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	
+	if (!ctx->js_cleanup_handler_set)
+	{
+		*vp = JSVAL_VOID;
+		return JS_TRUE;
+	}
+	
+	if (!JS_GetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, vp))
+	{
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
+		return JS_FALSE;
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
+setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+{
+	ngx_http_request_t         *r;
+	ngx_http_js_ctx_t         *ctx;
+	
+	TRACE();
+	GET_PRIVATE(r);
+	
+	// get a js module context
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	ngx_assert(ctx);
+	
+	if (!JSVAL_IS_OBJECT(*vp) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(*vp)))
+	{
+		JS_ReportError(cx, "oncleanup has to be a function");
+		return JS_FALSE;
+	}
+	
+	if (!JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, *vp))
+	{
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
+		return JS_FALSE;
+	}
+	
+	ctx->js_cleanup_handler_set = 1;
+	
+	return JS_TRUE;
+}
+
 
 JSPropertySpec ngx_http_js__nginx_request__props[] =
 {
