@@ -167,7 +167,11 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 		ngx_del_timer(&ctx->js_timer);
 	}
 	
-	if (ctx->js_request)
+	if (ctx->js_request == NULL)
+	{
+		ngx_log_error(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cleaning up the request with an empty wrapper");
+	}
+	else
 	{
 		// second param has to be &ctx->js_request
 		// because JS_AddRoot was used with it's address
@@ -181,10 +185,6 @@ ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 		JS_SetPrivate(cx, ctx->js_request, NULL);
 		// and set the native request as unwrapped
 		ctx->js_request = NULL;
-	}
-	else
-	{
-		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cleaning up the request with an empty wrapper");
 	}
 }
 
