@@ -24,7 +24,7 @@ static void
 cleanup_handler(void *data);
 
 static void
-ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
+cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
 
 static void
 method_setTimer_handler(ngx_event_t *ev);
@@ -121,15 +121,15 @@ cleanup_handler(void *data)
 		return;
 	}
 	
-	ngx_http_js__nginx_request__cleanup(ctx, r, js_cx);
+	cleanup_request(ctx, r, js_cx);
 }
 
 static ngx_inline void
-call_cleanup_js_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
+call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
 	jsval     fun, rval;
 	
-	if (!ctx->cleanup_handler_set || ctx->js_request == NULL)
+	if (!ctx->js_cleanup_handler_set || ctx->js_request == NULL)
 	{
 		return;
 	}
@@ -150,11 +150,11 @@ call_cleanup_js_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 }
 
 static void
-ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
+cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup");
 	
-	call_cleanup_js_handler(ctx, r, cx);
+	call_js_cleanup_handler(ctx, r, cx);
 	
 	// let the modules to deside what to clean up
 	ngx_http_js__nginx_headers_in__cleanup(ctx, r, cx);
@@ -202,7 +202,7 @@ getter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	
-	if (!ctx->cleanup_handler_set)
+	if (!ctx->js_cleanup_handler_set)
 	{
 		*vp = JSVAL_VOID;
 		return JS_TRUE;
@@ -236,7 +236,7 @@ setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	ctx->cleanup_handler_set = 1;
+	ctx->js_cleanup_handler_set = 1;
 	
 	return JS_TRUE;
 }
