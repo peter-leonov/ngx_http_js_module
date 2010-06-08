@@ -82,7 +82,9 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	ctx->js_request = request;
 	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
-		// mark as not wrapped
+		// mark the wrapper as inactive
+		JS_SetPrivate(cx, request, NULL);
+		// mark the request as not wrapped
 		ctx->js_request = NULL;
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not add new root %s", JS_REQUEST_ROOT_NAME);
 		return NULL;
@@ -92,9 +94,11 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
 	{
-		// mark as not wrapped
+		// mark the wrapper as inactive
+		JS_SetPrivate(cx, request, NULL);
+		// mark the request as not wrapped
 		ctx->js_request = NULL;
-		// un-root
+		// un-root the wrapper
 		JS_RemoveRoot(cx, &ctx->js_request);
 		JS_ReportOutOfMemory(cx);
 		return NULL;
