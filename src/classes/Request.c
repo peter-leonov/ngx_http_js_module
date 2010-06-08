@@ -23,9 +23,6 @@ static JSClass *private_class = &ngx_http_js__nginx_request__class;
 static void
 cleanup_handler(void *data);
 
-static ngx_int_t
-ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request);
-
 static void
 ngx_http_js__nginx_request__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
 
@@ -43,6 +40,7 @@ JSObject *
 ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
 	ngx_http_js_ctx_t         *ctx;
+	ngx_http_cleanup_t        *cln;
 	JSObject                  *request;
 	
 	TRACE_REQUEST("request_wrap");
@@ -69,6 +67,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		return ctx->js_request;
 	}
 	
+	// wrapping
 	request = JS_NewObject(cx, &ngx_http_js__nginx_request__class, ngx_http_js__nginx_request__prototype, NULL);
 	if (request == NULL)
 	{
@@ -76,82 +75,32 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
-	JS_SetPrivate(cx, request, r);
-	
-	
-	// We can't just store the wrapper in the request context without rooting it,
-	// because the wrapper may be garbage collected out and we get a pointer to nothing
-	// in our ctx->js_request which leads to a crash or worst. So leaving the ctx->js_request
-	// empty.
-	
-	
-	return request;
-}
-
-static ngx_int_t
-ngx_http_js__nginx_request__root_in(JSContext *cx, ngx_http_request_t *r, JSObject *request)
-{
-	ngx_http_js_ctx_t         *ctx;
-	ngx_http_cleanup_t        *cln;
-	
-	TRACE_REQUEST("request_root");
-	
-	// get a js module context
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	if (ctx == NULL)
-	{
-		// or create a js module context;
-		// ngx_pcalloc fills allocated memory with zeroes
-		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
-		if (ctx == NULL)
-		{
-			// mark the request wrapper as inactive
-			JS_SetPrivate(cx, request, NULL);
-			JS_ReportOutOfMemory(cx);
-			// or return an error
-			return NGX_ERROR;
-		}
-		
-		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
-	}
-	
-	if (ctx->js_request != NULL)
-	{
-		if (ctx->js_request != request)
-		{
-			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "trying to root JS request %p in ctx %p in place of JS request %p", request, ctx, ctx->js_request);
-			// mark the request wrapper as inactive
-			JS_SetPrivate(cx, request, NULL);
-			return NGX_ERROR;
-		}
-		
-		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "trying to root the same JS request %p in the same ctx %p more then once", request, ctx);
-		return NGX_OK;
-	}
-	
-	
+	// rooting
 	ctx->js_request = request;
-	
 	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
+		// mark as not wrapped
+		ctx->js_request = NULL;
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "could not add new root %s", JS_REQUEST_ROOT_NAME);
-		ngx_http_js__nginx_request__cleanup(ctx, r, cx);
-		return NGX_ERROR;
+		return NULL;
 	}
 	
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
 	{
-		// mark the request wrapper as inactive
-		ngx_http_js__nginx_request__cleanup(ctx, r, cx);
+		// mark as not wrapped
+		ctx->js_request = NULL;
 		JS_ReportOutOfMemory(cx);
-		return NGX_ERROR;
+		return NULL;
 	}
 	cln->data = r;
 	cln->handler = cleanup_handler;
 	
-	return NGX_OK;
+	JS_SetPrivate(cx, request, r);
+	
+	return request;
 }
+
 
 static void
 cleanup_handler(void *data)
@@ -277,20 +226,6 @@ setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	
-	if (ctx->js_request == NULL)
-	{
-		if (ngx_http_js__nginx_request__root_in(cx, r, self) != NGX_OK)
-		{
-			return JS_FALSE;
-		}
-		
-		if (ctx->js_request == NULL)
-		{
-			JS_ReportError(cx, "can't root the request for you");
-			return JS_FALSE;
-		}
-	}
-	
 	if (!JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__CLEANUP, *vp))
 	{
 		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
@@ -298,24 +233,6 @@ setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	}
 	
 	ctx->cleanup_handler_set = 1;
-	
-	return JS_TRUE;
-}
-
-
-static JSBool
-method_rootMe(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
-{
-	ngx_http_request_t *r;
-	
-	GET_PRIVATE(r);
-	TRACE_REQUEST_METHOD();
-	
-	// force the “self” to be rooted in the “r”
-	if (ngx_http_js__nginx_request__root_in(cx, r, self) != NGX_OK)
-	{
-		return JS_FALSE;
-	}
 	
 	return JS_TRUE;
 }
@@ -349,7 +266,7 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	}
 	
 	
-	// create a wrapper object (not yet rooted) for native request struct
+	// create a wrapper object (already rooted) for native request struct
 	request = ngx_http_js__nginx_request__wrap(cx, r);
 	if (request == NULL)
 	{
@@ -368,34 +285,6 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 		return JS_FALSE;
 	}
 	ngx_http_js_module_log = last_log;
-	
-	// root the request as soon as possible,
-	// in single threaded app no GC may take place in the middle,
-	// in multythreaded please use JS_EnterLocalRootScope() instead)
-	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
-	
-	// check if the request hasn't been rooted already
-	if (ctx->js_request == NULL)
-	{
-		// if a timer was set, or a subrequest issued, or the request body is awaited
-		// the request wrapper must be preserved
-		if (r->main->count > 2)
-		{
-			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "complex request handled, rooting wrapper");
-			if (ngx_http_js__nginx_request__root_in(cx, r, request) != NGX_OK)
-			{
-				JS_ReportOutOfMemory(cx);
-				return JS_FALSE;
-			}
-		}
-		// the request wrapper is no more needed to nginx
-		else
-		{
-			// try to fully cleanup the request
-			ngx_http_js__nginx_request__cleanup(ctx, r, cx);
-		}
-	}
 	
 	DEBUG_GC(cx);
 	
@@ -1125,14 +1014,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		return JS_FALSE;
 	}
 	
-	if (ngx_http_js__nginx_request__root_in(cx, sr, subrequest) != NGX_OK)
-	{
-		// mark the handler as inactive
-		psr->data = NULL;
-		// forward the exception
-		return JS_FALSE;
-	}
-	
 	// // to be able to manually call finalize at the subrequest handler
 	// r->main->count++;
 	
@@ -1453,7 +1334,6 @@ JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 	JS_FS("setTimer",          method_setTimer,             2, 0, 0),
 	JS_FS("clearTimer",        method_clearTimer,           0, 0, 0),
 	JS_FS("nextBodyFilter",    method_nextBodyFilter,       1, 0, 0),
-	JS_FS("rootMe",            method_rootMe,               0, 0, 0),
 	JS_FS_END
 };
 
