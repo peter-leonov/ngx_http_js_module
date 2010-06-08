@@ -194,6 +194,7 @@ call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 		return;
 	}
 	
+	DEBUG_GC(cx);
 	JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
 	DEBUG_GC(cx);
 }
@@ -221,6 +222,7 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	last_log = ngx_http_js_module_log;
 	ngx_http_js_module_log = r->connection->log;
 	
+	DEBUG_GC(cx);
 	req = OBJECT_TO_JSVAL(request);
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
 	{
@@ -231,11 +233,10 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
+	DEBUG_GC(cx);
 	
 	// restore previouse log
 	ngx_http_js_module_log = last_log;
-	
-	DEBUG_GC(cx);
 	
 	return JS_TRUE;
 }
@@ -567,6 +568,7 @@ method_getBody_handler(ngx_http_request_t *r)
 		return;
 	}
 	
+	DEBUG_GC(js_cx);
 	if (!JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 	{
 		// it may be OOM, so be brute
@@ -574,7 +576,6 @@ method_getBody_handler(ngx_http_request_t *r)
 		ngx_http_finalize_request(r, NGX_ERROR);
 		return;
 	}
-	
 	DEBUG_GC(js_cx);
 	
 	// implies count--
@@ -854,6 +855,7 @@ method_setTimer_handler(ngx_event_t *timer)
 	// timer_set is 0 here and count is incremented
 	// because ngx_event_expire_timers() sets it before calling the handler
 	
+	DEBUG_GC(js_cx);
 	// here a new timeout handler may be set
 	if (!JS_CallFunctionValue(js_cx, request, callback, 0, NULL, &rval))
 	{
@@ -861,7 +863,6 @@ method_setTimer_handler(ngx_event_t *timer)
 		ngx_http_finalize_request(r, NGX_ERROR);
 		return;
 	}
-	
 	DEBUG_GC(js_cx);
 	
 	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : NGX_OK;
@@ -1040,13 +1041,13 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	args[2] = INT_TO_JSVAL(rc);
 	
+	DEBUG_GC(js_cx);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
 	if (!JS_CallFunctionValue(js_cx, js_global, callback, 3, args, &rval))
 	{
 		// it may be OOM, so be brute
 		return NGX_ERROR;
 	}
-	
 	DEBUG_GC(js_cx);
 	
 	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : rc;
