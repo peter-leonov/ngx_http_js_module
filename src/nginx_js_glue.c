@@ -649,7 +649,9 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	}
 	ngx_http_js_module_log = last_log;
 	
-	DEBUG_GC(cx);
+	// root the request as soon as possible,
+	// in single threaded app no GC may take place in the middle,
+	// in multythreaded please use JS_EnterLocalRootScope() instead)
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
 	
@@ -673,6 +675,8 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 			ngx_http_js__nginx_request__cleanup(ctx, r, cx);
 		}
 	}
+	
+	DEBUG_GC(cx);
 	
 	return NGX_OK;
 }
