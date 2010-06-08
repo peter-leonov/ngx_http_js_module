@@ -26,6 +26,9 @@ cleanup_handler(void *data);
 static void
 cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
 
+static ngx_inline void
+call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx);
+
 static void
 method_setTimer_handler(ngx_event_t *ev);
 
@@ -124,31 +127,6 @@ cleanup_handler(void *data)
 	cleanup_request(ctx, r, js_cx);
 }
 
-static ngx_inline void
-call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
-{
-	jsval     fun, rval;
-	
-	if (!ctx->js_cleanup_handler_set || ctx->js_request == NULL)
-	{
-		return;
-	}
-	
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "calling the js handler for request cleanup");
-	
-	if (!JS_GetReservedSlot(cx, ctx->js_request, NGX_JS_REQUEST_SLOT__CLEANUP, &fun))
-	{
-		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
-		return;
-	}
-	
-	if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
-	{
-		JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
-		DEBUG_GC(cx);
-	}
-}
-
 static void
 cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 {
@@ -185,6 +163,32 @@ cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 		JS_SetPrivate(cx, ctx->js_request, NULL);
 		// and set the native request as unwrapped
 		ctx->js_request = NULL;
+	}
+}
+
+
+static ngx_inline void
+call_js_cleanup_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
+{
+	jsval     fun, rval;
+	
+	if (!ctx->js_cleanup_handler_set || ctx->js_request == NULL)
+	{
+		return;
+	}
+	
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "calling the js handler for request cleanup");
+	
+	if (!JS_GetReservedSlot(cx, ctx->js_request, NGX_JS_REQUEST_SLOT__CLEANUP, &fun))
+	{
+		JS_ReportError(cx, "can't get slot NGX_JS_REQUEST_SLOT__CLEANUP(%d)", NGX_JS_REQUEST_SLOT__CLEANUP);
+		return;
+	}
+	
+	if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
+	{
+		JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
+		DEBUG_GC(cx);
 	}
 }
 
