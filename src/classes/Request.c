@@ -85,6 +85,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
+	// adds hook to r->main
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
 	{
@@ -283,7 +284,7 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(function), 1, &req, rval))
 	{
 		ngx_http_js_module_log = last_log;
-		// it mat be OOM, so be brute
+		// it may be OOM, so be brute
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
