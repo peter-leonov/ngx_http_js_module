@@ -649,6 +649,8 @@ ngx_http_js__glue__call_function(JSContext *cx, ngx_http_request_t *r, JSObject 
 	}
 	ngx_http_js_module_log = last_log;
 	
+	DEBUG_GC(cx);
+	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js handler done: main->count = %i", r->main->count);
 	
 	// check if the request hasn't been rooted already

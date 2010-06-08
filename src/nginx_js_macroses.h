@@ -62,6 +62,9 @@ if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) 
 	return JS_FALSE; \
 }
 
+#define DEBUG_GC(cx) \
+ngx_log_debug0(NGX_LOG_DEBUG_HTTP, js_log(), 0, "DEBUG_GC() taking place"); \
+JS_GC(cx);
 
 #else /* NO NGX_DEBUG */
 
@@ -86,6 +89,7 @@ if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) 
 	return JS_FALSE; \
 }
 
+#define DEBUG_GC(cx)
 
 #endif
 

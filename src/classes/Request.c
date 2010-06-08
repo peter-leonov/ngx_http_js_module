@@ -186,6 +186,7 @@ call_cleanup_js_handler(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext
 	if (JSVAL_IS_OBJECT(fun) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(fun)))
 	{
 		JS_CallFunctionValue(cx, ctx->js_request, fun, 0, NULL, &rval);
+		DEBUG_GC(cx);
 	}
 }
 
@@ -660,6 +661,8 @@ method_getBody_handler(ngx_http_request_t *r)
 		return;
 	}
 	
+	DEBUG_GC(js_cx);
+	
 	// implies count--
 	ngx_http_finalize_request(r, NGX_DONE);
 }
@@ -937,6 +940,8 @@ method_setTimer_handler(ngx_event_t *timer)
 		return;
 	}
 	
+	DEBUG_GC(js_cx);
+	
 	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : NGX_OK;
 	
 	// the ngx_event_expire_timers() implies ngx_rbtree_delete() and timer_set = 0;
@@ -1131,6 +1136,8 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 		// it may be OOM, so be brute
 		return NGX_ERROR;
 	}
+	
+	DEBUG_GC(js_cx);
 	
 	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : rc;
 	// ngx_http_run_posted_requests(r->main->connection);
