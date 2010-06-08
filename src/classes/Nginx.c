@@ -40,7 +40,7 @@ method_logError(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	level = JSVAL_TO_INT(argv[0]);
 	jsstr = JSVAL_TO_STRING(argv[1]);
 	
-	ngx_log_error(level, ngx_cycle->log, 0, "%s", JS_GetStringBytes(jsstr));
+	ngx_log_error(level, js_log(), 0, "%s", JS_GetStringBytes(jsstr));
 	
 	return JS_TRUE;
 }
