@@ -26,6 +26,8 @@ if [ -f $PIDFILE ]; then
 	fi
 fi
 
+# enable core dumps
+ulimit -c unlimited
 
 # gdb --args
 $NGINX -p $MODULE_ROOT -c nginx.conf -g "$NGINX_OPTS" &
