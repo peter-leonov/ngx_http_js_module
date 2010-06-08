@@ -1041,7 +1041,10 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 	
 	args[2] = INT_TO_JSVAL(rc);
 	
-	DEBUG_GC(js_cx);
+	// Never do the GC or somethig lead to GC here,
+	// otherwise the vals in args will be GCed
+	// before passed to the callback and become protected form GC.
+	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, sr->connection->log, 0, "calling subrequest js callback");
 	if (!JS_CallFunctionValue(js_cx, js_global, callback, 3, args, &rval))
 	{
