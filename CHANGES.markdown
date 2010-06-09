@@ -1,3 +1,18 @@
+0.2.15 (2010-06-09)
+======
+
+* `Request#log()`;
+* `Nginx.crit()` to log messages at `crit` level;
+* optimized call to `Request#oncleanup`;
+* `Request#rootMe()` is deprecated (dew to all the requests are now rooted when wraped);
+* added some forced GC points in debug build to locate GC-related bugs;
+* fixed bugs with redirects and without-a-timeout callbacks;
+* C-to-JS request wrapping has been rewritten to simplify things;
+* greatly optimized `File#read()`;
+* `File#seek()`;
+* builds and runs tests on x86 FreeBSD and PowerPC Debian.
+
+
 0.2.14 (2010-06-04)
 ======
 
