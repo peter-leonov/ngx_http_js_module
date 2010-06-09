@@ -20,6 +20,14 @@ JSObject *ngx_http_js__nginx_request__prototype;
 JSClass ngx_http_js__nginx_request__class;
 static JSClass *private_class = &ngx_http_js__nginx_request__class;
 
+typedef struct
+{
+	ngx_http_request_t        *r;
+	ngx_http_js_ctx_t          *ctx;
+}
+request_cleanup_ctx_t;
+
+
 static void
 cleanup_handler(void *data);
 
@@ -44,6 +52,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 {
 	ngx_http_js_ctx_t         *ctx;
 	ngx_http_cleanup_t        *cln;
+	request_cleanup_ctx_t      *cln_ctx;
 	JSObject                  *request;
 	
 	TRACE_REQUEST("request_wrap");
@@ -90,6 +99,24 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		return NULL;
 	}
 	
+	// emulate a closure with request_cleanup_ctx_t
+	cln_ctx = ngx_pcalloc(r->pool, sizeof(request_cleanup_ctx_t));
+	if (cln_ctx == NULL)
+	{
+		// mark the wrapper as inactive
+		JS_SetPrivate(cx, request, NULL);
+		// mark the request as not wrapped
+		ctx->js_request = NULL;
+		// un-root the wrapper
+		JS_RemoveRoot(cx, &ctx->js_request);
+		JS_ReportOutOfMemory(cx);
+		return NULL;
+	}
+	cln_ctx->r = r;
+	// store the original module context in the cleanup context
+	// to properly cleanup redirected request with NULL-ed out module context
+	cln_ctx->ctx = ctx;
+	
 	// adds hook to r->main
 	cln = ngx_http_cleanup_add(r, 0);
 	if (cln == NULL)
@@ -103,7 +130,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
-	cln->data = r;
+	cln->data = cln_ctx;
 	cln->handler = cleanup_handler;
 	
 	JS_SetPrivate(cx, request, r);
@@ -115,18 +142,30 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 static void
 cleanup_handler(void *data)
 {
+	request_cleanup_ctx_t     *cln_ctx;
 	ngx_http_request_t        *r;
 	ngx_http_js_ctx_t         *ctx;
 	
-	r = data;
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js request cleanup_handler(r=%p)", r);
+	cln_ctx = data;
+	r = cln_ctx->r;
+	ctx = cln_ctx->ctx;
 	
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	if (ctx == NULL)
+	TRACE_REQUEST("cleanup_handler");
+	
+#if (NGX_DEBUG)
 	{
-		ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "empty module context");
-		return;
+		ngx_http_js_ctx_t         *ctx_r;
+		ctx_r = ngx_http_get_module_ctx(r, ngx_http_js_module);
+		if (ctx_r == NULL)
+		{
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "empty module context");
+		}
+		else if (ctx_r != ctx)
+		{
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "different module context");
+		}
 	}
+#endif
 	
 	cleanup_request(ctx, r, js_cx);
 }
