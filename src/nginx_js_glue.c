@@ -400,7 +400,7 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 }
 
 static ngx_int_t
-ngx_http_js__glue__variable(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
+js_variable_get_handler(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
 {
 	ngx_http_js_variable_t      *jv;
 	ngx_str_t                    value;
@@ -517,7 +517,7 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		}
 	}
 	
-	v->get_handler = ngx_http_js__glue__variable;
+	v->get_handler = js_variable_get_handler;
 	v->data = (uintptr_t) jv;
 	
 	return NGX_CONF_OK;
