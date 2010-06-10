@@ -6,23 +6,28 @@ NginxTests.requestBodyRC = function (r)
 	
 	Tests.test('tests for body callback result codes', function (t)
 	{
-		t.test('rc = 200', function (t)
+		function test (code)
 		{
-			function callback (sr, body, rc)
+			t.test('rc = ' + code, function (t)
 			{
-				if (rc != Nginx.OK)
-					return
+				function callback (sr, body, rc)
+				{
+					if (rc != Nginx.OK)
+						return
+					
+					t.eq(sr.headersOut.status, code, 'response status')
+					
+					t.done()
+				}
 				
-				t.eq(sr.headersOut.status, 200, 'response status')
+				r.subrequest('/loopback/run/request-body-r-c-handler?' + code, callback)
 				
-				t.done()
-			}
-			
-			r.subrequest('/loopback/run/request-body-r-c-handler?200', callback)
-			
-			t.wait(3000)
-		})
+				t.wait(3000)
+			})
+		}
 		
+		test(403)
+		test(404)
 		
 		
 	})
@@ -39,14 +44,18 @@ NginxTests.requestBodyRC = function (r)
 
 NginxTests.requestBodyRCHandler = function (r)
 {
-	function body ()
-	{
-		r.sendString(r.body)
-		
-		return Nginx.DONE
-	}
+	// function body ()
+	// {
+	// 	r.sendString('123')
+	// 	
+	// 	return Nginx.OK
+	// }
+	// 
+	// r.getBody(body)
 	
-	r.getBody(body)
+	// r.sendString('123')
+	
+	return +r.args
 }
 
 })();
