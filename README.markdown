@@ -49,6 +49,7 @@ This module was successfully tested on:
 
 * Ubuntu 8.04.3 32-bit (2.6.18-virtuozzo; 2.6.24-23-openvz in VirtualBox)
 * FreeBSD 8.0 32-bit (Parallels Desktop 5.0 Mac)
+* OpenBSD 4.7 64-bit (VirtualBox 3.2.4)
 * Debian 5.0 32-bit PowerPC (Mac mini G4)
 * Mac OS 10.6.3 32-bit and 64-bit (Core Duo and Core 2 Duo iMacs)
 
