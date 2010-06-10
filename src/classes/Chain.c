@@ -9,6 +9,7 @@
 #include <ngx_http_jsapi.h>
 
 #include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
 #include <strings_util.h>
 #include <classes/Chain.h>
 

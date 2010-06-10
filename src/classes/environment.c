@@ -4,7 +4,8 @@
 #include <nginx.h>
 
 #include <ngx_http_jsapi.h>
-
+#include <ngx_http_js_module.h>
+#include <nginx_js_glue.h>
 #include <nginx_js_macroses.h>
 
 // token from SpiderMonkey 1.7.0 source (js.c:2740)

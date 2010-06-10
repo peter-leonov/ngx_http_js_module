@@ -45,8 +45,8 @@ if (!(expr)) \
 
 // #define TRACE() { fprintf(stderr, "%s() at %s:%d\n", __FUNCTION__, __FILE__, __LINE__); }
 // #define TRACE() { fprintf(stderr, "%s()\n", __FUNCTION__); }
-#define TRACE() ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "%s" COLOR_CLEAR "()", __FUNCTION__);
-#define TRACE_S(s) ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, COLOR_CYAN "%s" COLOR_CLEAR "(%s)", __FUNCTION__, s);
+#define TRACE() ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, COLOR_CYAN "%s" COLOR_CLEAR "()", __FUNCTION__);
+#define TRACE_S(s) ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, COLOR_CYAN "%s" COLOR_CLEAR "(%s)", __FUNCTION__, s);
 #define TRACE_STATIC_GETTER() ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, COLOR_CYAN "get " JS_CLASS_NAME ".%s" COLOR_CLEAR, __FUNCTION__ + 7);
 #define TRACE_REQUEST(func) ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_CYAN "%s" COLOR_CLEAR "(r=%p)", func, r);
 #define TRACE_REQUEST_METHOD() ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, COLOR_CYAN "Request#%s" COLOR_CLEAR "(r=%p)", __FUNCTION__ + 7, r);
