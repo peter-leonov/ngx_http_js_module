@@ -618,14 +618,7 @@ method_getBody_handler(ngx_http_request_t *r)
 	}
 	DEBUG_GC(js_cx);
 	
-	if (JSVAL_IS_INT(rval))
-	{
-		rc = (ngx_int_t) JSVAL_TO_INT(rval);
-	}
-	else
-	{
-		rc = NGX_OK;
-	}
+	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : NGX_OK;
 	
 	// implies count--
 	ngx_http_finalize_request(r, rc);
