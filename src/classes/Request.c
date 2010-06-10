@@ -577,6 +577,7 @@ void
 method_getBody_handler(ngx_http_request_t *r)
 {
 	ngx_http_js_ctx_t                *ctx;
+	ngx_int_t                         rc;
 	JSObject                         *request;
 	jsval                             rval, callback;
 	
@@ -617,8 +618,17 @@ method_getBody_handler(ngx_http_request_t *r)
 	}
 	DEBUG_GC(js_cx);
 	
+	if (JSVAL_IS_INT(rval))
+	{
+		rc = (ngx_int_t) JSVAL_TO_INT(rval);
+	}
+	else
+	{
+		rc = NGX_OK;
+	}
+	
 	// implies count--
-	ngx_http_finalize_request(r, NGX_DONE);
+	ngx_http_finalize_request(r, rc);
 }
 
 
