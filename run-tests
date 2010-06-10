@@ -41,7 +41,6 @@ curl $OPTS "http://127.0.0.1:19090/rewrite/run/request-object?nginx=yes&uri=/run
 curl $OPTS --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-discard"
 curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body?body=some+text+body,+ля-ля-ля"
 curl $OPTS --data "some text body, ля-ля-ля" "http://127.0.0.1:19090/run/request-body-plain?body=some+text+body,+ля-ля-ля"
-curl $OPTS "http://127.0.0.1:19090/run/request-body-r-c"
 curl $OPTS --http1.0 --data "@${MODULE_ROOT}request-body-file.txt" "http://127.0.0.1:19090/run/request-body-file?body=some+text+body,+ля-ля-ля"
 curl $OPTS http://127.0.0.1:19090/run/file
 mkdir -p   $MODULE_ROOT/nginx-dir-tests/a/b/c
@@ -74,6 +73,7 @@ curl $OPTS "http://127.0.0.1:19090/run/subrequest-headers-in"
 curl $OPTS "http://127.0.0.1:19090/run/request-sendfile"
 curl $OPTS "http://127.0.0.1:19090/run/request-redirect"
 curl $OPTS "http://127.0.0.1:19090/run/request-send-string"
+curl $OPTS "http://127.0.0.1:19090/run/request-response-codes"
 
 # curl $OPTS "http://127.0.0.1:19090/demo/request-headers-out"
 # curl $OPTS "http://127.0.0.1:19090/demo/delayed-output"

@@ -1,6 +1,6 @@
 ;(function(){
 
-NginxTests.requestBodyRC = function (r)
+NginxTests.requestResponseCodes = function (r)
 {
 	r.sendHttpHeader('text/plain; charset=utf-8')
 	
@@ -20,7 +20,7 @@ NginxTests.requestBodyRC = function (r)
 					t.done()
 				}
 				
-				r.subrequest('/loopback/run/request-body-r-c-handler?' + code, callback)
+				r.subrequest('/loopback/run/request-response-codes-handler?' + code, callback)
 				
 				t.wait(3000)
 			})
@@ -42,19 +42,8 @@ NginxTests.requestBodyRC = function (r)
 	return Nginx.OK
 }
 
-NginxTests.requestBodyRCHandler = function (r)
+NginxTests.requestResponseCodesHandler = function (r)
 {
-	// function body ()
-	// {
-	// 	r.sendString('123')
-	// 	
-	// 	return Nginx.OK
-	// }
-	// 
-	// r.getBody(body)
-	
-	// r.sendString('123')
-	
 	return +r.args
 }
 
