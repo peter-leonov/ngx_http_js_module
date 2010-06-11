@@ -20,7 +20,7 @@ ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter = NULL;
 
 
 static char *
-ngx_http_js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+command__js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	ngx_http_js_main_conf_t    *jsmcf;
 	u_char                    **p;
@@ -42,7 +42,7 @@ ngx_http_js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 static char *
-ngx_http_js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+command__js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	JS_SetCStringsAreUTF8();
 	
@@ -57,7 +57,7 @@ ngx_http_js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static char *
-ngx_http_js_require(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+command__js_require(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	ngx_http_js_main_conf_t    *jsmcf;
 	u_char                    **p;
@@ -112,7 +112,7 @@ command__js_access(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static char *
-ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+command__js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	ngx_http_js_loc_conf_t     *jslcf;
 	ngx_str_t                  *value;
@@ -144,7 +144,7 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static char *
-ngx_http_js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+command__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	return ngx_http_js__glue__js_set(cf, cmd, conf);
 }
@@ -371,7 +371,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 	{
 		ngx_string("js_utf8"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_NOARGS,
-		ngx_http_js_utf8,
+		command__js_utf8,
 		NGX_HTTP_MAIN_CONF_OFFSET,
 		0,
 		NULL
@@ -380,7 +380,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 	{
 		ngx_string("js_load"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,
-		ngx_http_js_load,
+		command__js_load,
 		NGX_HTTP_MAIN_CONF_OFFSET,
 		0,
 		NULL
@@ -389,7 +389,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 	{
 		ngx_string("js_require"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE1,
-		ngx_http_js_require,
+		command__js_require,
 		NGX_HTTP_MAIN_CONF_OFFSET,
 		0,
 		NULL
@@ -398,7 +398,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 	{
 		ngx_string("js"),
 		NGX_HTTP_LOC_CONF|NGX_HTTP_LMT_CONF|NGX_CONF_TAKE1,
-		ngx_http_js,
+		command__js,
 		NGX_HTTP_LOC_CONF_OFFSET,
 		0,
 		NULL
@@ -416,7 +416,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 	{
 		ngx_string("js_set"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE2,
-		ngx_http_js_set,
+		command__js_set,
 		NGX_HTTP_LOC_CONF_OFFSET,
 		0,
 		NULL
