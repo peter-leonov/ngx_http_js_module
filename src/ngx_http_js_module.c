@@ -100,7 +100,7 @@ command__js_access(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	
 	// JS side of question
-	if (ngx_http_js__glue__set_callback(cf, cmd, jslcf) != NGX_CONF_OK)
+	if (ngx_http_js__glue__set_handler(cf, &jslcf->access_handler_function, "js access handler") != NGX_CONF_OK)
 		return NGX_CONF_ERROR;
 	
 	
@@ -132,7 +132,7 @@ command__js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	
 	// JS side of question
-	if (ngx_http_js__glue__set_callback(cf, cmd, jslcf) != NGX_CONF_OK)
+	if (ngx_http_js__glue__set_handler(cf, &jslcf->content_handler_function, "js content handler") != NGX_CONF_OK)
 		return NGX_CONF_ERROR;
 	
 	

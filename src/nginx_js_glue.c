@@ -368,11 +368,10 @@ ngx_http_js__glue__exit_master(ngx_cycle_t *cycle)
 
 
 char *
-ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
+ngx_http_js__glue__set_handler(ngx_conf_t *cf, JSObject **handler, const char *root_name)
 {
 	ngx_str_t                  *value;
 	jsval                       function;
-	static char                *JS_CALLBACK_ROOT_NAME = "js callback instance";
 	
 	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
 	{
@@ -389,10 +388,10 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 		return NGX_CONF_ERROR;
 	}
 	
-	jslcf->content_handler_function = JSVAL_TO_OBJECT(function);
-	if (!JS_AddNamedRoot(js_cx, &jslcf->content_handler_function, JS_CALLBACK_ROOT_NAME))
+	*handler = JSVAL_TO_OBJECT(function);
+	if (!JS_AddNamedRoot(js_cx, handler, root_name))
 	{
-		JS_ReportError(js_cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
+		JS_ReportError(js_cx, "Can`t add new root %s", root_name);
 		return NGX_CONF_ERROR;
 	}
 	
@@ -544,7 +543,7 @@ ngx_http_js__glue__content_handler(ngx_http_request_t *r)
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
 	
 	
-	// the callback function was set in config by ngx_http_js__glue__set_callback()
+	// the callback function was set in config by ngx_http_js__glue__set_handler()
 	if (!ngx_http_js__request__call_function(js_cx, r, jslcf->content_handler_function, &rval))
 	{
 		return NGX_ERROR;
