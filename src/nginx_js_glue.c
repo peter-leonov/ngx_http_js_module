@@ -549,14 +549,7 @@ ngx_http_js__glue__content_handler(ngx_http_request_t *r)
 		return NGX_ERROR;
 	}
 	
-	if (JSVAL_IS_INT(rval))
-	{
-		rc = (ngx_int_t) JSVAL_TO_INT(rval);
-	}
-	else
-	{
-		rc = NGX_OK;
-	}
+	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : NGX_OK;
 	
 	// JS_MaybeGC(js_cx);
 	
