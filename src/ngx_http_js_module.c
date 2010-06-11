@@ -80,6 +80,38 @@ ngx_http_js_require(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static char *
+command__js_access(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+	ngx_http_js_loc_conf_t     *jslcf;
+	ngx_str_t                  *value;
+	ngx_http_core_loc_conf_t   *clcf;
+	
+	TRACE();
+	
+	jslcf = conf;
+	value = cf->args->elts;
+	
+	if (jslcf->access_handler_name.data)
+	{
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js access handler \"%V\"", &value[1]);
+		return NGX_CONF_ERROR;
+	}
+	jslcf->access_handler_name = value[1];
+	
+	
+	// JS side of question
+	if (ngx_http_js__glue__set_callback(cf, cmd, jslcf) != NGX_CONF_OK)
+		return NGX_CONF_ERROR;
+	
+	
+	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
+	clcf->handler = ngx_http_js_content_handler;
+	
+	return NGX_CONF_OK;
+}
+
+
+static char *
 ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
 	ngx_http_js_loc_conf_t     *jslcf;
@@ -373,6 +405,9 @@ static ngx_command_t  ngx_http_js_commands[] =
 	},
 	
 	{
+		ngx_string("js_access"),
+		NGX_HTTP_LOC_CONF|NGX_HTTP_LMT_CONF|NGX_CONF_TAKE1,
+		command__js_access,
 		NGX_HTTP_LOC_CONF_OFFSET,
 		0,
 		NULL
