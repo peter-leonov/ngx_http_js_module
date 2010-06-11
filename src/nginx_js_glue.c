@@ -557,6 +557,12 @@ ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_lo
 }
 
 ngx_int_t
+ngx_http_js__glue__access_handler(ngx_http_request_t *r)
+{
+	return NGX_DECLINED;
+}
+
+ngx_int_t
 ngx_http_js__glue__content_handler(ngx_http_request_t *r)
 {
 	ngx_int_t                    rc;

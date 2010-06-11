@@ -324,9 +324,35 @@ ngx_http_js_body_buffer_filter(ngx_http_request_t *r, ngx_chain_t *in)
 }
 
 static ngx_int_t
+init_access_phase(ngx_conf_t *cf)
+{
+	ngx_http_handler_pt        *h;
+	ngx_http_core_main_conf_t  *cmcf;
+	
+	cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
+	
+	h = ngx_array_push(&cmcf->phases[NGX_HTTP_ACCESS_PHASE].handlers);
+	if (h == NULL)
+	{
+		return NGX_ERROR;
+	}
+	
+	*h = ngx_http_js__glue__access_handler;
+	
+	return NGX_OK;
+}
+
+static ngx_int_t
 ngx_http_js_filter_init(ngx_conf_t *cf)
 {
+	ngx_int_t     rc;
 	TRACE();
+	
+	rc = init_access_phase(cf);
+	if (rc != NGX_OK)
+	{
+		return rc;
+	}
 	
 	ngx_http_js_next_header_filter = ngx_http_top_header_filter;
 	// ngx_http_top_header_filter = ngx_http_js_header_filter;
