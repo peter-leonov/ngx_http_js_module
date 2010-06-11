@@ -11,7 +11,7 @@
 #include <nginx_js_macroses.h>
 
 static ngx_int_t
-ngx_http_js_handler(ngx_http_request_t *r);
+ngx_http_js_content_handler(ngx_http_request_t *r);
 
 static ngx_int_t access_phase_needed;
 
@@ -91,12 +91,12 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	jslcf = conf;
 	value = cf->args->elts;
 	
-	if (jslcf->handler_name.data)
+	if (jslcf->content_handler_name.data)
 	{
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js handler \"%V\"", &value[1]);
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "duplicate js content handler \"%V\"", &value[1]);
 		return NGX_CONF_ERROR;
 	}
-	jslcf->handler_name = value[1];
+	jslcf->content_handler_name = value[1];
 	
 	
 	// JS side of question
@@ -105,7 +105,7 @@ ngx_http_js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	
 	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
-	clcf->handler = ngx_http_js_handler;
+	clcf->handler = ngx_http_js_content_handler;
 	
 	return NGX_CONF_OK;
 }
@@ -146,7 +146,7 @@ ngx_http_js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static ngx_int_t
-ngx_http_js_handler(ngx_http_request_t *r)
+ngx_http_js_content_handler(ngx_http_request_t *r)
 {
 	r->main->count++;
 	
@@ -203,7 +203,7 @@ ngx_http_js_create_loc_conf(ngx_conf_t *cf)
 		return NGX_CONF_ERROR;
 	
 	// set by ngx_pcalloc():
-	//  jslcf->handler_function = NULL;
+	//  jslcf->content_handler_function = NULL;
 
 	return jslcf;
 }
