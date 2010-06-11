@@ -13,6 +13,7 @@
 static ngx_int_t
 ngx_http_js_handler(ngx_http_request_t *r);
 
+static ngx_int_t access_phase_needed;
 
 ngx_http_output_header_filter_pt  ngx_http_js_next_header_filter = NULL;
 ngx_http_output_body_filter_pt    ngx_http_js_next_body_filter = NULL;
@@ -328,6 +329,11 @@ init_access_phase(ngx_conf_t *cf)
 {
 	ngx_http_handler_pt        *h;
 	ngx_http_core_main_conf_t  *cmcf;
+	
+	if (!access_phase_needed)
+	{
+		return NGX_OK;
+	}
 	
 	cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
 	
