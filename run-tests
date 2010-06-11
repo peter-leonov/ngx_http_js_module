@@ -74,6 +74,7 @@ curl $OPTS "http://127.0.0.1:19090/run/request-sendfile"
 curl $OPTS "http://127.0.0.1:19090/run/request-redirect"
 curl $OPTS "http://127.0.0.1:19090/run/request-send-string"
 curl $OPTS "http://127.0.0.1:19090/run/request-response-codes"
+curl $OPTS "http://127.0.0.1:19090/run/access"
 
 # curl $OPTS "http://127.0.0.1:19090/demo/request-headers-out"
 # curl $OPTS "http://127.0.0.1:19090/demo/delayed-output"

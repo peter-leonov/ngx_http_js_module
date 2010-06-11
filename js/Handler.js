@@ -84,6 +84,7 @@ require('tests/request-sendfile.js')
 require('tests/request-redirect.js')
 require('tests/request-send-string.js')
 require('tests/request-response-codes.js')
+require('tests/access.js')
 
 require('demos/request-headers-out.js')
 require('demos/delayed-output.js')
