@@ -525,7 +525,29 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 ngx_int_t
 ngx_http_js__glue__access_handler(ngx_http_request_t *r)
 {
-	return NGX_DECLINED;
+	ngx_int_t                    rc;
+	jsval                        rval;
+	ngx_http_js_loc_conf_t      *jslcf;	
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js access handler");
+	
+	// location configuration for current request
+	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
+	if (jslcf == NULL || jslcf->access_handler_function == NULL)
+	{
+		return NGX_DECLINED;
+	}
+	
+	// the callback function was set in config by ngx_http_js__glue__set_handler()
+	if (!ngx_http_js__request__call_function(js_cx, r, jslcf->access_handler_function, &rval))
+	{
+		return NGX_ERROR;
+	}
+	
+	rc = JSVAL_IS_INT(rval) ? JSVAL_TO_INT(rval) : NGX_OK;
+	
+	// JS_MaybeGC(js_cx);
+	
+	return rc;
 }
 
 ngx_int_t
