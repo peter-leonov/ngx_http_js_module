@@ -523,39 +523,6 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	return NGX_CONF_OK;
 }
 
-char *
-ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf)
-{
-	ngx_str_t                  *value;
-	jsval                       function;
-	static char                *JS_CALLBACK_ROOT_NAME = "js filter instance";
-	
-	if (ngx_http_js__glue__init_interpreter(cf) != NGX_CONF_OK)
-	{
-		return NGX_CONF_ERROR;
-	}
-	
-	value = cf->args->elts;
-	if (!JS_EvaluateScript(js_cx, js_global, (char*)value[1].data, value[1].len, (char*)cf->conf_file->file.name.data, cf->conf_file->line, &function))
-		return NGX_CONF_ERROR;
-	
-	if (!JSVAL_IS_OBJECT(function) || !JS_ObjectIsFunction(js_cx, JSVAL_TO_OBJECT(function)))
-	{
-		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, "result of (%s) is not a function", (char*)value[1].data);
-		return NGX_CONF_ERROR;
-	}
-	
-	jslcf->filter_function = JSVAL_TO_OBJECT(function);
-	if (!JS_AddNamedRoot(js_cx, &jslcf->filter_function, JS_CALLBACK_ROOT_NAME))
-	{
-		JS_ReportError(js_cx, "Can`t add new root %s", JS_CALLBACK_ROOT_NAME);
-		return NGX_CONF_ERROR;
-	}
-	
-	
-	return NGX_CONF_OK;
-}
-
 ngx_int_t
 ngx_http_js__glue__access_handler(ngx_http_request_t *r)
 {

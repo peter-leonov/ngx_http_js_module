@@ -24,9 +24,6 @@ typedef struct {
 typedef struct {
 	JSObject                  *content_handler_function;
 	ngx_str_t                  content_handler_name;
-	JSObject                  *filter_function;
-	ngx_str_t                  filter_name;
-	ngx_array_t               *filter_types;
 } ngx_http_js_loc_conf_t;
 
 

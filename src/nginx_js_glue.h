@@ -15,17 +15,11 @@ ngx_http_js__glue__set_callback(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_
 extern char *
 ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
-extern char *
-ngx_http_js__glue__set_filter(ngx_conf_t *cf, ngx_command_t *cmd, ngx_http_js_loc_conf_t *jslcf);
-
 ngx_int_t
 ngx_http_js__glue__access_handler(ngx_http_request_t *r);
 
 ngx_int_t
 ngx_http_js__glue__content_handler(ngx_http_request_t *r);
-
-extern ngx_int_t
-ngx_http_js__glue__call_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
 extern char *
 ngx_http_js__glue__init_interpreter(ngx_conf_t *cf);
