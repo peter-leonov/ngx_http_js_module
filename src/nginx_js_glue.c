@@ -536,9 +536,6 @@ ngx_http_js__glue__content_handler(ngx_http_request_t *r)
 	ngx_http_js_loc_conf_t      *jslcf;	
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "js content handler");
 	
-	ngx_assert(js_cx);
-	ngx_assert(js_global);
-	
 	// location configuration for current request
 	jslcf = ngx_http_get_module_loc_conf(r, ngx_http_js_module);
 	
