@@ -349,7 +349,7 @@ init_access_phase(ngx_conf_t *cf)
 }
 
 static ngx_int_t
-ngx_http_js_filter_init(ngx_conf_t *cf)
+postconfiguration(ngx_conf_t *cf)
 {
 	ngx_int_t     rc;
 	TRACE();
@@ -496,7 +496,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 static ngx_http_module_t  ngx_http_js_module_ctx =
 {
 	NULL,                                  /* preconfiguration */
-	ngx_http_js_filter_init,               /* postconfiguration */
+	postconfiguration,                     /* postconfiguration */
 	
 	ngx_http_js_create_main_conf,          /* create main configuration */
 	ngx_http_js_init_main_conf,            /* init main configuration */
