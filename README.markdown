@@ -284,6 +284,33 @@ curl http://localhost/demo/msie6
 	</html>
 
 
+Access example
+--------------
+
+	location = /demo/secret-data {
+		js_access  '
+			
+			function (r) {
+				if (r.headersIn.cookies.goodUser)
+					return Nginx.OK
+				
+				return Nginx.HTTP_FORBIDDEN
+			}
+			
+		';
+	}
+
+curl http://localhost/demo/secret-data
+
+	<html>
+	<head><title>403 Forbidden</title></head>
+	<body bgcolor="white">
+	<center><h1>403 Forbidden</h1></center>
+	<hr><center>nginx/0.7.62</center>
+	</body>
+	</html>
+
+
 
 Directives
 ==========
@@ -297,6 +324,17 @@ js
 **context**: location
 
 Defines a JS handler for current location. The request object is passed to a function as the first argument.
+
+
+js_access
+---
+
+**syntax**: js_access object.property | 'function (r) { ... }' | any other JS expression that returns a Function  
+**default**: none  
+**context**: location
+
+Defines a JS handler for the current location at an access phase. The request object is passed to a function as the first argument.
+Return `Nginx.OK` to pass the request further or return `Nginx.HTTP_FORBIDDEN` to deny an access to the location.
 
 
 js_load
