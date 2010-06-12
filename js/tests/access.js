@@ -18,7 +18,41 @@ NginxTests.access = function (r)
 				t.done()
 			}
 			
-			r.subrequest('/loopback/run/access-path', callback)
+			r.subrequest('/loopback/run/access-path/?secret', callback)
+			
+			t.wait(3000)
+		})
+		
+		t.test('declined', function (t)
+		{
+			function callback (sr, body, rc)
+			{
+				if (rc != Nginx.OK)
+					return
+				
+				t.eq(sr.headersOut.status, 404, 'response status')
+				
+				t.done()
+			}
+			
+			r.subrequest('/loopback/run/access-path/', callback)
+			
+			t.wait(3000)
+		})
+		
+		t.test('forbidden', function (t)
+		{
+			function callback (sr, body, rc)
+			{
+				if (rc != Nginx.OK)
+					return
+				
+				t.eq(sr.headersOut.status, 403, 'response status')
+				
+				t.done()
+			}
+			
+			r.subrequest('/loopback/run/access-path/?blablabla', callback)
 			
 			t.wait(3000)
 		})
@@ -36,7 +70,13 @@ NginxTests.access = function (r)
 
 NginxTests.accessCheck = function (r)
 {
-	return Nginx.DECLINED
+	var args = r.args
+	if (args == 'secret')
+		return Nginx.OK
+	else if (args)
+		return Nginx.HTTP_FORBIDDEN
+	
+	return Nginx.OK
 }
 
 })();
