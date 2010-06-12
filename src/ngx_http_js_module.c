@@ -102,6 +102,8 @@ command__js_access(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	if (ngx_http_js__glue__set_handler(cf, &jslcf->access_handler_function, "js access handler") != NGX_CONF_OK)
 		return NGX_CONF_ERROR;
 	
+	access_phase_needed = 1;
+	
 	return NGX_CONF_OK;
 }
 
