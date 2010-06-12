@@ -13,12 +13,12 @@ NginxTests.access = function (r)
 				if (rc != Nginx.OK)
 					return
 				
-				t.eq(sr.headersOut.status, 404, 'response status')
-				
+				t.eq(sr.headersOut.status, 200, 'response status')
+				t.eq(body, 'lalala', 'response body')
 				t.done()
 			}
 			
-			r.subrequest('/loopback/run/access-path/?secret', callback)
+			r.subrequest('/loopback/run/access-path?secret', callback)
 			
 			t.wait(3000)
 		})
@@ -30,12 +30,12 @@ NginxTests.access = function (r)
 				if (rc != Nginx.OK)
 					return
 				
-				t.eq(sr.headersOut.status, 404, 'response status')
+				t.eq(sr.headersOut.status, 200, 'response status')
 				
 				t.done()
 			}
 			
-			r.subrequest('/loopback/run/access-path/', callback)
+			r.subrequest('/loopback/run/access-path', callback)
 			
 			t.wait(3000)
 		})
@@ -52,7 +52,7 @@ NginxTests.access = function (r)
 				t.done()
 			}
 			
-			r.subrequest('/loopback/run/access-path/?blablabla', callback)
+			r.subrequest('/loopback/run/access-path?blablabla', callback)
 			
 			t.wait(3000)
 		})
@@ -66,6 +66,11 @@ NginxTests.access = function (r)
 	Tests.run(r)
 	
 	return Nginx.OK
+}
+
+NginxTests.accessPath = function (r)
+{
+	r.sendString('lalala')
 }
 
 NginxTests.accessCheck = function (r)
