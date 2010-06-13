@@ -41,6 +41,7 @@ command__js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	return NGX_CONF_OK;
 }
 
+#if (NGX_HTTP_JS_SET_STRINGS_ARE_UTF8)
 static char *
 command__js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
@@ -54,6 +55,7 @@ command__js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return NGX_CONF_ERROR;
 	}
 }
+#endif
 
 
 static char *
@@ -365,6 +367,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 		NULL
 	},
 	
+#if (NGX_HTTP_JS_SET_STRINGS_ARE_UTF8)
 	{
 		ngx_string("js_utf8"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_NOARGS,
@@ -373,6 +376,7 @@ static ngx_command_t  ngx_http_js_commands[] =
 		0,
 		NULL
 	},
+#endif
 	
 	{
 		ngx_string("js_load"),

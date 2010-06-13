@@ -10,6 +10,10 @@ ngx_found=no
 # look for headers in js/*
 
 if [ $ngx_found = no ]; then
+	NGX_HTTP_JS_HEADERS="0"
+fi
+
+if [ $ngx_found = no ]; then
 	ngx_feature_incs="#include <js/jsapi.h>"
 	ngx_feature_test=
 	ngx_feature="js/jsapi.h"
@@ -32,7 +36,7 @@ fi
 # look for headers in mozjs/*
 
 if [ $ngx_found = no ]; then
-	have=NGX_HTTP_JS_MOZJS_HEADERS . auto/have
+	NGX_HTTP_JS_HEADERS="1"
 fi
 
 if [ $ngx_found = no ]; then
@@ -48,11 +52,40 @@ fi
 if [ $ngx_found = no ]; then
 	ngx_feature_incs="#include <mozjs/jsapi.h>"
 	ngx_feature_test=
-	ngx_feature="mozjs/jsapi.h /usr/local/include"
+	ngx_feature="mozjs/jsapi.h in /usr/local/include"
 	ngx_feature_path="/usr/local/include"
 	ngx_feature_libs=
 	. auto/feature
 fi
+
+
+# look for headers in *
+
+if [ $ngx_found = no ]; then
+	NGX_HTTP_JS_HEADERS="2"
+fi
+
+if [ $ngx_found = no ]; then
+	ngx_feature_incs="#define XP_UNIX \
+					  #include <jsapi.h>"
+	ngx_feature_test=
+	ngx_feature="jsapi.h"
+	ngx_feature_path=
+	ngx_feature_libs=
+	. auto/feature
+fi
+
+# FreeBSD
+if [ $ngx_found = no ]; then
+	ngx_feature_incs="#define XP_UNIX \
+					  #include <jsapi.h>"
+	ngx_feature_test=
+	ngx_feature="jsapi.h in /usr/local/include"
+	ngx_feature_path="/usr/local/include"
+	ngx_feature_libs=
+	. auto/feature
+fi
+
 
 if [ $ngx_found = no ]; then
 	echo
@@ -61,6 +94,8 @@ if [ $ngx_found = no ]; then
 	
 	exit 1
 fi
+
+have=NGX_HTTP_JS_HEADERS value="$NGX_HTTP_JS_HEADERS" . auto/define
 
 CORE_INCS="$CORE_INCS $ngx_feature_path"
 
@@ -85,6 +120,16 @@ if [ $ngx_found = no ]; then
 	ngx_feature="libjs in /usr/local/lib"
 	ngx_feature_path=
 	ngx_feature_libs="-L/usr/local/lib -ljs"
+	. auto/feature
+fi
+
+# FreeBSD port
+if [ $ngx_found = no ]; then
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libjs (with libm) in /usr/local/lib"
+	ngx_feature_path=
+	ngx_feature_libs="-L/usr/local/lib -lm -ljs"
 	. auto/feature
 fi
 
