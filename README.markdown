@@ -86,6 +86,7 @@ Notes on SpiderMonkey support on different platforms (2010-05-27):
 In short all those are suitable to run ngx_http_js_module, but only the following were tested:
 
 * FreeBSD 7.3 with SM 1.7 port
+* Debian 5 with SM 1.9 package
 
 
 Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 sources][firefox sources] (or my [github mirror][spidermonkey mirror] of the `js/` sub-folder) ships with an independent SpiderMonkey source tree. This means we can build a SpiderMonkey library and install it with all the header files without even touching the Firefox source code. All we have to do is the following:

@@ -1,6 +1,10 @@
 #ifndef _NGX_HTTP_JSAPI_H_INCLUDED_
 #define _NGX_HTTP_JSAPI_H_INCLUDED_
 
+// XP_UNIX is needed for:
+//   OpenBSD manual SpiderMonkey build,
+//   FreeBSD 7 “spidermonkey” port
+//   Debian 5 “libmozjs-dev” package
 #ifndef XP_UNIX
 #define XP_UNIX
 #endif
