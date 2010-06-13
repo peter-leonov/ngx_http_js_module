@@ -83,7 +83,9 @@ Notes on SpiderMonkey support on different platforms (2010-05-27):
 [on freebsd]: http://www.FreeBSD.org/cgi/ports.cgi?query=spidermonkey&stype=all
 
 
-In short all those are suitable to run ngx_http_js_module, but only the following were tested:
+In short all those are suitable to run ngx_http_js_module, but those may lack a support for the JSON module or UTF-8 strings.
+
+The following platforms were tested and proved to have an ability to compile and pass some tests:
 
 * FreeBSD 7.3 with SM 1.7 port
 * Debian 5 with SM 1.9 package
