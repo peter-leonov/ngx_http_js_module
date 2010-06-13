@@ -61,22 +61,20 @@ Requirements
 ------------
 
 * nginx version 0.8.37 and greater is required;
-* SpiderMonkey 1.9.0 and greater is required;
+* SpiderMonkey 1.7.0 and greater is required;
 * curl near 7.19 for automated testing.
 
 
 ### installing SpiderMonkey
 
-This module requires the SpiderMonkey 1.9+ (or TraceMonkey, or JaegerMonkey, or anything else with the [JSAPI][] on 2010-03.26) to be properly installed in your system.
+This module requires the SpiderMonkey 1.7+ (or TraceMonkey, or JaegerMonkey, or anything else with the [JSAPI][] on 2010-03.26) to be properly installed in your system.
 
-Notes on SpiderMonkey support (2010-05-27):
+Notes on SpiderMonkey support on different platforms (2010-05-27):
 
 * Ubuntu has relatively bad support for SpiderMonkey at the moment: [1.5 and 1.8 versions][on ubuntu] only;
 * Debian [has much greater][on debian] SpiderMonkey in it and may be useful;
 * MacPorts is [no good][on mac];
 * FreeBSD got [the same][on freebsd] as MacPorts.
-
-In short the Debian Lenny and greater SpiderMonkey port is useful ATM.
 
 [JSAPI]: https://developer.mozilla.org/en/SpiderMonkey/JSAPI_Reference
 [on ubuntu]: http://packages.ubuntu.com/search?keywords=spidermonkey&searchon=names&suite=all&section=all
@@ -84,7 +82,13 @@ In short the Debian Lenny and greater SpiderMonkey port is useful ATM.
 [on mac]: http://www.macports.org/ports.php?by=name&substr=spidermonkey
 [on freebsd]: http://www.FreeBSD.org/cgi/ports.cgi?query=spidermonkey&stype=all
 
-Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 sources][firefox sources] (or my [github mirror][spidermonkey mirror] of the `js/` subfolder) ships with an independent SpiderMonkey source tree. This means we can build a SpiderMonkey library and install it with all the header files without even touching the Firefox source code. All we have to do is the following:
+
+In short all those are suitable to run ngx_http_js_module, but only the following were tested:
+
+* FreeBSD 7.3 with SM 1.7 port
+
+
+Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 sources][firefox sources] (or my [github mirror][spidermonkey mirror] of the `js/` sub-folder) ships with an independent SpiderMonkey source tree. This means we can build a SpiderMonkey library and install it with all the header files without even touching the Firefox source code. All we have to do is the following:
 
 [firefox sources]: https://developer.mozilla.org/en/Download_Mozilla_Source_Code
 [spidermonkey mirror]: http://github.com/kung-fu-tzu/spidermonkey
