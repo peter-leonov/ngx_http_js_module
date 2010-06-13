@@ -169,6 +169,17 @@ if [ "$HTTP_JS_COLOR" = "yes" ]; then
 fi
 
 
+ngx_feature_name="NGX_HTTP_JS_SET_STRINGS_ARE_UTF8"
+ngx_feature_run=no
+ngx_feature_incs=
+ngx_feature_test="JS_SetCStringsAreUTF8();"
+ngx_feature="JS_SetCStringsAreUTF8()"
+ngx_feature_path="$CORE_INCS"
+ngx_feature_libs="$CORE_LIBS"
+ngx_found=no
+. auto/feature
+
+
 
 CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
 
