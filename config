@@ -66,7 +66,7 @@ if [ $ngx_found = no ]; then
 fi
 
 if [ $ngx_found = no ]; then
-	ngx_feature_incs="#define XP_UNIX \
+	ngx_feature_incs="#define XP_UNIX
 					  #include <jsapi.h>"
 	ngx_feature_test=
 	ngx_feature="jsapi.h"
@@ -77,7 +77,7 @@ fi
 
 # FreeBSD
 if [ $ngx_found = no ]; then
-	ngx_feature_incs="#define XP_UNIX \
+	ngx_feature_incs="#define XP_UNIX
 					  #include <jsapi.h>"
 	ngx_feature_test=
 	ngx_feature="jsapi.h in /usr/local/include"
@@ -164,12 +164,13 @@ fi
 
 CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
 
-
-CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
-
 if [ "$HTTP_JS_COLOR" = "yes" ]; then
 	have=NGX_HTTP_JS_COLORED . auto/have
 fi
+
+
+
+CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
 
 
 HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
