@@ -1,6 +1,11 @@
 #ifndef _NGX_HTTP_JSAPI_H_INCLUDED_
 #define _NGX_HTTP_JSAPI_H_INCLUDED_
 
+// nedded for JS_SetGCZeal()
+#ifdef NGX_DEBUG
+#define DEBUG
+#endif
+
 // XP_UNIX is needed for:
 //   OpenBSD manual SpiderMonkey build,
 //   FreeBSD 7 “spidermonkey” port
