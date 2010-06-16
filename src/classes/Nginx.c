@@ -125,6 +125,9 @@ setup_constants(JSContext *cx, JSObject *obj)
 	// NGX_HTTP_*
 	SET_INT("HTTP_OK",                         NGX_HTTP_OK);
 	SET_INT("HTTP_CREATED",                    NGX_HTTP_CREATED);
+#ifdef NGX_HTTP_ACCEPTED
+	SET_INT("HTTP_ACCEPTED",                   NGX_HTTP_ACCEPTED);
+#endif
 	SET_INT("HTTP_NO_CONTENT",                 NGX_HTTP_NO_CONTENT);
 	SET_INT("HTTP_PARTIAL_CONTENT",            NGX_HTTP_PARTIAL_CONTENT);
 	SET_INT("HTTP_SPECIAL_RESPONSE",           NGX_HTTP_SPECIAL_RESPONSE);
