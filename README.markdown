@@ -593,6 +593,8 @@ The handler:
 		return Nginx.OK
 	}
 
+As of 0.2.16 we can return a HTTP status code just from the callback. If not `Nginx.OK` is used.
+
 
 ### discardBody()
 
