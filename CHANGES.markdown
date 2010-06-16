@@ -1,3 +1,18 @@
+0.2.16 (2010-06-16)
+======
+
+* use `JS_SetGCZeal()` to debug GC-related issues;
+* new `js_access` nginx command;
+* support for SpiderMonkey beginning from 1.7;
+* take result code of the `Request#getBody()` handler in account;
+* additionally tested on:
+	* OpenBSD 4.7 64-bit
+	* FreeBSD 7.3 32-bit
+	* Ubuntu 10.04 32-bit
+	* Debian 5.0 32-bit
+	* Debian 5.0 64-bit
+
+
 0.2.15 (2010-06-09)
 ======
 
