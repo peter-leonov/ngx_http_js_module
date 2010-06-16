@@ -38,6 +38,19 @@ if [ $ngx_found = no ]; then
 	. auto/feature
 fi
 
+# /opt
+if [ $ngx_found = no ]; then
+	ngx_feature_incs="
+		#define XP_UNIX
+		#include <js/jsapi.h>
+	"
+	ngx_feature_test=
+	ngx_feature="js/jsapi.h in /opt/include"
+	ngx_feature_path="/opt/include"
+	ngx_feature_libs=
+	. auto/feature
+fi
+
 
 # look for headers in mozjs/*
 
@@ -137,6 +150,16 @@ if [ $ngx_found = no ]; then
 	ngx_feature="libmozjs in /usr/local/lib"
 	ngx_feature_path=
 	ngx_feature_libs="-L/usr/local/lib -lmozjs"
+	. auto/feature
+fi
+
+# /opt
+if [ $ngx_found = no ]; then
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libmozjs in /opt/lib"
+	ngx_feature_path=
+	ngx_feature_libs="-L/opt/lib -lmozjs"
 	. auto/feature
 fi
 
