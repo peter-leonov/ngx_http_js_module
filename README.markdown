@@ -53,6 +53,7 @@ This module was successfully tested on:
 * FreeBSD 7.3 32-bit (VirtualBox 3.2.4)
 * OpenBSD 4.7 64-bit (VirtualBox 3.2.4)
 * Debian 5.0 32-bit (VirtualBox 3.2.4)
+* Debian 5.0 64-bit (VirtualBox 3.2.4)
 * Debian 5.0 32-bit PowerPC (Mac mini G4)
 * Mac OS 10.6.3 32-bit and 64-bit (Core Duo and Core 2 Duo iMacs)
 
@@ -90,7 +91,8 @@ In short all those are suitable to run ngx_http_js_module, but those may lack a 
 The following platforms were tested and proved to have an ability to compile and pass some tests:
 
 * FreeBSD 7.3 with SM 1.7 port
-* Debian 5 with SM 1.9 package
+* Debian 5 32-bit with SM 1.9 package
+* Debian 5 64-bit with SM 1.9 package
 
 
 Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 sources][firefox sources] (or my [github mirror][spidermonkey mirror] of the `js/` sub-folder) ships with an independent SpiderMonkey source tree. This means we can build a SpiderMonkey library and install it with all the header files without even touching the Firefox source code. All we have to do is the following:
