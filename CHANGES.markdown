@@ -4,7 +4,7 @@
 * `Request#log()`;
 * `Nginx.crit()` to log messages at `crit` level;
 * optimized call to `Request#oncleanup`;
-* `Request#rootMe()` is deprecated (dew to all the requests are now rooted when wraped);
+* `Request#rootMe()` is deprecated (dew to all the requests are now rooted when wrapped);
 * added some forced GC points in debug build to locate GC-related bugs;
 * fixed bugs with redirects and without-a-timeout callbacks;
 * C-to-JS request wrapping has been rewritten to simplify things;
@@ -25,7 +25,7 @@
 ======
 
 * support for debug build of the SpiderMonkey;
-* `configure` now use nginx feature investigation tools to check the SpiderMonkey abailability and version;
+* `configure` now use nginx feature investigation tools to check the SpiderMonkey availability and version;
 * `File.exists()` now returns `null` if file does not exist and `false` if its not a file;
 * `File.open()` now returns `null` if file does not exist.
 
@@ -34,7 +34,7 @@
 ======
 
 * support for nginx 0.8.37;
-* `File.exists()` checks for an entry existency;
+* `File.exists()` checks for an entry existence;
 * good looking test reports;
 * `HeadersOut#$contentTypeLen` and `HeadersOut#$contentTypeLowcase` properties are now marked as readonly as they are;
 * `Request#sendString()` and `Request#sendHttpHeader()` convert an argument to string manually;
