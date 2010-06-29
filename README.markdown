@@ -91,6 +91,7 @@ In short all those are suitable to run ngx_http_js_module, but those may lack a 
 The following platforms were tested and proved to have an ability to compile and pass some tests:
 
 * FreeBSD 7.3 with SM 1.7 port
+* OpenBSD 4.6 with SM 1.7 port
 * Debian 5 32-bit with SM 1.9 package
 * Debian 5 64-bit with SM 1.9 package
 
