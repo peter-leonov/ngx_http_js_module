@@ -70,7 +70,7 @@ Requirements
 
 ### installing SpiderMonkey
 
-This module requires the SpiderMonkey 1.7+ (or TraceMonkey, or JaegerMonkey, or anything else with the [JSAPI][] on 2010-03.26) to be properly installed in your system.
+This module requires the SpiderMonkey 1.7+ (or TraceMonkey, or JaegerMonkey, or anything else with the [JSAPI][] on 2010-03-26) to be properly installed in your system.
 
 Notes on SpiderMonkey support on different platforms (2010-05-27):
 
