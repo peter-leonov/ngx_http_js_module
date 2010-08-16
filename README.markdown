@@ -45,7 +45,7 @@ The installation is straightforward. Just add this module with a familiar `--add
 [compiling modules]: http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
 
 
-This module was successfully tested on:
+With a fresh SpiderMonkey build from sources the ngx_http_js_module module was successfully tested on:
 
 * Ubuntu 8.04.3 32-bit (2.6.18-virtuozzo; 2.6.24-23-openvz in VirtualBox)
 * Ubuntu 10.04 32-bit (VirtualBox 3.2.4)
@@ -57,7 +57,13 @@ This module was successfully tested on:
 * Debian 5.0 32-bit PowerPC (Mac mini G4)
 * Mac OS 10.6.3 32-bit and 64-bit (Core Duo and Core 2 Duo iMacs)
 
-Note that the latest SpiderMonkey was manually built and installed on thees systems.
+
+With a SpiderMonkey installed from ports the following platforms were tested and proved to have an ability to compile and pass almost all tests:
+
+* FreeBSD 7.3 with SM 1.7 port
+* OpenBSD 4.6 with SM 1.7 port
+* Debian 5 32-bit with SM 1.9 package
+* Debian 5 64-bit with SM 1.9 package
 
 
 Requirements
@@ -87,14 +93,6 @@ Notes on SpiderMonkey support on different platforms (2010-05-27):
 
 
 In short all those are suitable to run ngx_http_js_module, but those may lack a support for the JSON module or UTF-8 strings.
-
-The following platforms were tested and proved to have an ability to compile and pass some tests:
-
-* FreeBSD 7.3 with SM 1.7 port
-* OpenBSD 4.6 with SM 1.7 port
-* Debian 5 32-bit with SM 1.9 package
-* Debian 5 64-bit with SM 1.9 package
-
 
 Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 sources][firefox sources] (or my [github mirror][spidermonkey mirror] of the `js/` sub-folder) ships with an independent SpiderMonkey source tree. This means we can build a SpiderMonkey library and install it with all the header files without even touching the Firefox source code. All we have to do is the following:
 
