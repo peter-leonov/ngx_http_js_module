@@ -63,8 +63,8 @@ Note that the latest SpiderMonkey was manually built and installed on thees syst
 Requirements
 ------------
 
-* nginx version 0.8.37 and greater is required;
-* SpiderMonkey 1.7.0 and greater is required;
+* nginx version 0.8.37 (tested up to 0.8.49);
+* SpiderMonkey 1.7.0 and greater;
 * curl near 7.19 for automated testing.
 
 
