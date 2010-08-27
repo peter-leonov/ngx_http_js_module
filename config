@@ -205,6 +205,16 @@ if [ $ngx_found = no ]; then
 	. auto/feature
 fi
 
+# OpenBSD port (with non-base compiler)
+if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libjs (with libpthread) in /usr/local/lib"
+        ngx_feature_path=
+        ngx_feature_libs="-L/usr/local/lib -ljs -lpthread"
+        . auto/feature
+fi
+
 if [ $ngx_found = no ]; then
 	echo
 	echo $0: error: the $ngx_addon_name addon requires the js library.
