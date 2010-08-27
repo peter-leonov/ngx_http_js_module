@@ -152,7 +152,9 @@ command__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 static ngx_int_t
 ngx_http_js_content_handler(ngx_http_request_t *r)
 {
+#if defined(nginx_version) && (nginx_version >= 8011)
 	r->main->count++;
+#endif
 	
 	ngx_http_finalize_request(r, ngx_http_js__glue__content_handler(r));
 	
