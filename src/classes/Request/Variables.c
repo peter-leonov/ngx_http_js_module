@@ -134,7 +134,11 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	// ngx_http_get_variable() calls v->get_handler() and
 	// checks for *special* variables kinda $http_*, $cookie_* and others,
 	// so we can rely on it – all job will done for us
+#if defined(nginx_version) && (nginx_version >= 8036)
 	vv = ngx_http_get_variable(r, &var, hash);
+#else
+	vv = ngx_http_get_variable(r, &var, hash, 1);
+#endif
 	if (vv == NULL)
 	{
 		JS_ReportOutOfMemory(cx);

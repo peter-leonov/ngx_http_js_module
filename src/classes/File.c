@@ -22,6 +22,9 @@
 #define FD_TO_PTR(fd)   ((void *) ((uintptr_t) fd << 1))
 #define PTR_TO_FD(p)  ((ngx_fd_t) ((uintptr_t) p >> 1))
 
+#ifndef NGX_FILE_NONBLOCK
+#define NGX_FILE_NONBLOCK O_NONBLOCK
+#endif
 
 JSObject *ngx_http_js__nginx_file__prototype;
 JSClass ngx_http_js__nginx_file__class;

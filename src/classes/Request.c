@@ -825,7 +825,9 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		timer->log = r->connection->log;
 		timer->data = r;
 		
+#if defined(nginx_version) && (nginx_version >= 8011)
 		r->main->count++;
+#endif
 	}
 	
 	// implies timer_set = 1;
@@ -855,7 +857,9 @@ method_clearTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	{
 		// implies timer_set = 0;
 		ngx_del_timer(timer);
+#if defined(nginx_version) && (nginx_version >= 8011)
 		r->main->count--;
+#endif
 	}
 	
 	return JS_TRUE;
