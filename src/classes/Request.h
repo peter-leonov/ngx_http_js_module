@@ -14,15 +14,6 @@
 #define NGX_JS_REQUEST_SLOT__CLEANUP                  7
 #define NGX_JS_REQUEST_SLOTS_COUNT                    8
 
-#ifndef ngx_str_set
-#define ngx_str_set(str, text)                                               \
-    (str)->len = sizeof(text) - 1; (str)->data = (u_char *) text
-#endif
-
-#ifndef ngx_str_null
-#define ngx_str_null(str)   (str)->len = 0; (str)->data = NULL
-#endif
-
 extern JSClass ngx_http_js__nginx_request__class;
 extern JSObject *ngx_http_js__nginx_request__prototype;
 

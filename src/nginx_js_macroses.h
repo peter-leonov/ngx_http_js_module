@@ -122,5 +122,14 @@ if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) 
 
 #define NGX_STRING_to_JS_STRING_to_JSVAL(cx, str, v) DATA_LEN_to_JS_STRING_to_JSVAL(cx, (str).data, (str).len, v);
 
+// introduced in nginx 0.8.37
+#ifndef ngx_str_set
+#define ngx_str_set(str, text)                                               \
+    (str)->len = sizeof(text) - 1; (str)->data = (u_char *) text
+#endif
+
+#ifndef ngx_str_null
+#define ngx_str_null(str)   (str)->len = 0; (str)->data = NULL
+#endif
 
 #endif
