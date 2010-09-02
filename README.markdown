@@ -69,7 +69,7 @@ With a SpiderMonkey installed from ports the following platforms were tested and
 Requirements
 ------------
 
-* nginx version 0.8.37 (tested up to 0.8.49);
+* nginx version 0.8.11 (tested up to 0.8.49);
 * SpiderMonkey 1.7.0 and greater;
 * curl near 7.19 for automated testing.
 
