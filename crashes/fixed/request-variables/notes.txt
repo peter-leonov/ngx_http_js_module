@@ -1,0 +1,7 @@
+This crash occurs due to nginx bug in limit_rate variable handling. It was fixed in 0.8.22:
+
+    *) Bugfix: a segmentation fault might occur in a worker process while
+       $limit_rate logging.
+       Thanks to Maxim Dounin.
+
+For details see http://github.com/kung-fu-tzu/nginx/commit/9059342960cf79b9f82b8d978de7670868a9133f#diff-29
