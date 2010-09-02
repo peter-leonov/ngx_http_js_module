@@ -1,3 +1,10 @@
+0.2.17 (2010-09-02)
+======
+
+* works well with nginx versions 0.8.11+ (thanks to Piotr Sikora);
+* builds on OpenBSD using non-base compiler (thanks to Piotr Sikora);
+* builds on OpenBSD with SpiderMonkey installed from ports (thanks to Piotr Sikora).
+
 0.2.16 (2010-06-16)
 ======
 
