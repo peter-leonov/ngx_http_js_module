@@ -34,8 +34,12 @@ NginxTests.requestVariables = function (r)
 		vars.http_host = 'blablabla'
 		t.eq(vars.http_host, '127.0.0.1:19090', 'vars.http_host')
 		
-		vars.limit_rate = "1024"
-		t.eq(vars.limit_rate, "1024", '$limit_rate')
+		// see crashes/request-variables
+		if (Nginx.version >= 8022)
+		{
+			vars.limit_rate = "1024"
+			t.eq(vars.limit_rate, "1024", '$limit_rate')
+		}
 	})
 	Tests.oncomplete = function ()
 	{
