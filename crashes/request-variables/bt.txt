@@ -1,0 +1,54 @@
+Testing ngx_http_js_module
+/Users/peter/pro/ngx_http_js_module//run-tests: line 22: kill: (27546) - No such process
+/Users/peter/pro/ngx_http_js_module//run-tests: line 25: kill: (27546) - No such process
+tests for request.variables
+    r.variables: {  } is true 
+    vars.lalala: undefined === undefined 
+    vars.js_set_number: "123" === "123" 
+    vars.js_request_variables_a: "abc" === "abc" 
+    vars.js_request_variables_b: "abc123" === "abc123" 
+    vars.js_request_variables_j: "xxbar1xx" === "xxbar1xx" 
+    exception was thrown: can't find variable "foo1" at …[39]…/tests/request-variables.js:25 
+    vars.foo1: undefined === undefined 
+    vars.js_request_variables_v: "555" === "555" 
+    vars.http_host: "127.0.0.1:19090" === "127.0.0.1:19090" 
+    vars.http_host: "127.0.0.1:19090" === "127.0.0.1:19090" 
+curl: (18) transfer closed with outstanding read data remaining
+/Users/peter/pro/ngx_http_js_module//run-tests: line 68: 38572 Segmentation fault      (core dumped) $NGINX -p $MODULE_ROOT -c nginx.conf -g "$NGINX_OPTS"
+/Users/peter/pro/ngx_http_js_module//run-tests: line 97: kill: (38572) - No such process
+/Users/peter/pro/ngx_http_js_module//run-tests: line 100: kill: (38572) - No such process
+
+pl:nginx peter$ gdb objs/nginx /cores/core.38572 
+GNU gdb 6.3.50-20050815 (Apple version gdb-1346) (Fri Sep 18 20:40:51 UTC 2009)
+Copyright 2004 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "x86_64-apple-darwin"...Reading symbols for shared libraries ...... done
+
+Reading symbols for shared libraries . done
+Reading symbols for shared libraries ............................................................................................ done
+#0  js_InflateString (cx=0x1003110f0, bytes=0xab <Address 0xab out of bounds>, lengthp=0x7fff5fbfe5a8) at jsstr.cpp:3473
+3473	            chars[i] = (unsigned char) bytes[i];
+(gdb) bt
+#0  js_InflateString (cx=0x1003110f0, bytes=0xab <Address 0xab out of bounds>, lengthp=0x7fff5fbfe5a8) at jsstr.cpp:3473
+#1  0x00000001000e9864 in JS_NewStringCopyN (cx=0x1003110f0, s=<value temporarily unavailable, due to optimizations>, n=1024) at jsapi.cpp:5261
+#2  0x000000010006c6be in getProperty (cx=0x1003110f0, self=<value temporarily unavailable, due to optimizations>, id=<value temporarily unavailable, due to optimizations>, vp=0x7fff5fbfea88) at /Users/peter/pro/ngx_http_js_module//src/classes/Request/Variables.c:154
+#3  0x000000010017876a in js_GetSprop [inlined] () at /Users/peter/pro/spidermonkey/jsscope.h:613
+#4  0x000000010017876a in js_NativeGet (cx=0x1003110f0, obj=0x10041bb00, pobj=0x10041bb00, sprop=0x1008643f0, vp=0x7fff5fbfea88) at jsscope.h:4113
+#5  0x000000010017e68b in js_GetPropertyHelper (cx=0x1003110f0, obj=0x10041bb00, id=4299249220, cacheResult=1, vp=0x7fff5fbfea88) at jsobj.cpp:4271
+#6  0x000000010014fff9 in js_Interpret (cx=0x1003110f0) at jsops.cpp:1518
+#7  0x000000010016b2bf in js_Invoke (cx=0x1003110f0, argc=1, vp=0x1008574f8, flags=0) at jsinterp.cpp:1368
+#8  0x000000010013f6f3 in js_fun_call (cx=0x1003110f0, argc=1, vp=0x1008574c0) at jsfun.cpp:1955
+#9  0x0000000100161c35 in js_Interpret (cx=0x1003110f0) at jsops.cpp:2208
+#10 0x000000010016b2bf in js_Invoke (cx=0x1008574c8, argc=0, vp=0x100857438, flags=0) at jsinterp.cpp:1368
+#11 0x000000010016c2f3 in js_InternalInvoke (cx=0x1003110f0, obj=0x10041b800, fval=4299219584, flags=0, argc=0, argv=0x0, rval=0x7fff5fbff238) at jsinterp.cpp:1423
+#12 0x00000001000e8f9f in JS_CallFunctionValue (cx=0x1003110f0, obj=<value temporarily unavailable, due to optimizations>, fval=<value temporarily unavailable, due to optimizations>, argc=<value temporarily unavailable, due to optimizations>, argv=<value temporarily unavailable, due to optimizations>, rval=<value temporarily unavailable, due to optimizations>) at jsapi.cpp:5112
+#13 0x0000000100063e0b in method_setTimer_handler (timer=<value temporarily unavailable, due to optimizations>) at /Users/peter/pro/ngx_http_js_module//src/classes/Request.c:906
+#14 0x00000001000171f2 in ngx_event_expire_timers () at src/event/ngx_event_timer.c:149
+#15 0x0000000100017080 in ngx_process_events_and_timers (cycle=0x10083ec50) at src/event/ngx_event.c:261
+#16 0x000000010001d2da in ngx_single_process_cycle (cycle=0x10083ec50) at src/os/unix/ngx_process_cycle.c:296
+#17 0x00000001000025a1 in main (argc=7, argv=0x25) at src/core/nginx.c:379
+Current language:  auto; currently c++
+(gdb) 

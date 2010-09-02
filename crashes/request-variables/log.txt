@@ -1,0 +1,338 @@
+2010/09/02 17:31:11 [notice] 38572#0: using the "kqueue" event method
+2010/09/02 17:31:11 [notice] 38572#0: nginx/0.8.11
+2010/09/02 17:31:11 [notice] 38572#0: built by gcc 4.2.1 (Apple Inc. build 5646) (dot 1)
+2010/09/02 17:31:11 [notice] 38572#0: OS: Darwin 10.4.0
+2010/09/02 17:31:11 [notice] 38572#0: hw.ncpu: 2
+2010/09/02 17:31:11 [notice] 38572#0: net.inet.tcp.sendspace: 65536
+2010/09/02 17:31:11 [notice] 38572#0: kern.ipc.somaxconn: 128
+2010/09/02 17:31:11 [notice] 38572#0: getrlimit(RLIMIT_NOFILE): 2048:2048
+2010/09/02 17:31:11 [debug] 38572#0: ngx_http_js_init_worker()
+2010/09/02 17:31:11 [debug] 38572#0: global.initWorker() found
+2010/09/02 17:31:11 [debug] 38572#0: ngx_http_js_init_worker()
+2010/09/02 17:31:11 [debug] 38572#0: global.initWorker() found
+2010/09/02 17:31:12 [debug] 38572#0: *1 http process request line
+2010/09/02 17:31:12 [debug] 38572#0: *1 http request line: "GET /run/request-variables HTTP/1.1"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http uri: "/run/request-variables"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http args: ""
+2010/09/02 17:31:12 [debug] 38572#0: *1 http exten: ""
+2010/09/02 17:31:12 [debug] 38572#0: *1 http process request header line
+2010/09/02 17:31:12 [debug] 38572#0: *1 http header: "User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http header: "Host: 127.0.0.1:19090"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http header: "Accept: */*"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http header done
+2010/09/02 17:31:12 [debug] 38572#0: *1 generic phase: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script value: "abc"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script set $js_request_variables_a
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script complex value
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script var: "abc"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script copy: "123"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script set $js_request_variables_b
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script complex value
+2010/09/02 17:31:12 [debug] 38572#0: js_variable_get_handler()
+2010/09/02 17:31:12 [debug] 38572#0: ngx_http_js__request__call_function()
+2010/09/02 17:31:12 [debug] 38572#0: *1 request_wrap(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http cleanup add: 000000010080A3A0
+2010/09/02 17:31:12 [debug] 38572#0: *1 DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: *1 DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script copy: "xx"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script var: "bar1"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script copy: "xx"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script set $js_request_variables_j
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script value: ""
+2010/09/02 17:31:12 [debug] 38572#0: *1 http script set $js_request_variables_v
+2010/09/02 17:31:12 [debug] 38572#0: *1 test location: "/"
+2010/09/02 17:31:12 [debug] 38572#0: *1 test location: "quick"
+2010/09/02 17:31:12 [debug] 38572#0: *1 test location: "run/"
+2010/09/02 17:31:12 [debug] 38572#0: *1 test location: "request-body-file"
+2010/09/02 17:31:12 [debug] 38572#0: *1 using configuration "/run/"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http cl:-1 max:1048576
+2010/09/02 17:31:12 [debug] 38572#0: *1 generic phase: 2
+2010/09/02 17:31:12 [debug] 38572#0: *1 post rewrite phase: 3
+2010/09/02 17:31:12 [debug] 38572#0: *1 generic phase: 4
+2010/09/02 17:31:12 [debug] 38572#0: *1 generic phase: 5
+2010/09/02 17:31:12 [debug] 38572#0: *1 access phase: 6
+2010/09/02 17:31:12 [debug] 38572#0: *1 js access handler
+2010/09/02 17:31:12 [debug] 38572#0: *1 access phase: 7
+2010/09/02 17:31:12 [debug] 38572#0: *1 js access handler
+2010/09/02 17:31:12 [debug] 38572#0: *1 access phase: 8
+2010/09/02 17:31:12 [debug] 38572#0: *1 access phase: 9
+2010/09/02 17:31:12 [debug] 38572#0: *1 post access phase: 10
+2010/09/02 17:31:12 [debug] 38572#0: *1 js content handler
+2010/09/02 17:31:12 [debug] 38572#0: ngx_http_js__request__call_function()
+2010/09/02 17:31:12 [debug] 38572#0: *1 request_wrap(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#sendHttpHeader(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 HTTP/1.1 200 OK
+Server: nginx/0.8.11
+Date: Thu, 02 Sep 2010 13:31:12 GMT
+Content-Type: text/plain; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:171
+2010/09/02 17:31:12 [debug] 38572#0: *1 get Nginx.time
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#setTimer(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 timer.timer_set = 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: *1 http finalize request: 0, "/run/request-variables?" a:1, c:3
+2010/09/02 17:31:12 [debug] 38572#0: *1 http request count:3 blk:0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http finalize request: -4, "/run/request-variables?" a:1, c:2
+2010/09/02 17:31:12 [debug] 38572#0: *1 http request count:2 blk:0
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#setTimer_handler(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: get Nginx.time
+2010/09/02 17:31:12 [debug] 38572#0: ngx_http_js__nginx_variables__wrap()
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["__iterator__"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 28
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:205
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:205
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 40
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:46
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:46
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["lalala"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 51
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:57
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:57
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_set_number"]
+2010/09/02 17:31:12 [debug] 38572#0: js_variable_get_handler()
+2010/09/02 17:31:12 [debug] 38572#0: ngx_http_js__request__call_function()
+2010/09/02 17:31:12 [debug] 38572#0: *1 request_wrap(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: *1 DEBUG_GC() taking place
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 50
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:56
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:56
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_request_variables_a"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 59
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:65
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:65
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_request_variables_b"]
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_request_variables_a"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 65
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:71
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:71
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_request_variables_j"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 69
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:75
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:75
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: setProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["foo1"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 107
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:113
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:113
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["foo1"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 49
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:55
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:55
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: setProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_request_variables_v"]
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["js_request_variables_v"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 59
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:65
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:65
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["http_host"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 70
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:76
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:76
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: setProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["http_host"]
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["http_host"]
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#print(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE070
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 70
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:0 s:76
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 Request#flush(r=000000010085D400)
+2010/09/02 17:31:12 [debug] 38572#0: *1 http output filter "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: *1 http js buffer filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http postpone filter "/run/request-variables?" 00007FFF5FBFE080
+2010/09/02 17:31:12 [debug] 38572#0: *1 http chunk: 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter: l:0 f:1 s:76
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter limit 0
+2010/09/02 17:31:12 [debug] 38572#0: *1 http write filter 0000000000000000
+2010/09/02 17:31:12 [debug] 38572#0: *1 copy filter: 0 "/run/request-variables?"
+2010/09/02 17:31:12 [debug] 38572#0: setProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["limit_rate"]
+2010/09/02 17:31:12 [debug] 38572#0: getProperty()
+2010/09/02 17:31:12 [debug] 38572#0: *1 variables["limit_rate"]
+
