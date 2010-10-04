@@ -6,113 +6,125 @@ ngx_feature_name=
 ngx_feature_run=no
 ngx_found=no
 
+NGX_HTTP_JS_HEADERS="0"
 
-# look for headers in js/*
+if [ $SPIDERMONKEY_INC ]; then
+        ngx_feature_incs="
+        #define XP_UNIX
+        #include <js/jsapi.h>
+    "
+    ngx_feature_test=
+    ngx_feature="js/jsapi.h in $SPIDERMONKEY_INC"
+    ngx_feature_path="$SPIDERMONKEY_INC"
+    ngx_feature_libs=
+    . auto/feature
 
-if [ $ngx_found = no ]; then
-	NGX_HTTP_JS_HEADERS="0"
-fi
+else
 
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <js/jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="js/jsapi.h"
-	ngx_feature_path=
-	ngx_feature_libs=
-	. auto/feature
-fi
+    # auto discovery
+    # look for headers in js/*
 
-# FreeBSD
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <js/jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="js/jsapi.h in /usr/local/include"
-	ngx_feature_path="/usr/local/include"
-	ngx_feature_libs=
-	. auto/feature
-fi
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <js/jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="js/jsapi.h"
+        ngx_feature_path=
+        ngx_feature_libs=
+        . auto/feature
+    fi
 
-# /opt
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <js/jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="js/jsapi.h in /opt/include"
-	ngx_feature_path="/opt/include"
-	ngx_feature_libs=
-	. auto/feature
-fi
+    # FreeBSD
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <js/jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="js/jsapi.h in /usr/local/include"
+        ngx_feature_path="/usr/local/include"
+        ngx_feature_libs=
+        . auto/feature
+    fi
 
-
-# look for headers in mozjs/*
-
-if [ $ngx_found = no ]; then
-	NGX_HTTP_JS_HEADERS="1"
-fi
-
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <mozjs/jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="mozjs/jsapi.h"
-	ngx_feature_path=
-	ngx_feature_libs=
-	. auto/feature
-fi
-
-# FreeBSD
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <mozjs/jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="mozjs/jsapi.h in /usr/local/include"
-	ngx_feature_path="/usr/local/include"
-	ngx_feature_libs=
-	. auto/feature
-fi
+    # /opt
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <js/jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="js/jsapi.h in /opt/include"
+        ngx_feature_path="/opt/include"
+        ngx_feature_libs=
+        . auto/feature
+    fi
 
 
-# look for headers in *
+    # look for headers in mozjs/*
 
-if [ $ngx_found = no ]; then
-	NGX_HTTP_JS_HEADERS="2"
-fi
+    if [ $ngx_found = no ]; then
+        NGX_HTTP_JS_HEADERS="1"
+    fi
 
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="jsapi.h"
-	ngx_feature_path=
-	ngx_feature_libs=
-	. auto/feature
-fi
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <mozjs/jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="mozjs/jsapi.h"
+        ngx_feature_path=
+        ngx_feature_libs=
+        . auto/feature
+    fi
 
-# FreeBSD
-if [ $ngx_found = no ]; then
-	ngx_feature_incs="
-		#define XP_UNIX
-		#include <jsapi.h>
-	"
-	ngx_feature_test=
-	ngx_feature="jsapi.h in /usr/local/include"
-	ngx_feature_path="/usr/local/include"
-	ngx_feature_libs=
-	. auto/feature
+    # FreeBSD
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <mozjs/jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="mozjs/jsapi.h in /usr/local/include"
+        ngx_feature_path="/usr/local/include"
+        ngx_feature_libs=
+        . auto/feature
+    fi
+
+
+    # look for headers in *
+
+    if [ $ngx_found = no ]; then
+        NGX_HTTP_JS_HEADERS="2"
+    fi
+
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="jsapi.h"
+        ngx_feature_path=
+        ngx_feature_libs=
+        . auto/feature
+    fi
+
+    # FreeBSD
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs="
+            #define XP_UNIX
+            #include <jsapi.h>
+        "
+        ngx_feature_test=
+        ngx_feature="jsapi.h in /usr/local/include"
+        ngx_feature_path="/usr/local/include"
+        ngx_feature_libs=
+        . auto/feature
+    fi
 fi
 
 
@@ -131,88 +143,99 @@ CORE_INCS="$CORE_INCS $ngx_feature_path"
 
 ngx_found=no
 
+if [ $SPIDERMONKEY_LIB ]; then
 
-# look for mozjs library
+    ngx_feature_incs=
+    ngx_feature_test=
+    ngx_feature="libmozjs in $SPIDERMONKEY_LIB"
+    ngx_feature_path=
+    ngx_feature_libs="-L$SPIDERMONKEY_LIB -lmozjs"
+    . auto/feature
 
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libmozjs"
-	ngx_feature_path=
-	ngx_feature_libs="-lmozjs"
-	. auto/feature
-fi
+else
 
-# FreeBSD
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libmozjs in /usr/local/lib"
-	ngx_feature_path=
-	ngx_feature_libs="-L/usr/local/lib -lmozjs"
-	. auto/feature
-fi
+    # look for mozjs library
 
-# /opt
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libmozjs in /opt/lib"
-	ngx_feature_path=
-	ngx_feature_libs="-L/opt/lib -lmozjs"
-	. auto/feature
-fi
-
-
-# look for js library
-
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libjs"
-	ngx_feature_path=
-	ngx_feature_libs="-ljs"
-	. auto/feature
-fi
-
-# FreeBSD
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libjs in /usr/local/lib"
-	ngx_feature_path=
-	ngx_feature_libs="-L/usr/local/lib -ljs"
-	. auto/feature
-fi
-
-# FreeBSD port
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libjs (with libm) in /usr/local/lib"
-	ngx_feature_path=
-	ngx_feature_libs="-L/usr/local/lib -lm -ljs"
-	. auto/feature
-fi
-
-# OpenBSD port
-if [ $ngx_found = no ]; then
-	ngx_feature_incs=
-	ngx_feature_test=
-	ngx_feature="libjs (with pthread) in /usr/local/lib"
-	ngx_feature_path=
-	ngx_feature_libs="-L/usr/local/lib -ljs -pthread"
-	. auto/feature
-fi
-
-# OpenBSD port (with non-base compiler)
-if [ $ngx_found = no ]; then
+    if [ $ngx_found = no ]; then
         ngx_feature_incs=
         ngx_feature_test=
-        ngx_feature="libjs (with libpthread) in /usr/local/lib"
+        ngx_feature="libmozjs"
         ngx_feature_path=
-        ngx_feature_libs="-L/usr/local/lib -ljs -lpthread"
+        ngx_feature_libs="-lmozjs"
         . auto/feature
+    fi
+
+    # FreeBSD
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libmozjs in /usr/local/lib"
+        ngx_feature_path=
+        ngx_feature_libs="-L/usr/local/lib -lmozjs"
+        . auto/feature
+    fi
+
+    # /opt
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libmozjs in /opt/lib"
+        ngx_feature_path=
+        ngx_feature_libs="-L/opt/lib -lmozjs"
+        . auto/feature
+    fi
+
+
+    # look for js library
+
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libjs"
+        ngx_feature_path=
+        ngx_feature_libs="-ljs"
+        . auto/feature
+    fi
+
+    # FreeBSD
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libjs in /usr/local/lib"
+        ngx_feature_path=
+        ngx_feature_libs="-L/usr/local/lib -ljs"
+        . auto/feature
+    fi
+
+    # FreeBSD port
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libjs (with libm) in /usr/local/lib"
+        ngx_feature_path=
+        ngx_feature_libs="-L/usr/local/lib -lm -ljs"
+        . auto/feature
+    fi
+
+    # OpenBSD port
+    if [ $ngx_found = no ]; then
+        ngx_feature_incs=
+        ngx_feature_test=
+        ngx_feature="libjs (with pthread) in /usr/local/lib"
+        ngx_feature_path=
+        ngx_feature_libs="-L/usr/local/lib -ljs -pthread"
+        . auto/feature
+    fi
+
+    # OpenBSD port (with non-base compiler)
+    if [ $ngx_found = no ]; then
+            ngx_feature_incs=
+            ngx_feature_test=
+            ngx_feature="libjs (with libpthread) in /usr/local/lib"
+            ngx_feature_path=
+            ngx_feature_libs="-L/usr/local/lib -ljs -lpthread"
+            . auto/feature
+    fi
 fi
 
 if [ $ngx_found = no ]; then
