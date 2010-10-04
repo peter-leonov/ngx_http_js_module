@@ -139,7 +139,8 @@ If you have installed Spidermonkey in a non-standard path, or Nginx cannot find 
 
     export SPIDERMONKEY_INC=/path/to/spidermonkey/include       # allows config to find <jsapi.h>
     export SPIDERMONKEY_LIB=/path/to/spidermonkey/lib           # allows config to find libmozjs
-    export LD_RUN_PATH=/path/to/spidermonkey/lib                # adds the lib path to the directories that Nginx will search to find libmozjs
+    export LD_RUN_PATH=/path/to/spidermonkey/lib                # adds the lib path to the directories that Nginx
+                                                                # will search to find libmozjs
 
     ./configure ...
 
