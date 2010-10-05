@@ -104,7 +104,7 @@ Any way we can always build SpiderMonkey ourselves from sources. [Firefox 3.6 so
 	make
 	sudo make install
 
-If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to be able to `make` SpiderMonkey. If you are on Ubuntu please use `--prefix=/usr/`, otherwise SpiderMonkey installs itself to `/usr/local/` and `libmozjs.so` becomes unreachable. Use `--disable-tests` to get `make` ended shortly. Use `--enable-debug` if you plan to develop a little ;)
+If you have a 64-bit Mac (even with only 32-bit kernel) use `--disable-jit` to be able to `make` SpiderMonkey. Use `--enable-debug` if you plan to develop a little ;)
 
 On a clear FreeBSD 8.0 at least the following have to be installed from ports: gmake, perl, python, zip. Run `gmake` and `gmake install` after `./configure`.
 
@@ -134,6 +134,22 @@ configure
 The JS module could be compiled as any other nginx module:
 
 	./configure --add-module=/absolute/path/to/the/ngx_http_js_module/
+
+If you have installed Spidermonkey in a non-standard path, or Nginx cannot automatically find the library, you should set some variables before running configure:
+
+	export SPIDERMONKEY_INC=/path/to/spidermonkey/include       # allows config to find <jsapi.h>
+	export SPIDERMONKEY_LIB=/path/to/spidermonkey/lib           # allows config to find libmozjs
+	
+	./configure ...
+
+If you are on an ELF-based platform and do not want to bother with `LD_LIBRARY_PATH` please define `LD_RUN_PATH` to set [rpath][] like so:
+
+	export LD_RUN_PATH=/path/to/spidermonkey/lib                # adds the lib path to the directories that Nginx
+	                                                            # will search to find libmozjs on Linux/Solaris
+	
+	./configure ...
+
+[rpath]: http://www.eyrie.org/~eagle/notes/rpath.html
 
 If you want to look into the guts and do something there, please configure like the following:
 
@@ -172,7 +188,9 @@ please, try to set `LD_LIBRARY_PATH` environment variable like so:
 
 	export LD_LIBRARY_PATH="/usr/local/lib/"
 
-and then run `make test-js` again.
+Or try to define the `LD_RUN_PATH` as described above and re-compile.
+
+And then you may run `make test-js` again.
 
 `make test-js` (calling `run-tests` from the module sources) tries to set the `LD_LIBRARY_PATH` environment variable for you.
 

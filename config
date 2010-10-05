@@ -6,12 +6,22 @@ ngx_feature_name=
 ngx_feature_run=no
 ngx_found=no
 
+NGX_HTTP_JS_HEADERS="0"
 
-# look for headers in js/*
-
-if [ $ngx_found = no ]; then
-	NGX_HTTP_JS_HEADERS="0"
+if [ $SPIDERMONKEY_INC ]; then
+	ngx_feature_incs="
+		#define XP_UNIX
+		#include <js/jsapi.h>
+	"
+	ngx_feature_test=
+	ngx_feature="js/jsapi.h in $SPIDERMONKEY_INC"
+	ngx_feature_path="$SPIDERMONKEY_INC"
+	ngx_feature_libs=
+	. auto/feature
 fi
+
+# auto discovery
+# look for headers in js/*
 
 if [ $ngx_found = no ]; then
 	ngx_feature_incs="
@@ -131,6 +141,15 @@ CORE_INCS="$CORE_INCS $ngx_feature_path"
 
 ngx_found=no
 
+
+if [ $SPIDERMONKEY_LIB ]; then
+	ngx_feature_incs=
+	ngx_feature_test=
+	ngx_feature="libmozjs in $SPIDERMONKEY_LIB"
+	ngx_feature_path=
+	ngx_feature_libs="-L$SPIDERMONKEY_LIB -lmozjs"
+	. auto/feature
+fi
 
 # look for mozjs library
 
