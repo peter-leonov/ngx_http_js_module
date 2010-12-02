@@ -32,9 +32,10 @@ command__js_load(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	jsmcf = conf;
 	p = ngx_array_push(&jsmcf->loads);
-	
 	if (p == NULL)
+	{
 		return NGX_CONF_ERROR;
+	}
 	
 	*p = value[1].data;
 	
@@ -48,7 +49,9 @@ command__js_utf8(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	JS_SetCStringsAreUTF8();
 	
 	if (JS_CStringsAreUTF8())
+	{
 		return NGX_CONF_OK;
+	}
 	else
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "couldn't set JS_CStringsAreUTF8()", &cmd->name);
@@ -73,7 +76,9 @@ command__js_require(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	p = ngx_array_push(&jsmcf->requires);
 	
 	if (p == NULL)
+	{
 		return NGX_CONF_ERROR;
+	}
 	
 	*p = value[1].data;
 	
@@ -102,7 +107,9 @@ command__js_access(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	// JS side of question
 	if (ngx_http_js__glue__set_handler(cf, &jslcf->access_handler_function, "js access handler") != NGX_CONF_OK)
+	{
 		return NGX_CONF_ERROR;
+	}
 	
 	access_phase_needed = 1;
 	
@@ -132,8 +139,9 @@ command__js(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	
 	// JS side of question
 	if (ngx_http_js__glue__set_handler(cf, &jslcf->content_handler_function, "js content handler") != NGX_CONF_OK)
+	{
 		return NGX_CONF_ERROR;
-	
+	}
 	
 	clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
 	clcf->handler = ngx_http_js_content_handler;
@@ -174,13 +182,19 @@ ngx_http_js_create_main_conf(ngx_conf_t *cf)
 	
 	jsmcf = ngx_pcalloc(cf->pool, sizeof(ngx_http_js_main_conf_t));
 	if (jsmcf == NULL)
+	{
 		return NGX_CONF_ERROR;
+	}
 	
 	if (ngx_array_init(&jsmcf->requires, cf->pool, 1, sizeof(u_char *)) != NGX_OK)
+	{
 		return NULL;
+	}
 	
 	if (ngx_array_init(&jsmcf->loads, cf->pool, 1, sizeof(u_char *)) != NGX_OK)
+	{
 		return NULL;
+	}
 	
 	jsmcf->maxmem = NGX_CONF_UNSET_SIZE;
 	
@@ -206,7 +220,9 @@ ngx_http_js_create_loc_conf(ngx_conf_t *cf)
 	
 	jslcf = ngx_pcalloc(cf->pool, sizeof(ngx_http_js_loc_conf_t));
 	if (jslcf == NULL)
+	{
 		return NGX_CONF_ERROR;
+	}
 	
 	// set by ngx_pcalloc():
 	//  jslcf->content_handler_function = NULL;
@@ -248,14 +264,19 @@ ngx_http_js_header_buffer_filter(ngx_http_request_t *r)
 	ngx_http_js_ctx_t        *ctx;
 	
 	if (r == r->main)
+	{
 		return ngx_http_js_next_header_filter(r);
+	}
 	
-	if (!(ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)))
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
 	{
 		// ngx_pcalloc fills allocated memory with zeroes
 		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
 		if (ctx == NULL)
+		{
 			return NGX_ERROR;
+		}
 		
 		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
 	}
