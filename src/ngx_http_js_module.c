@@ -274,42 +274,50 @@ static ngx_int_t
 ngx_http_js_body_buffer_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
 	ngx_http_js_ctx_t        *ctx;
+	ngx_chain_t              *cl;
 	
 	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "http js buffer filter \"%V?%V\" %p", &r->uri, &r->args, in);
 	
-	if ((ctx = ngx_http_get_module_ctx(r, ngx_http_js_module)) && ctx->filter_enabled)
+	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
+	if (ctx == NULL)
 	{
-		ngx_chain_t *cl;
-		
-		for (; in != NULL; in = in->next)
-		{
-			ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "buf: %*s", in->buf->last - in->buf->pos, in->buf->pos);
-			
-			cl = ngx_palloc(r->pool, sizeof(ngx_chain_t));
-			if (cl == NULL)
-				return NGX_ERROR;
-			
-			cl->buf = in->buf;
-			
-			if (ctx->chain_last)
-			{
-				ctx->chain_last->next = cl;
-				ctx->chain_last = cl;
-			}
-			else
-			{
-				ctx->chain_first = cl;
-				ctx->chain_last = cl;
-			}
-			
-			// if (chain_link->buf->last_buf)
-		}
-		ctx->chain_last->next = NULL;
-		
-		return NGX_OK;
+		return ngx_http_js_next_body_filter(r, in);
 	}
 	
-	return ngx_http_js_next_body_filter(r, in);
+	if (!ctx->filter_enabled)
+	{
+		return ngx_http_js_next_body_filter(r, in);
+	}
+	
+	
+	for (; in != NULL; in = in->next)
+	{
+		ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "buf: %*s", in->buf->last - in->buf->pos, in->buf->pos);
+		
+		cl = ngx_palloc(r->pool, sizeof(ngx_chain_t));
+		if (cl == NULL)
+		{
+			return NGX_ERROR;
+		}
+		
+		cl->buf = in->buf;
+		
+		if (ctx->chain_last)
+		{
+			ctx->chain_last->next = cl;
+			ctx->chain_last = cl;
+		}
+		else
+		{
+			ctx->chain_first = cl;
+			ctx->chain_last = cl;
+		}
+		
+		// if (chain_link->buf->last_buf)
+	}
+	ctx->chain_last->next = NULL;
+	
+	return NGX_OK;
 }
 
 static ngx_int_t
