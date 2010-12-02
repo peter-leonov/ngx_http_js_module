@@ -259,39 +259,6 @@ ngx_http_js_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
 
 static ngx_int_t
-ngx_http_js_header_buffer_filter(ngx_http_request_t *r)
-{
-	ngx_http_js_ctx_t        *ctx;
-	
-	if (r == r->main)
-	{
-		return ngx_http_js_next_header_filter(r);
-	}
-	
-	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
-	if (ctx == NULL)
-	{
-		// ngx_pcalloc fills allocated memory with zeroes
-		ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_js_ctx_t));
-		if (ctx == NULL)
-		{
-			return NGX_ERROR;
-		}
-		
-		ngx_http_set_ctx(r, ctx, ngx_http_js_module);
-	}
-	
-	ctx->filter_enabled = 1;
-	ctx->chain_first = NULL;
-	ctx->chain_last = NULL;
-	
-	r->filter_need_in_memory = 1;
-	
-	
-	return ngx_http_js_next_header_filter(r);
-}
-
-static ngx_int_t
 ngx_http_js_body_buffer_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
 	ngx_http_js_ctx_t        *ctx;
@@ -376,9 +343,6 @@ postconfiguration(ngx_conf_t *cf)
 	{
 		return rc;
 	}
-	
-	ngx_http_js_next_header_filter = ngx_http_top_header_filter;
-	ngx_http_top_header_filter = ngx_http_js_header_buffer_filter;
 	
 	ngx_http_js_next_body_filter = ngx_http_top_body_filter;
 	ngx_http_top_body_filter = ngx_http_js_body_buffer_filter;
