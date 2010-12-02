@@ -966,8 +966,13 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		THROW("Error in ngx_http_parse_unsafe_uri(%s)", uri.data);
 	}
 	
-	psr = NULL;
-	E(psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t)), "Can`t ngx_palloc()");
+	psr = ngx_palloc(r->pool, sizeof(ngx_http_post_subrequest_t));
+	if (psr == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	
 	psr->handler = method_subrequest_handler;
 	psr->data = NULL;
 	
