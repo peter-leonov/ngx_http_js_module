@@ -936,6 +936,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_http_post_subrequest_t  *psr;
 	ngx_str_t                    uri, args;
 	ngx_uint_t                   flags;
+	ngx_http_js_ctx_t           *sr_ctx;
 	JSString                    *str;
 	JSObject                    *subrequest;
 	
@@ -989,7 +990,6 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
-	// sr->filter_need_in_memory = 1;
 	
 	subrequest = ngx_http_js__nginx_request__wrap(cx, sr);
 	if (subrequest == NULL)
@@ -997,6 +997,17 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		// forward the exception
 		return JS_FALSE;
 	}
+	
+	// context must be successfully created in ngx_http_js__nginx_request__wrap()
+	sr_ctx = ngx_http_get_module_ctx(sr, ngx_http_js_module);
+	ngx_assert(sr_ctx);
+	// ask body filter to buffer all the data
+	sr_ctx->filter_enabled = 1;
+	sr_ctx->chain_first = NULL;
+	sr_ctx->chain_last = NULL;
+	
+	sr->filter_need_in_memory = 1;
+	
 	
 	if (!JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]))
 	{
