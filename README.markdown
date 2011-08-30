@@ -29,11 +29,11 @@ Features
 * lots of useful properties of Nginx object (`Nginx.time`, `Nginx.prefix`, `Nginx.version`, etc);
 * plain `require()` function that finds JS files walking through `Nginx.prefix` + `JSLIB` environment variable (like `RUBYLIB` and `PERL5LIB`);
 * initial support for files via `Nginx.File` (create/delete/rename, simple open/close/read/write, all in UTF-8);
-* handy tests suit written in plain JavaScript (using asynchronous test framework from [Programica.js][])
+* handy tests suit written in plain JavaScript (using asynchronous test framework from [liby.js][])
 
 The code uses `ngx_assert()` and `ngx_log_debug()` almost everywhere, so the debugging must not be a pain.
 
-[Programica.js]: http://github.com/kung-fu-tzu/programica.js
+[liby.js]: http://kung-fu-tzu.ru/liby/
 
 
 
