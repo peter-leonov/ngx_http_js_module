@@ -15,11 +15,10 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	JSString *str;
 	char *filename, *filevar_name;
 	u_char real[NGX_MAX_PATH], *the_end;
-	JSScript *script;
 	JSBool ok;
 	jsval result, name, old;
 	uint32 oldopts;
-	JSObject *global;
+	JSObject *global, *script;
 	// FILE *fileh;
 	
 	TRACE();
@@ -35,7 +34,11 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 			return JS_FALSE;
 		}
 		name = argv[i] = STRING_TO_JSVAL(str);
-		filename = JS_GetStringBytes(str);
+		filename = JS_EncodeString(cx, str);
+		if (filename == NULL)
+		{
+			return JS_FALSE;
+		}
 		if (filename[0] != '/')
 		{
 			the_end = ngx_snprintf(real, NGX_MAX_PATH, "%*s/%s", ngx_cycle->conf_prefix.len, ngx_cycle->conf_prefix.data, (u_char *) filename);
@@ -64,6 +67,7 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 			JS_SetProperty(cx, global, filevar_name, &old);
 		}
 		JS_SetOptions(cx, oldopts);
+		JS_free(cx, filename);
 		if (!ok)
 		{
 			return JS_FALSE;
