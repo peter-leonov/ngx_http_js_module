@@ -14,33 +14,29 @@ ngx_buf_t *
 js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool)
 {
 	ngx_buf_t           *b;
-	const char          *p;
 	size_t               len;
 	
 	ngx_assert(cx);
 	ngx_assert(str);
 	ngx_assert(pool);
 	
-	// get bytes with UTF-16 -> UTF-8 conversion
-	p = JS_GetStringBytes(str);
-	// JS_GetStringBytes() returns an empty C-string on failure,
-	// but on success it does the same, so treat every response as a success
-	if (p == NULL)
+	// calculate the length in bytes of the UTF-8 string representation
+	// on error JS_GetStringEncodingLength() will report the broken character code
+	len = JS_GetStringEncodingLength(cx, str);
+	if (len == (size_t) -1)
 	{
 		return NULL;
 	}
 	
-	// run through the UTF-8 string again
-	len = ngx_strlen(p);
-	
-	// allocate another buffer for the string, the third:
-	// the first for the original string,
-	// the second for its UTF-8 representation
+	// allocate a buffer for the string
 	b = ngx_create_temp_buf(pool, len);
 	if (b == NULL)
+	{
 		return NULL;
+	}
 	
-	ngx_memcpy(b->last, p, len);
+	// get bytes with UTF-16 to UTF-8 conversion
+	JS_EncodeStringToBuffer(str, (char *) b->last, len);
 	b->last = b->last + len;
 	
 	return b;
@@ -49,7 +45,6 @@ js_str2ngx_buf(JSContext *cx, JSString *str, ngx_pool_t *pool)
 JSBool
 js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 {
-	const u_char        *p;
 	size_t               len;
 	
 	ngx_assert(cx);
@@ -57,32 +52,26 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 	ngx_assert(pool);
 	ngx_assert(s);
 	
-	// get bytes with UTF-16 -> UTF-8 conversion
-	p = (u_char *) JS_GetStringBytes(str);
-	// JS_GetStringBytes() returns an empty C-string on failure,
-	// but on success it does the same, so treat every response as a success
-	if (p == NULL)
+	// calculate the length in bytes of the UTF-8 string representation
+	// on error JS_GetStringEncodingLength() will report the broken character code
+	len = JS_GetStringEncodingLength(cx, str);
+	if (len == (size_t) -1)
 	{
 		return JS_FALSE;
 	}
 	
-	// run through the UTF-8 string again
-	len = ngx_strlen(p);
-	
-	// allocate another buffer for the string (the third, again!!!)
-	s->data = ngx_palloc(pool, len+1);
+	// allocate a buffer for the string
+	s->data = ngx_palloc(pool, len + 1);
 	if (s->data == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	// copy a string memory (the second time!)
-	ngx_memcpy(s->data, p, len);
+	// get bytes with UTF-16 to UTF-8 conversion
+	JS_EncodeStringToBuffer(str, (char *) s->data, len);
 	s->data[len] = 0;
 	s->len = len;
 	
-	// all this was very uneffective,
-	// finally, exiting
 	return JS_TRUE;
 }
 
@@ -90,56 +79,55 @@ js_str2ngx_str(JSContext *cx, JSString *str, ngx_pool_t *pool, ngx_str_t *s)
 u_char *
 js_str2c_str(JSContext *cx, JSString *str, ngx_pool_t *pool, size_t *out_len)
 {
-	u_char              *p, *np;
+	u_char              *p;
 	size_t               len;
 	
 	ngx_assert(cx);
 	ngx_assert(str);
 	ngx_assert(pool);
 	
-	p = (u_char *) JS_GetStringBytes(str);
-	// JS_GetStringBytes() returns an empty C-string on failure,
-	// but on success it does the same, so treat every response as a success
+	// calculate the length in bytes of the UTF-8 string representation
+	// on error JS_GetStringEncodingLength() will report the broken character code
+	len = JS_GetStringEncodingLength(cx, str);
+	if (len == (size_t) -1)
+	{
+		return NULL;
+	}
+	
+	p = ngx_palloc(pool, len + 1);
 	if (p == NULL)
 	{
 		return NULL;
 	}
 	
-	len = ngx_strlen(p);
-	
-	np = ngx_palloc(pool, len+1);
-	if (np == NULL)
-	{
-		return NULL;
-	}
-	
-	ngx_memcpy(np, p, len);
-	np[len] = 0;
+	// get bytes with UTF-16 to UTF-8 conversion
+	JS_EncodeStringToBuffer(str, (char *) p, len);
+	p[len] = 0;
 	
 	if (out_len != NULL)
 		*out_len = len;
 	
-	return np;
+	return p;
 }
 
 
 u_char *
 js_debug_value_to_cstring(JSContext *cx, jsval v)
 {
-	JSString  *str_jss;
-	u_char    *str;
+	JSString  *str;
+	u_char    *p;
 	
-	str_jss = JS_ValueToString(cx, v);
-	if (str_jss == NULL)
+	str = JS_ValueToString(cx, v);
+	if (str == NULL)
 	{
 		return (u_char *) "[JS_ValueToString() == NULL]";
 	}
 	
-	str = (u_char *) JS_GetStringBytes(str_jss);
-	if (str == NULL)
+	p = (u_char *) JS_EncodeString(cx, str);
+	if (p == NULL)
 	{
 		return (u_char *) "[JS_GetStringBytes() == NULL]";
 	}
 	
-	return str;
+	return p;
 }
