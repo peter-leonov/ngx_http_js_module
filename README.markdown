@@ -135,6 +135,10 @@ The JS module could be compiled as any other nginx module:
 
 	./configure --add-module=/absolute/path/to/the/ngx_http_js_module/
 
+on Mac OS Lion add `--with-cc-opt="-Wno-deprecated-declarations"` like so:
+
+	./configure --add-module=/absolute/path/to/the/ngx_http_js_module/ --with-cc-opt="-Wno-deprecated-declarations"
+
 If you have installed Spidermonkey in a non-standard path, or Nginx cannot automatically find the library, you should set some variables before running configure:
 
 	export SPIDERMONKEY_INC=/path/to/spidermonkey/include       # allows config to find <jsapi.h>
