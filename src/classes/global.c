@@ -100,25 +100,22 @@ method_maybeGC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 static JSBool
 getter_utf8length(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 {
-	JSString   *value_jss;
-	u_char     *value;
+	JSString   *str;
 	size_t      len;
 	
 	TRACE();
 	
-	value_jss = JS_ValueToString(cx, OBJECT_TO_JSVAL(self));
-	if (value_jss == NULL)
+	str = JS_ValueToString(cx, OBJECT_TO_JSVAL(self));
+	if (str == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	value = (u_char *) JS_GetStringBytes(value_jss);
-	if (value == NULL)
+	len = JS_GetStringEncodingLength(cx, str);
+	if (len == (size_t) -1)
 	{
 		return JS_FALSE;
 	}
-	
-	len = ngx_strlen(value);
 	
 	if (!JS_NewNumberValue(cx, len, vp))
 	{
