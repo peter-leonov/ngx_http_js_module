@@ -89,7 +89,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 	
 	// rooting
 	ctx->js_request = request;
-	if (!JS_AddNamedRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
+	if (!JS_AddNamedObjectRoot(cx, &ctx->js_request, JS_REQUEST_ROOT_NAME))
 	{
 		// mark the wrapper as inactive
 		JS_SetPrivate(cx, request, NULL);

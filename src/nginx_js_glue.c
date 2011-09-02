@@ -392,7 +392,7 @@ ngx_http_js__glue__set_handler(ngx_conf_t *cf, JSObject **handler, const char *r
 	}
 	
 	*handler = JSVAL_TO_OBJECT(function);
-	if (!JS_AddNamedRoot(js_cx, handler, root_name))
+	if (!JS_AddNamedObjectRoot(js_cx, handler, root_name))
 	{
 		JS_ReportError(js_cx, "Can`t add new root %s", root_name);
 		return NGX_CONF_ERROR;
@@ -512,7 +512,7 @@ ngx_http_js__glue__js_set(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		}
 		
 		jv->function = JSVAL_TO_OBJECT(function);
-		if (!JS_AddNamedRoot(js_cx, &jv->function, JS_VARIABLE_CALLBACK_ROOT_NAME))
+		if (!JS_AddNamedObjectRoot(js_cx, &jv->function, JS_VARIABLE_CALLBACK_ROOT_NAME))
 		{
 			JS_ReportError(js_cx, "Can`t add new root %s", JS_VARIABLE_CALLBACK_ROOT_NAME);
 			return NGX_CONF_ERROR;
