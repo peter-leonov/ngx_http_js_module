@@ -537,7 +537,8 @@ static JSBool
 method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString        *jss_name;
-	const char      *name;
+	const char      name[NGX_MAX_PATH];
+	size_t          len;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -549,8 +550,8 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(jss_name);
-	if (name == NULL)
+	len = JS_EncodeStringToBuffer(jss_name, name, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
