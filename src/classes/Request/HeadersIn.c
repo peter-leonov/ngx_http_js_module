@@ -100,12 +100,18 @@ else \
 
 
 static JSBool
-getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
 {
-	ngx_http_request_t         *r;
+	ngx_http_request_t    *r;
+	jsval                  id;
 	
 	TRACE();
 	GET_PRIVATE(r);
+	
+	if (JS_IdToValue(cx, rawid, &id))
+	{
+		return JS_FALSE;
+	}
 	
 	if (JSVAL_IS_INT(id))
 	{
@@ -212,7 +218,7 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setProperty(JSContext *cx, JSObject *self, jsid rawid, JSBool strict, jsval *vp)
 {
 	u_char                     *key, *lowercased;
 	size_t                      key_len;
@@ -222,9 +228,15 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 	ngx_table_elt_t           **phh;
 	ngx_int_t                   hash;
 	JSString                   *key_jsstr, *value_jsstr;
+	jsval                       id;
 	
 	TRACE();
 	GET_PRIVATE(r);
+	
+	if (JS_IdToValue(cx, rawid, &id))
+	{
+		return JS_FALSE;
+	}
 	
 	if (JSVAL_IS_STRING(id))
 	{
@@ -342,7 +354,7 @@ setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+delProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	TRACE();
 	return JS_TRUE;
