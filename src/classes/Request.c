@@ -1391,19 +1391,19 @@ JSPropertySpec ngx_http_js__nginx_request__props[] =
 
 JSFunctionSpec ngx_http_js__nginx_request__funcs[] =
 {
-	JS_FS("log",               method_log,                  2, 0, 0),
-	JS_FS("sendHttpHeader",    method_sendHttpHeader,       2, 0, 0),
-	JS_FS("print",             method_print,                1, 0, 0),
-	JS_FS("flush",             method_flush,                0, 0, 0),
-	JS_FS("sendString",        method_sendString,           1, 0, 0),
-	JS_FS("subrequest",        method_subrequest,           2, 0, 0),
-	JS_FS("sendSpecial",       method_sendSpecial,          1, 0, 0),
-	JS_FS("discardBody",       method_discardBody,          0, 0, 0),
-	JS_FS("getBody",           method_getBody,              1, 0, 0),
-	JS_FS("sendfile",          method_sendfile,             3, 0, 0),
-	JS_FS("redirect",          method_redirect,             2, 0, 0),
-	JS_FS("setTimer",          method_setTimer,             2, 0, 0),
-	JS_FS("clearTimer",        method_clearTimer,           0, 0, 0),
+	JS_FS("log",               method_log,                  2, 0),
+	JS_FS("sendHttpHeader",    method_sendHttpHeader,       2, 0),
+	JS_FS("print",             method_print,                1, 0),
+	JS_FS("flush",             method_flush,                0, 0),
+	JS_FS("sendString",        method_sendString,           1, 0),
+	JS_FS("subrequest",        method_subrequest,           2, 0),
+	JS_FS("sendSpecial",       method_sendSpecial,          1, 0),
+	JS_FS("discardBody",       method_discardBody,          0, 0),
+	JS_FS("getBody",           method_getBody,              1, 0),
+	JS_FS("sendfile",          method_sendfile,             3, 0),
+	JS_FS("redirect",          method_redirect,             2, 0),
+	JS_FS("setTimer",          method_setTimer,             2, 0),
+	JS_FS("clearTimer",        method_clearTimer,           0, 0),
 	JS_FS_END
 };
 
