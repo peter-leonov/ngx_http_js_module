@@ -9,7 +9,7 @@
 #include <nginx_js_macroses.h>
 
 static JSBool
-method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_load(JSContext *cx, uintN argc, jsval *vp)
 {
 	uintN i;
 	JSString *str;
@@ -19,7 +19,6 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	jsval result, name, old;
 	uint32 oldopts;
 	JSObject *global, *script;
-	// FILE *fileh;
 	
 	TRACE();
 	
@@ -28,12 +27,12 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	
 	for (i = 0; i < argc; i++)
 	{
-		str = JS_ValueToString(cx, argv[i]);
+		str = JS_ValueToString(cx, JS_ARGV(cx, vp)[i]);
 		if (!str)
 		{
 			return JS_FALSE;
 		}
-		name = argv[i] = STRING_TO_JSVAL(str);
+		name = STRING_TO_JSVAL(str);
 		filename = JS_EncodeString(cx, str);
 		if (filename == NULL)
 		{
@@ -49,7 +48,7 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
-		script = JS_CompileFile(cx, self, filename);
+		script = JS_CompileFile(cx, global, filename);
 		if (errno)
 		{
 			ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "error loading script %s: %s.\n", filename, strerror(errno));
@@ -63,7 +62,7 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		{
 			JS_GetProperty(cx, global, filevar_name, &old);
 			JS_SetProperty(cx, global, filevar_name, &name);
-			ok = JS_ExecuteScript(cx, self, script, &result);
+			ok = JS_ExecuteScript(cx, global, script, &result);
 			JS_SetProperty(cx, global, filevar_name, &old);
 		}
 		JS_SetOptions(cx, oldopts);
@@ -78,7 +77,7 @@ method_load(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 }
 
 static JSBool
-method_GC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_GC(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "JS_GC() begin");
 	JS_GC(cx);
@@ -88,7 +87,7 @@ method_GC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 }
 
 static JSBool
-method_maybeGC(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_maybeGC(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "JS_MaybeGC() begin");
 	JS_MaybeGC(cx);
