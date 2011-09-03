@@ -1135,113 +1135,198 @@ request_constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsva
 	return JS_TRUE;
 }
 
-
-enum request_propid
-{
-	REQUEST_URI, REQUEST_METHOD, REQUEST_FILENAME, REQUEST_REMOTE_ADDR, REQUEST_ARGS,
-	REQUEST_HEADERS_IN, REQUEST_HEADERS_OUT,
-	REQUEST_HEADER_ONLY, REQUEST_BODY_FILENAME, REQUEST_HAS_BODY, REQUEST_BODY,
-	REQUEST_VARIABLES
-};
-
 static JSBool
-request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_uri(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t   *r;
-	GET_PRIVATE(r);
 	
-	if (JSVAL_IS_INT(id))
-	{
-		switch (JSVAL_TO_INT(id))
-		{
-			case REQUEST_URI:
-			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->uri, *vp);
-			break;
-			
-			case REQUEST_METHOD:
-			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->method_name, *vp);
-			break;
-			
-			case REQUEST_FILENAME:
-			{
-				size_t root;
-				ngx_str_t           filename;
-				
-				if (ngx_http_map_uri_to_path(r, &filename, &root, 0) == NULL)
-				{
-					JS_ReportOutOfMemory(cx);
-					return JS_FALSE;
-				}
-				filename.len--;
-				
-				NGX_STRING_to_JS_STRING_to_JSVAL(cx, filename, *vp);
-			}
-			break;
-			
-			case REQUEST_REMOTE_ADDR:
-			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->connection->addr_text, *vp);
-			break;
-			
-			case REQUEST_ARGS:
-			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->args, *vp);
-			break;
-			
-			case REQUEST_HEADER_ONLY:
-			*vp = r->header_only ? JSVAL_TRUE : JSVAL_FALSE;
-			break;
-			
-			case REQUEST_HEADERS_IN:
-			{
-				JSObject             *headers;
-				E(headers = ngx_http_js__nginx_headers_in__wrap(cx, self, r), "couldn't wrap headers_in");
-				*vp = OBJECT_TO_JSVAL(headers);
-			}
-			break;
-			
-			case REQUEST_HEADERS_OUT:
-			{
-				JSObject             *headers;
-				E(headers = ngx_http_js__nginx_headers_out__wrap(cx, self, r), "couldn't wrap headers_out");
-				*vp = OBJECT_TO_JSVAL(headers);
-			}
-			break;
-			
-			case REQUEST_BODY_FILENAME:
-			if (r->request_body != NULL && r->request_body->temp_file != NULL)
-			NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->request_body->temp_file->file.name, *vp);
-			break;
-			
-			case REQUEST_HAS_BODY:
-			*vp = r->headers_in.content_length_n <= 0 ? JSVAL_FALSE : JSVAL_TRUE;
-			break;
-			
-			case REQUEST_BODY:
-			if (r->request_body == NULL || r->request_body->temp_file || r->request_body->bufs == NULL)
-			{
-				*vp = JSVAL_VOID;
-			}
-			else
-			{
-				DATA_LEN_to_JS_STRING_to_JSVAL(cx, r->request_body->bufs->buf->pos, r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos, *vp);
-			}
-			break;
-			
-			case REQUEST_VARIABLES:
-			{
-				JSObject   *js_variables;
-				js_variables = ngx_http_js__nginx_variables__wrap(cx, r);
-				if (js_variables == NULL)
-				{
-					// just forward the exception
-					return JS_FALSE;
-				}
-				*vp = OBJECT_TO_JSVAL(js_variables);
-			}
-			break;
-		}
-	}
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->uri, *vp);
+	
 	return JS_TRUE;
 }
+
+static JSBool
+getter_method(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->method_name, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_filename(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	ngx_str_t             filename;
+	size_t                root;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	if (ngx_http_map_uri_to_path(r, &filename, &root, 0) == NULL)
+	{
+		JS_ReportOutOfMemory(cx);
+		return JS_FALSE;
+	}
+	filename.len--;
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, filename, *vp);
+	
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_remoteAddr(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->connection->addr_text, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_args(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->args, *vp);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_headerOnly(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	*vp = r->header_only ? JSVAL_TRUE : JSVAL_FALSE;
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_headerIn(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	JSObject             *headers;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	E(headers = ngx_http_js__nginx_headers_in__wrap(cx, self, r), "couldn't wrap headers_in");
+	*vp = OBJECT_TO_JSVAL(headers);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_headerOut(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	JSObject             *headers;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	E(headers = ngx_http_js__nginx_headers_out__wrap(cx, self, r), "couldn't wrap headers_out");
+	*vp = OBJECT_TO_JSVAL(headers);
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_bodyFilename(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	if (r->request_body != NULL && r->request_body->temp_file != NULL)
+	{
+		NGX_STRING_to_JS_STRING_to_JSVAL(cx, r->request_body->temp_file->file.name, *vp);
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_hasBody(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	*vp = r->headers_in.content_length_n <= 0 ? JSVAL_FALSE : JSVAL_TRUE;
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_body(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	if (r->request_body == NULL || r->request_body->temp_file || r->request_body->bufs == NULL)
+	{
+		*vp = JSVAL_VOID;
+	}
+	else
+	{
+		DATA_LEN_to_JS_STRING_to_JSVAL(cx, r->request_body->bufs->buf->pos, r->request_body->bufs->buf->last - r->request_body->bufs->buf->pos, *vp);
+	}
+	
+	return JS_TRUE;
+}
+
+static JSBool
+getter_variables(JSContext *cx, JSObject *self, jsid id, jsval *vp)
+{
+	ngx_http_request_t   *r;
+	JSObject             *js_variables;
+	
+	GET_PRIVATE(r);
+	TRACE_REQUEST_GETTER();
+	
+	js_variables = ngx_http_js__nginx_variables__wrap(cx, r);
+	if (js_variables == NULL)
+	{
+		// just forward the exception
+		return JS_FALSE;
+	}
+	*vp = OBJECT_TO_JSVAL(js_variables);
+	
+	return JS_TRUE;
+}
+
+
+
+
+
+
 
 static JSBool
 getter_allowRanges(JSContext *cx, JSObject *self, jsid id, jsval *vp)
@@ -1370,21 +1455,21 @@ setter_cleanupCallback(JSContext *cx, JSObject *self, jsid id, JSBool strict, js
 
 JSPropertySpec ngx_http_js__nginx_request__props[] =
 {
-	{"uri",             REQUEST_URI,              JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"method",          REQUEST_METHOD,           JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"filename",        REQUEST_FILENAME,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"remoteAddr",      REQUEST_REMOTE_ADDR,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"headersIn",       REQUEST_HEADERS_IN,       JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"headersOut",      REQUEST_HEADERS_OUT,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"args",            REQUEST_ARGS,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"headerOnly",      REQUEST_HEADER_ONLY,      JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"bodyFilename",    REQUEST_BODY_FILENAME,    JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"hasBody",         REQUEST_HAS_BODY,         JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"body",            REQUEST_BODY,             JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"variables",       REQUEST_VARIABLES,        JSPROP_READONLY|JSPROP_ENUMERATE,   NULL, NULL},
-	{"allowRanges",     0,                        JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
-	{"oncleanup",       0,                        JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
-	{"internal",        0,                        JSPROP_ENUMERATE,                   getter_internal,           setter_internal},
+	{"uri",             0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_uri, NULL},
+	{"method",          0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_method, NULL},
+	{"filename",        0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_filename, NULL},
+	{"remoteAddr",      0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_remoteAddr, NULL},
+	{"headersIn",       0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_headerIn, NULL},
+	{"headersOut",      0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_headerOut, NULL},
+	{"args",            0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_args, NULL},
+	{"headerOnly",      0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_headerOnly, NULL},
+	{"bodyFilename",    0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_bodyFilename, NULL},
+	{"hasBody",         0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_hasBody, NULL},
+	{"body",            0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_body, NULL},
+	{"variables",       0,   JSPROP_READONLY|JSPROP_ENUMERATE,   getter_variables, NULL},
+	{"allowRanges",     0,   JSPROP_ENUMERATE,                   getter_allowRanges, setter_allowRanges},
+	{"oncleanup",       0,   JSPROP_ENUMERATE,                   getter_cleanupCallback,    setter_cleanupCallback},
+	{"internal",        0,   JSPROP_ENUMERATE,                   getter_internal,           setter_internal},
 	{0, 0, 0, NULL, NULL}
 };
 
