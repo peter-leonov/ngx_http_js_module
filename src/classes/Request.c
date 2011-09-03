@@ -317,13 +317,14 @@ method_log(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_FALSE;
 	}
 	
-	mes = JS_GetStringBytes(str);
+	mes = JS_EncodeString(cx, str);
 	if (str == NULL)
 	{
 		return JS_FALSE;
 	}
 	
 	ngx_log_error(level, r->connection->log, 0, "%s", mes);
+	JS_free(cx, mes);
 	
 	return JS_TRUE;
 }
