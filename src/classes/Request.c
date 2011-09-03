@@ -282,11 +282,12 @@ ngx_http_js__request__call_function(JSContext *cx, ngx_http_request_t *r, JSObje
 
 
 static JSBool
-method_log(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_log(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t       *r;
 	ngx_uint_t                level;
 	JSString                 *str;
+	JSObject                 *self;
 	char                     *mes;
 	
 	GET_PRIVATE(r);
@@ -303,15 +304,15 @@ method_log(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	}
 	else
 	{
-		if (!JSVAL_IS_INT(argv[1]))
+		if (!JSVAL_IS_INT(JS_ARGV(cx, vp)[1]))
 		{
 			THROW("level must be of type Integer");
 		}
 		
-		level = JSVAL_TO_INT(argv[1]);
+		level = JSVAL_TO_INT(JS_ARGV(cx, vp)[1]);
 	}
 	
-	str = JS_ValueToString(cx, argv[0]);
+	str = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (str == NULL)
 	{
 		return JS_FALSE;
@@ -331,9 +332,10 @@ method_log(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 
 
 static JSBool
-method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_sendHttpHeader(JSContext *cx, uintN argc, jsval *vp)
 {
-	ngx_http_request_t *r;
+	ngx_http_request_t    *r;
+	JSObject              *self;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -347,7 +349,7 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 	{
 		JSString  *str;
 		
-		str = JS_ValueToString(cx, argv[0]);
+		str = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 		if (str == NULL)
 		{
 			return JS_FALSE;
@@ -365,18 +367,19 @@ method_sendHttpHeader(JSContext *cx, JSObject *self, uintN argc, jsval *argv, js
 	E(ngx_http_set_content_type(r) == NGX_OK, "Can`t ngx_http_set_content_type(r)")
 	E(ngx_http_send_header(r) == NGX_OK, "Can`t ngx_http_send_header(r)");
 	
-	*rval = JSVAL_TRUE;
+	JS_SET_RVAL(cx, vp, JSVAL_TRUE);
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_print(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
 	JSString            *str;
+	JSObject            *self;
 	ngx_chain_t          out;
 	ngx_int_t            rc;
 	
@@ -385,7 +388,7 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	
 	E(argc == 1, "Nginx.Request#print takes 1 argument: str");
 	
-	str = JS_ValueToString(cx, argv[0]);
+	str = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (str == NULL)
 	{
 		return JS_FALSE;
@@ -411,18 +414,19 @@ method_print(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	out.next = NULL;
 	rc = ngx_http_output_filter(r, &out);
 	
-	*rval = INT_TO_JSVAL(rc);
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(rc));
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_flush(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_flush(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	ngx_chain_t          out;
 	ngx_int_t            rc;
+	JSObject            *self;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -439,18 +443,19 @@ method_flush(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	out.next = NULL;
 	rc = ngx_http_output_filter(r, &out);
 	
-	*rval = INT_TO_JSVAL(rc);
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(rc));
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_sendString(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	ngx_buf_t           *b;
 	size_t               len;
 	JSString            *str;
+	JSObject            *self;
 	ngx_chain_t          out;
 	ngx_int_t            rc;
 	
@@ -462,7 +467,7 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 		THROW("Nginx.Request#sendString takes 1 mandatory argument: string, and 1 optional contentType");
 	}
 	
-	str = JS_ValueToString(cx, argv[0]);
+	str = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (str == NULL)
 	{
 		return JS_FALSE;
@@ -495,7 +500,7 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	{
 		JSString  *str;
 		
-		str = JS_ValueToString(cx, argv[1]);
+		str = JS_ValueToString(cx, JS_ARGV(cx, vp)[1]);
 		if (str == NULL)
 		{
 			return JS_FALSE;
@@ -520,43 +525,49 @@ method_sendString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	ngx_http_send_special(r, NGX_HTTP_FLUSH);
 	
-	*rval = INT_TO_JSVAL(rc);
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(rc));
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_sendSpecial(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_sendSpecial(JSContext *cx, uintN argc, jsval *vp)
 {
-	ngx_http_request_t  *r;
+	ngx_http_request_t    *r;
+	JSObject              *self;
+	jsval                  rval;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
+	E(argc == 1 && JSVAL_IS_INT(JS_ARGV(cx, vp)[0]), "Nginx.Request#sendSpecial takes 1 argument: flags:Number");
 	
-	*rval = INT_TO_JSVAL(ngx_http_send_special(r, (ngx_uint_t)JSVAL_TO_INT(argv[0])));
+	rval = INT_TO_JSVAL(ngx_http_send_special(r, (ngx_uint_t)JSVAL_TO_INT(JS_ARGV(cx, vp)[0])));
+	JS_SET_RVAL(cx, vp, rval);
 	return JS_TRUE;
 }
 
 static JSBool
-method_getBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_getBody(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
+	JSObject            *self;
+	jsval                rval;
+	
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_OBJECT(argv[0]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[0])), "Request#hasBody takes 1 argument: callback:Function");
+	E(argc == 1 && JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[0]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[0])), "Request#hasBody takes 1 argument: callback:Function");
 	
 	
 	if (r->headers_in.content_length_n <= 0)
 	{
-		*rval = JSVAL_FALSE;
+		JS_SET_RVAL(cx, vp, JSVAL_FALSE);
 		return JS_TRUE;
 	}
 	
-	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, argv[0]),
+	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK, JS_ARGV(cx, vp)[0]),
 		"can't set slot NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__HAS_BODY_CALLBACK);
 	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "has body callback set");
 	
@@ -570,7 +581,8 @@ method_getBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rv
 	}
 	
 	// ngx_http_read_client_request_body implies count++
-	*rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_getBody_handler));
+	rval = INT_TO_JSVAL(ngx_http_read_client_request_body(r, method_getBody_handler));
+	JS_SET_RVAL(cx, vp, rval);
 	return JS_TRUE;
 }
 
@@ -627,20 +639,23 @@ method_getBody_handler(ngx_http_request_t *r)
 
 
 static JSBool
-method_discardBody(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_discardBody(JSContext *cx, uintN argc, jsval *vp)
 {
-	ngx_http_request_t  *r;
+	ngx_http_request_t    *r;
+	JSObject              *self;
+	jsval                  rval;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	*rval = INT_TO_JSVAL(ngx_http_discard_request_body(r));
+	rval = INT_TO_JSVAL(ngx_http_discard_request_body(r));
+	JS_SET_RVAL(cx, vp, rval);
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_sendfile(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	u_char                    *filename;
@@ -651,23 +666,24 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	ngx_open_file_info_t       of;
 	ngx_http_core_loc_conf_t  *clcf;
 	ngx_chain_t                out;
+	JSObject                  *self;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
 	
-	E(argc >= 1 && JSVAL_IS_STRING(argv[0]),
+	E(argc >= 1 && JSVAL_IS_STRING(JS_ARGV(cx, vp)[0]),
 		"Nginx.Request#sendfile takes 1 mandatory argument: filename:String, and 2 optional offset:Number and bytes:Number");
 	
-	filename = js_str2c_str(cx, JSVAL_TO_STRING(argv[0]), r->pool, NULL);
+	filename = js_str2c_str(cx, JSVAL_TO_STRING(JS_ARGV(cx, vp)[0]), r->pool, NULL);
 	if (filename == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	offset = argc < 2 ? 0 : JSVAL_TO_INT(argv[1]);
-	bytes = argc < 3 ? 0 : JSVAL_TO_INT(argv[2]);
+	offset = argc < 2 ? 0 : JSVAL_TO_INT(JS_ARGV(cx, vp)[1]);
+	bytes = argc < 3 ? 0 : JSVAL_TO_INT(JS_ARGV(cx, vp)[2]);
 	
 	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "sending file \"%s\" with offset=%d and bytes=%d", filename, offset, bytes);
 	
@@ -716,7 +732,7 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		
 		ngx_log_error(NGX_LOG_CRIT, r->connection->log, ngx_errno, "%s \"%s\" failed", of.failed, filename);
 		
-		*rval = JSVAL_FALSE;
+		JS_SET_RVAL(cx, vp, JSVAL_FALSE);
 		return JS_TRUE;
 	}
 	
@@ -738,17 +754,18 @@ method_sendfile(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	out.buf = b;
 	out.next = NULL;
 	
-	*rval = INT_TO_JSVAL(ngx_http_output_filter(r, &out));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_http_output_filter(r, &out)));
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_redirect(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_redirect(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	ngx_str_t            uri, args;
 	JSString            *uri_jss, *args_jss;
+	JSObject            *self;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -758,7 +775,7 @@ method_redirect(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		THROW("Nginx.Request#sendfile takes 1 mandatory argument: \"uri\", and 1 optional \"args\"")
 	}
 	
-	uri_jss = JS_ValueToString(cx, argv[0]);
+	uri_jss = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (uri_jss == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
@@ -771,9 +788,9 @@ method_redirect(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	}
 	
 	
-	if (!JSVAL_IS_VOID(argv[1]))
+	if (!JSVAL_IS_VOID(JS_ARGV(cx, vp)[1]))
 	{
-		args_jss = JS_ValueToString(cx, argv[1]);
+		args_jss = JS_ValueToString(cx, JS_ARGV(cx, vp)[1]);
 		if (args_jss == NULL)
 		{
 			JS_ReportOutOfMemory(cx);
@@ -790,30 +807,30 @@ method_redirect(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		ngx_str_null(&args);
 	}
 	
-	*rval = INT_TO_JSVAL(ngx_http_internal_redirect(r, &uri, &args));
-	
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_http_internal_redirect(r, &uri, &args)));
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_setTimer(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
 	ngx_event_t         *timer;
+	JSObject            *self;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 2 && JSVAL_IS_OBJECT(argv[0]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[0])) && JSVAL_IS_INT(argv[1]),
+	E(argc == 2 && JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[0]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[0])) && JSVAL_IS_INT(JS_ARGV(cx, vp)[1]),
 			"Nginx.Request#setTimer() takes two mandatory argument callback:Function and milliseconds:Number");
 	
 	ctx = ngx_http_get_module_ctx(r, ngx_http_js_module);
 	ngx_assert(ctx);
 	timer = &ctx->js_timer;
 	
-	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMER, argv[0]),
+	E(JS_SetReservedSlot(cx, self, NGX_JS_REQUEST_SLOT__SET_TIMER, JS_ARGV(cx, vp)[0]),
 		"can't set slot NGX_JS_REQUEST_SLOT__SET_TIMER(%d)", NGX_JS_REQUEST_SLOT__SET_TIMER);
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "timer.timer_set = %i", timer->timer_set);
@@ -833,17 +850,18 @@ method_setTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 	
 	// implies timer_set = 1;
 	// AFAIK, the second addition of the timer does not duplicate it
-	ngx_add_timer(timer, (ngx_uint_t) argv[1]);
+	ngx_add_timer(timer, (ngx_uint_t) JSVAL_TO_INT(JS_ARGV(cx, vp)[1]));
 	
 	return JS_TRUE;
 }
 
 static JSBool
-method_clearTimer(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_clearTimer(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_http_request_t  *r;
 	ngx_http_js_ctx_t   *ctx;
 	ngx_event_t         *timer;
+	JSObject            *self;
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
@@ -930,7 +948,7 @@ method_setTimer_handler(ngx_event_t *timer)
 
 
 static JSBool
-method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_subrequest(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_int_t                    rc;
 	ngx_http_request_t          *r, *sr;
@@ -939,16 +957,16 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	ngx_uint_t                   flags;
 	ngx_http_js_ctx_t           *sr_ctx;
 	JSString                    *str;
-	JSObject                    *subrequest;
+	JSObject                    *subrequest, *self;
 	
 	
 	GET_PRIVATE(r);
 	TRACE_REQUEST_METHOD();
 	
-	E(argc == 2 && JSVAL_IS_STRING(argv[0]) && JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1])),
+	E(argc == 2 && JSVAL_IS_STRING(JS_ARGV(cx, vp)[0]) && JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[1])),
 		"Request#subrequest takes 2 mandatory arguments: uri:String and callback:Function");
 	
-	str = JSVAL_TO_STRING(argv[0]);
+	str = JSVAL_TO_STRING(JS_ARGV(cx, vp)[0]);
 	
 	if (!js_str2ngx_str(cx, str, r->pool, &uri))
 	{
@@ -1010,7 +1028,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	sr->filter_need_in_memory = 1;
 	
 	
-	if (!JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, argv[1]))
+	if (!JS_SetReservedSlot(cx, subrequest, NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK, JS_ARGV(cx, vp)[1]))
 	{
 		JS_ReportError(cx, "can't set slot NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK(%d)", NGX_JS_REQUEST_SLOT__SUBREQUEST_CALLBACK);
 		return JS_FALSE;
@@ -1022,7 +1040,7 @@ method_subrequest(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	// mark the handler as active
 	psr->data = r;
 	
-	*rval = OBJECT_TO_JSVAL(subrequest);
+	JS_SET_RVAL(cx, vp, OBJECT_TO_JSVAL(subrequest));
 	return JS_TRUE;
 }
 
@@ -1130,7 +1148,7 @@ method_subrequest_handler(ngx_http_request_t *sr, void *data, ngx_int_t rc)
 
 
 static JSBool
-request_constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+request_constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	return JS_TRUE;
 }

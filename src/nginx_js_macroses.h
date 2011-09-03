@@ -55,6 +55,7 @@ if (!(expr)) \
 
 #define GET_PRIVATE(private) \
 ngx_assert(cx); \
+self = JS_THIS_OBJECT(cx, vp); \
 ngx_assert(self); \
 if ( (private = JS_GetInstancePrivate(cx, self, private_class, NULL)) == NULL ) \
 { \
