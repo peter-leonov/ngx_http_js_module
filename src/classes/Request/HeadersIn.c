@@ -101,22 +101,16 @@ else \
 
 
 static JSBool
-getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
+getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t    *r;
-	jsval                  id;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	if (JS_IdToValue(cx, rawid, &id))
+	if (JSID_IS_INT(id))
 	{
-		return JS_FALSE;
-	}
-	
-	if (JSVAL_IS_INT(id))
-	{
-		switch (JSVAL_TO_INT(id))
+		switch (JSID_TO_INT(id))
 		{
 			case 1:
 			{
@@ -150,7 +144,7 @@ getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
 			
 		}
 	}
-	else if (JSVAL_IS_STRING(id))
+	else if (JSID_IS_STRING(id))
 	{
 		ngx_table_elt_t            *header;
 		ngx_http_header_t          *hh;
@@ -158,7 +152,7 @@ getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
 		u_char                     *key;
 		size_t                      len;
 		
-		key = js_str2c_str(cx, JSVAL_TO_STRING(id), r->pool, &len);
+		key = js_str2c_str(cx, JSID_TO_STRING(id), r->pool, &len);
 		if (key == NULL)
 		{
 			return JS_FALSE;
