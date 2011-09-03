@@ -155,17 +155,14 @@ getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
 		ngx_table_elt_t            *header;
 		ngx_http_header_t          *hh;
 		ngx_int_t                   hash;
-		u_char                     *key, *lowercased;
-		u_int                       len;
+		u_char                     *key;
+		size_t                      len;
 		
-		
-		key = (u_char *) JS_GetStringBytes(JSVAL_TO_STRING(id));
+		key = js_str2c_str(cx, JSVAL_TO_STRING(id), r->pool, &len);
 		if (key == NULL)
 		{
 			return JS_FALSE;
 		}
-		
-		len = ngx_strlen(key);
 		
 		if (len == 0)
 		{
@@ -173,18 +170,12 @@ getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
 			return JS_TRUE;
 		}
 		
-		lowercased = ngx_palloc(r->pool, len);
-		if (lowercased == NULL)
-		{
-			JS_ReportOutOfMemory(cx);
-			return JS_FALSE;
-		}
-		
-		hash = hash_header_name(lowercased, key, len);
+		// actually lowercase the key in-place
+		hash = hash_header_name(key, key, len);
 		
 		header = NULL;
 		
-		hh = search_hashed_headers_in(r, hash, lowercased, len);
+		hh = search_hashed_headers_in(r, hash, key, len);
 		if (hh != NULL)
 		{
 			// and this means its value was already cached in some field
@@ -199,6 +190,7 @@ getProperty(JSContext *cx, JSObject *self, jsid rawid, jsval *vp)
 		
 		if (header == NULL)
 		{
+			// case insensitive search
 			header = search_headers_in(r, key, len);
 		}
 		
@@ -473,7 +465,7 @@ search_headers_in(ngx_http_request_t *r, u_char *name, size_t len)
 			i = 0;
 		}
 		
-		// just compare names case insensitively
+		// just compare names case insensitively (ngx_strNcasecmp is just a size_t vrsrion)
 		if (len != h[i].key.len || ngx_strcasecmp(name, h[i].key.data) != 0)
 		{
 			continue;
