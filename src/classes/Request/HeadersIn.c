@@ -82,9 +82,10 @@ ngx_http_js__nginx_headers_in__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_
 
 
 static JSBool
-constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
+	JS_SET_RVAL(cx, vp, JSVAL_VOID);
 	return JS_TRUE;
 }
 
