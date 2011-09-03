@@ -108,7 +108,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		// mark the request as not wrapped
 		ctx->js_request = NULL;
 		// un-root the wrapper
-		JS_RemoveRoot(cx, &ctx->js_request);
+		JS_RemoveObjectRoot(cx, &ctx->js_request);
 		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
@@ -126,7 +126,7 @@ ngx_http_js__nginx_request__wrap(JSContext *cx, ngx_http_request_t *r)
 		// mark the request as not wrapped
 		ctx->js_request = NULL;
 		// un-root the wrapper
-		JS_RemoveRoot(cx, &ctx->js_request);
+		JS_RemoveObjectRoot(cx, &ctx->js_request);
 		JS_ReportOutOfMemory(cx);
 		return NULL;
 	}
@@ -196,7 +196,7 @@ cleanup_request(ngx_http_js_ctx_t *ctx, ngx_http_request_t *r, JSContext *cx)
 	{
 		// second param has to be &ctx->js_request
 		// because JS_AddRoot was used with it's address
-		if (!JS_RemoveRoot(cx, &ctx->js_request))
+		if (!JS_RemoveObjectRoot(cx, &ctx->js_request))
 		{
 			ngx_log_error(NGX_LOG_CRIT, r->connection->log, 0, "can't remove cleaned up root %s", JS_REQUEST_ROOT_NAME);
 		}
