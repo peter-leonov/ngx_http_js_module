@@ -1244,7 +1244,7 @@ request_getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-getter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_allowRanges(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t   *r;
 	
@@ -1257,7 +1257,7 @@ getter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_allowRanges(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t   *r;
 	JSBool                b;
@@ -1277,7 +1277,7 @@ setter_allowRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_internal(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t   *r;
 	
@@ -1290,7 +1290,7 @@ getter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_internal(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t   *r;
 	JSBool                b;
@@ -1310,7 +1310,7 @@ setter_internal(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_cleanupCallback(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	ngx_http_js_ctx_t         *ctx;
@@ -1338,7 +1338,7 @@ getter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_cleanupCallback(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_cleanupCallback(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	ngx_http_js_ctx_t         *ctx;
