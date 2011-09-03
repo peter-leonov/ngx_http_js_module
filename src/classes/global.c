@@ -97,7 +97,7 @@ method_maybeGC(JSContext *cx, uintN argc, jsval *vp)
 }
 
 static JSBool
-getter_utf8length(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_utf8length(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	JSString   *str;
 	size_t      len;
