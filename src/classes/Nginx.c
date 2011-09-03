@@ -24,34 +24,45 @@
 #endif
 
 static JSBool
-method_logError(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_logError(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString                       *jsstr;
 	ngx_uint_t                      level;
+	char                           *p;
 	
 	TRACE();
 	
-	if (argc != 2 || !JSVAL_IS_INT(argv[0]) || !JSVAL_IS_STRING(argv[1]))
+	if (argc != 2 || !JSVAL_IS_INT(JS_ARGV(cx, vp)[0]) || !JSVAL_IS_STRING(JS_ARGV(cx, vp)[1]))
 	{
 		JS_ReportError(cx, "Nginx.logError takes 2 arguments of types Integer and String");
 		return JS_FALSE;
 	}
 	
-	level = JSVAL_TO_INT(argv[0]);
-	jsstr = JSVAL_TO_STRING(argv[1]);
+	level = JSVAL_TO_INT(JS_ARGV(cx, vp)[0]);
+	jsstr = JSVAL_TO_STRING(JS_ARGV(cx, vp)[1]);
 	
-	ngx_log_error(level, js_log(), 0, "%s", JS_GetStringBytes(jsstr));
+	p = JS_EncodeString(cx, jsstr);
+	if (p == NULL)
+	{
+		return JS_FALSE;
+	}
 	
+	ngx_log_error(level, js_log(), 0, "%s", p);
+	
+	JS_free(cx, p);
+	
+	JS_SET_RVAL(cx, vp, JSVAL_VOID);
 	return JS_TRUE;
 }
 
 static JSBool
-method_md5(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_md5(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString                      *jsstr;
 	ngx_md5_t                      md5;
 	u_char                        *str, hash[16], hex[32];
 	size_t                         len;
+	jsval                          rval;
 	
 	TRACE();
 	
@@ -61,13 +72,13 @@ method_md5(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_FALSE;
 	}
 	
-	jsstr = JS_ValueToString(cx, argv[0]);
+	jsstr = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jsstr == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	str = (u_char *) JS_GetStringBytes(jsstr);
+	str = (u_char *) JS_EncodeString(cx, jsstr);
 	if (str == NULL)
 	{
 		return JS_FALSE;
@@ -81,7 +92,10 @@ method_md5(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	
 	ngx_hex_dump(hex, hash, 16);
 	
-	DATA_LEN_to_JS_STRING_to_JSVAL(cx, hex, 32, *rval);
+	DATA_LEN_to_JS_STRING_to_JSVAL(cx, hex, 32, rval);
+	JS_SET_RVAL(cx, vp, rval);
+	
+	JS_free(cx, str);
 	
 	return JS_TRUE;
 }
@@ -183,7 +197,7 @@ setup_constants(JSContext *cx, JSObject *obj)
 
 
 static JSBool
-getter_time(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_time(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	TRACE_STATIC_GETTER()
 	
@@ -198,7 +212,7 @@ getter_time(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_prefix(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_prefix(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	TRACE_STATIC_GETTER()
 	
@@ -216,7 +230,7 @@ getter_prefix(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_pid(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_pid(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	TRACE_STATIC_GETTER()
 	
@@ -239,15 +253,15 @@ static JSClass nginx_class =
 {
 	"Nginx",
 	0,
-	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
 
 static JSFunctionSpec nginx_class_funcs[] =
 {
-	JS_FS("logError",    method_logError,         1, 0, 0),
-	JS_FS("md5",         method_md5,              1, 0, 0),
+	JS_FS("logError",    method_logError,         1, 0),
+	JS_FS("md5",         method_md5,              1, 0),
 	JS_FS_END
 };
 
