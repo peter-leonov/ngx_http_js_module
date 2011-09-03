@@ -1411,7 +1411,7 @@ JSClass ngx_http_js__nginx_request__class =
 {
 	"Request",
 	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(NGX_JS_REQUEST_SLOTS_COUNT),
-	JS_PropertyStub, JS_PropertyStub, request_getProperty, JS_PropertyStub,
+	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
