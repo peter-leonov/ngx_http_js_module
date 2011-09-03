@@ -11,28 +11,27 @@
 // token from SpiderMonkey 1.7.0 source (js.c:2740)
 
 static JSBool
-env_setProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
+env_setProperty(JSContext *cx, JSObject *obj, jsid id, JSBool strict, jsval *vp)
 {
 	TRACE();
 /* XXX porting may be easy, but these don't seem to supply setenv by default */
 #if !defined XP_BEOS && !defined XP_OS2 && !defined SOLARIS
 	JSString *idstr, *valstr;
-	const char *name, *value;
+	jsval idval;
+	char *name, *value;
 	int rv;
 	
 	
-	idstr = JS_ValueToString(cx, id);
+	if (!JS_IdToValue(cx, id, &idval))
+	{
+		return JS_FALSE;
+	}
+	
+	idstr = JS_ValueToString(cx, idval);
 	if (idstr == NULL)
 	{
 		return JS_FALSE;
 	}
-	
-	name = JS_GetStringBytes(idstr);
-	if (name[0] == '\0')
-	{
-		return JS_FALSE;
-	}
-	
 	
 	valstr = JS_ValueToString(cx, *vp);
 	if (valstr == NULL)
@@ -40,8 +39,15 @@ env_setProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	value = JS_GetStringBytes(valstr);
-	if (value[0] == '\0')
+	
+	name = JS_EncodeString(cx, idstr);
+	if (name == NULL)
+	{
+		return JS_FALSE;
+	}
+	
+	value = JS_EncodeString(cx, valstr);
+	if (value == NULL)
 	{
 		return JS_FALSE;
 	}
@@ -76,6 +82,8 @@ env_setProperty(JSContext *cx, JSObject *obj, jsval id, jsval *vp)
 	}
 	*vp = STRING_TO_JSVAL(valstr);
 #endif /* !defined XP_BEOS && !defined XP_OS2 && !defined SOLARIS */
+	JS_free(cx, name);
+	JS_free(cx, value);
 	return JS_TRUE;
 }
 
@@ -120,10 +128,11 @@ env_enumerate(JSContext *cx, JSObject *obj)
 }
 
 static JSBool
-env_resolve(JSContext *cx, JSObject *obj, jsval id, uintN flags, JSObject **objp)
+env_resolve(JSContext *cx, JSObject *obj, jsid id, uintN flags, JSObject **objp)
 {
 	JSString *idstr, *valstr;
-	const char *name, *value;
+	char *name, *value;
+	jsval idval;
 	
 	TRACE();
 	
@@ -132,14 +141,19 @@ env_resolve(JSContext *cx, JSObject *obj, jsval id, uintN flags, JSObject **objp
 		return JS_TRUE;
 	}
 	
-	idstr = JS_ValueToString(cx, id);
+	if (!JS_IdToValue(cx, id, &idval))
+	{
+		return JS_FALSE;
+	}
+	
+	idstr = JS_ValueToString(cx, idval);
 	if (idstr == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(idstr);
-	if (name[0] == '\0')
+	name = JS_EncodeString(cx, idstr);
+	if (name == NULL)
 	{
 		return JS_FALSE;
 	}
@@ -160,6 +174,8 @@ env_resolve(JSContext *cx, JSObject *obj, jsval id, uintN flags, JSObject **objp
 	{
 		return JS_FALSE;
 	}
+	
+	JS_free(cx, name);
 	
 	*objp = obj;
 	return JS_TRUE;
