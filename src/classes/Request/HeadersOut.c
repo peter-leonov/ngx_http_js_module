@@ -109,7 +109,7 @@ getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 	u_char                     *key;
 	ngx_table_elt_t            *header;
 	jsval                       idval;
-	JSString                   *key_jsstr;
+	JSString                   *key_jss;
 	
 	TRACE();
 	GET_PRIVATE(r);
@@ -119,13 +119,13 @@ getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	if (key_jsstr == NULL)
 	key_jss = JS_ValueToString(cx, idval);
+	if (key_jss == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	key = (u_char *) JS_GetStringBytes(key_jsstr);
+	key = (u_char *) JS_GetStringBytes(key_jss);
 	if (key == NULL)
 	{
 		return JS_FALSE;
