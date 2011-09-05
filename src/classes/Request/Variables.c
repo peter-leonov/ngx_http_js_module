@@ -77,7 +77,7 @@ ngx_http_js__nginx_variables__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t
 }
 
 static JSBool
-constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
 	JS_ReportError(cx, "new Nginx.Request.Variables() can be constucted only with request.variables");
