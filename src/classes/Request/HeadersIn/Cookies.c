@@ -69,20 +69,22 @@ ngx_http_js__nginx_cookies__cleanup(ngx_http_js_ctx_t *ctx, ngx_http_request_t *
 }
 
 static JSBool
-method_empty(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_empty(JSContext *cx, uintN argc, jsval *vp)
 {
-	ngx_http_request_t         *r;
+	ngx_http_request_t       *r;
+	JSObject                 *self;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
 	r->headers_in.cookies.nelts = 0;
 	
+	JS_SET_RVAL(cx, vp, JSVAL_VOID);
 	return JS_TRUE;
 }
 
 static JSBool
-constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
 	JS_ReportError(cx, "new Nginx.Cookie() can be constucted only with request#headersIn#cookies");
