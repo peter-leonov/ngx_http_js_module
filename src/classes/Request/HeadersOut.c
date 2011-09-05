@@ -102,18 +102,24 @@ constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 
 
 static JSBool
-getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	u_char                     *key;
 	ngx_table_elt_t            *header;
+	jsval                       idval;
 	JSString                   *key_jsstr;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	key_jsstr = JS_ValueToString(cx, id);
+	if (!JS_IdToValue(cx, id, &idval))
+	{
+		return JS_FALSE;
+	}
+	
 	if (key_jsstr == NULL)
+	key_jss = JS_ValueToString(cx, idval);
 	{
 		return JS_FALSE;
 	}
@@ -138,17 +144,23 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	u_char                     *key;
 	ngx_table_elt_t            *header;
+	jsval                       idval;
 	JSString                   *key_jss, *value_jss;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	key_jss = JS_ValueToString(cx, id);
+	if (!JS_IdToValue(cx, id, &idval))
+	{
+		return JS_FALSE;
+	}
+	
+	key_jss = JS_ValueToString(cx, idval);
 	if (key_jss == NULL)
 	{
 		return JS_FALSE;
