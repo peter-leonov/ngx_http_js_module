@@ -94,8 +94,6 @@ getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 	ngx_http_variable_value_t  *vv;
 	jsval                       idval;
 	JSString                   *key_jss;
-	u_char                     *key, *lowcase;
-	size_t                      len;
 	
 	TRACE();
 	GET_PRIVATE(r);
@@ -105,31 +103,24 @@ getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	key = (u_char *) JS_GetStringBytes(key_jss);
-	if (key == NULL)
+	key_jss = JS_ValueToString(cx, idval);
+	if (key_jss == NULL)
 	{
-		JS_ReportError(cx, "can't get the C string of the property name");
 		return JS_FALSE;
 	}
-	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "variables[\"%s\"]", key);
-	
-	len = ngx_strlen(key);
 	
 	// we have to create the string on the request pool
 	// because the variable name may be cached just after
-	// the first seach for the var
-	lowcase = ngx_pnalloc(r->pool, len);
-	if (lowcase == NULL)
+	// the first seach for it
+	if (!js_str2ngx_str(cx, key_jss, r->pool, &var))
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	hash = ngx_hash_strlow(lowcase, key, len);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "variables[\"%s\"]", var.data);
 	
-	var.len = len;
-	var.data = lowcase;
+	// lowercase in-place
+	hash = ngx_hash_strlow(var.data, var.data, var.len);
 	
 	// ngx_http_get_variable() calls v->get_handler() and
 	// checks for *special* variables kinda $http_*, $cookie_* and others,
@@ -160,13 +151,12 @@ static JSBool
 setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	ngx_str_t                   var, value_ns;
+	ngx_str_t                   var, val;
 	ngx_uint_t                  hash;
 	ngx_http_variable_value_t  *vv;
 	ngx_int_t                   rc;
 	jsval                       idval;
 	JSString                   *key_jss, *value_jss;
-	u_char                     *key, *lowcase;
 	size_t                      len;
 	
 	TRACE();
@@ -177,31 +167,25 @@ setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	key = (u_char *) JS_GetStringBytes(key_jss);
-	if (key == NULL)
+	key_jss = JS_ValueToString(cx, idval);
+	if (key_jss == NULL)
 	{
-		JS_ReportError(cx, "can't get the C string of the property name");
 		return JS_FALSE;
 	}
-	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "variables[\"%s\"]", key);
-	
-	len = ngx_strlen(key);
 	
 	// we have to create the string on the request pool
 	// because the variable name may be cached just after
 	// the first seach for the var
-	lowcase = ngx_pnalloc(r->pool, len);
-	if (lowcase == NULL)
+	if (!js_str2ngx_str(cx, key_jss, r->pool, &var))
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	hash = ngx_hash_strlow(lowcase, key, len);
 	
-	var.len = len;
-	var.data = lowcase;
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "variables[\"%s\"]", var.data);
+	
+	// lowercase in-place
+	hash = ngx_hash_strlow(var.data, var.data, len);
 	
 	value_jss = JS_ValueToString(cx, *vp);
 	if (value_jss == NULL)
@@ -209,7 +193,7 @@ setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	if (!js_str2ngx_str(cx, value_jss, r->pool, &value_ns))
+	if (!js_str2ngx_str(cx, value_jss, r->pool, &val))
 	{
 		return JS_FALSE;
 	}
@@ -221,13 +205,13 @@ setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	vv->len = value_ns.len;
-	vv->data = value_ns.data;
+	vv->len = val.len;
+	vv->data = val.data;
 	
 	rc = set_variable(r, &var, hash, vv);
 	if (rc == NGX_DECLINED)
 	{
-		JS_ReportError(cx, "can't find variable \"%s\"", key);
+		JS_ReportError(cx, "can't find variable \"%s\"", var.data);
 		return JS_FALSE;
 	}
 	
