@@ -210,7 +210,7 @@ setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 }
 
 static JSBool
-delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+delProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	TRACE();
 	return JS_TRUE;
@@ -218,7 +218,7 @@ delProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_status(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -234,7 +234,7 @@ getter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_status(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	jsdouble                    val_n;
@@ -260,7 +260,7 @@ setter_status(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_statusLine(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_statusLine(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -279,7 +279,7 @@ getter_statusLine(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_statusLine(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_statusLine(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -296,7 +296,7 @@ setter_statusLine(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_server(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -315,7 +315,7 @@ getter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_server(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -332,7 +332,7 @@ setter_server(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_date(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -351,7 +351,7 @@ getter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_date(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -376,7 +376,7 @@ setter_date(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_dateTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_dateTime(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -393,7 +393,7 @@ getter_dateTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_contentLength(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentLength(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -412,7 +412,7 @@ getter_contentLength(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_contentLength(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_contentLength(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	jsdouble                    val_n;
@@ -442,7 +442,7 @@ setter_contentLength(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-getter_contentLengthN(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentLengthN(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -459,7 +459,7 @@ getter_contentLengthN(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_contentEncoding(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentEncoding(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -478,7 +478,7 @@ getter_contentEncoding(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_contentEncoding(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_contentEncoding(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Content-Encoding");
@@ -496,7 +496,7 @@ setter_contentEncoding(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_location(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_location(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -515,7 +515,7 @@ getter_location(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_location(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_location(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Location");
@@ -532,7 +532,7 @@ setter_location(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-getter_refresh(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_refresh(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -551,7 +551,7 @@ getter_refresh(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_refresh(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_refresh(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Refresh");
@@ -569,7 +569,7 @@ setter_refresh(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_lastModified(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_lastModified(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -588,7 +588,7 @@ getter_lastModified(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_lastModified(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_lastModified(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Location");
@@ -614,7 +614,7 @@ setter_lastModified(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_lastModifiedTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_lastModifiedTime(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -631,7 +631,7 @@ getter_lastModifiedTime(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_contentRange(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentRange(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -650,7 +650,7 @@ getter_contentRange(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_contentRange(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_contentRange(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Content-Range");
@@ -668,7 +668,7 @@ setter_contentRange(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_acceptRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_acceptRanges(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -687,7 +687,7 @@ getter_acceptRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_acceptRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_acceptRanges(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Accept-Ranges");
@@ -705,7 +705,7 @@ setter_acceptRanges(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_wwwAuthenticate(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_wwwAuthenticate(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -724,7 +724,7 @@ getter_wwwAuthenticate(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_wwwAuthenticate(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_wwwAuthenticate(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("WWW-Authenticate");
@@ -742,7 +742,7 @@ setter_wwwAuthenticate(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_expires(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_expires(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -761,7 +761,7 @@ getter_expires(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_expires(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_expires(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("Expires");
@@ -779,7 +779,7 @@ setter_expires(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_etag(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -798,7 +798,7 @@ getter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_etag(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	static ngx_str_t            header_name = ngx_string("ETag");
@@ -816,7 +816,7 @@ setter_etag(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_contentType(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentType(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -835,7 +835,7 @@ getter_contentType(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_contentType(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_contentType(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -858,7 +858,7 @@ setter_contentType(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-getter_contentTypeLen(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentTypeLen(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -874,7 +874,7 @@ getter_contentTypeLen(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-getter_contentTypeLowcase(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_contentTypeLowcase(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
@@ -894,7 +894,7 @@ getter_contentTypeLowcase(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-getter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getter_cacheControl(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	ngx_table_elt_t           **ph;
@@ -977,7 +977,7 @@ getter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 }
 
 static JSBool
-setter_cacheControl(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+setter_cacheControl(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	ngx_table_elt_t            *cc, **ccp;
