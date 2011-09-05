@@ -80,7 +80,7 @@ static JSBool
 constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
-	JS_ReportError(cx, "new Nginx.Request.Variables() can be constucted only with request.variables");
+	JS_ReportError(cx, "Nginx.Request.Variables instance may be constucted with request#variables only");
 	return JS_FALSE;
 }
 
