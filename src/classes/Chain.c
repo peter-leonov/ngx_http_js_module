@@ -103,32 +103,6 @@ constructor(JSContext *cx, uintN argc, jsval *vp)
 // enum propid { HEADER_LENGTH };
 
 
-static JSBool
-getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	ngx_chain_t  *ch;
-	
-	TRACE();
-	GET_PRIVATE(ch);
-	
-	
-	return JS_TRUE;
-}
-
-
-static JSBool
-setProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
-{
-	ngx_chain_t  *ch;
-	
-	TRACE();
-	GET_PRIVATE(ch);
-	
-	
-	return JS_TRUE;
-}
-
-
 JSPropertySpec ngx_http_js__nginx_chain__props[] =
 {
 	// {"uri",      REQUEST_URI,          JSPROP_READONLY,   NULL, NULL},
@@ -145,7 +119,7 @@ JSClass ngx_http_js__nginx_chain__class =
 {
 	"Chain",
 	JSCLASS_HAS_PRIVATE | JSCLASS_HAS_RESERVED_SLOTS(NGX_JS_CHAIN_SLOTS_COUNT),
-	JS_PropertyStub, JS_PropertyStub, getProperty, setProperty,
+	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, JS_FinalizeStub,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
