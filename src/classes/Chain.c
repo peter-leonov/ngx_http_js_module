@@ -43,18 +43,20 @@ ngx_http_js__nginx_chain__wrap(JSContext *cx, ngx_chain_t *ch, JSObject *request
 
 
 static JSBool
-method_toString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_toString(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
 	ngx_chain_t  *ch, *next;
 	int           len;
 	char         *buff;
+	JSObject     *self;
+	jsval         rval;
 	
 	GET_PRIVATE(ch);
 	
 	if (ch->buf && !ch->next)
 	{
-		DATA_LEN_to_JS_STRING_to_JSVAL(cx, ch->buf->pos, ch->buf->last - ch->buf->pos, *rval);
+		DATA_LEN_to_JS_STRING_to_JSVAL(cx, ch->buf->pos, ch->buf->last - ch->buf->pos, rval);
 	}
 	else
 	{
@@ -78,21 +80,23 @@ method_toString(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 			}
 		}
 		
-		DATA_LEN_to_JS_STRING_to_JSVAL(cx, buff, len, *rval);
+		DATA_LEN_to_JS_STRING_to_JSVAL(cx, buff, len, rval);
 		
 		JS_free(cx, buff);
 	}
 	
+	JS_SET_RVAL(cx, vp, rval);
 	return JS_TRUE;
 }
 
 
 
 static JSBool
-constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
-	return JS_TRUE;
+	JS_ReportError(cx, "Nginx.Chain instance can not be created at JS side");
+	return JS_FALSE;
 }
 
 
