@@ -149,7 +149,7 @@ static JSPropertySpec ngx_http_js__nginx_cookies__props[] =
 
 static JSFunctionSpec ngx_http_js__nginx_cookies__funcs[] =
 {
-	JS_FS("empty",       method_empty,          0, 0, 0),
+	JS_FS("empty",       method_empty,          0, 0),
 	JS_FS_END
 };
 
