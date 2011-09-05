@@ -108,16 +108,12 @@ getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 		ngx_int_t    n;
 		ngx_str_t    cookie_name, cookie_value;
 		
-		name = JS_GetStringBytes(JSVAL_TO_STRING(id));
-		if (name == NULL)
+		if (!js_str2ngx_str(cx, JSID_TO_STRING(id), r->pool, &cookie_name))
 		{
 			return JS_FALSE;
 		}
 		
-		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cookies[\"%s\"]", name);
-		
-		cookie_name.data = (u_char *) name;
-		cookie_name.len = ngx_strlen(name);
+		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "cookies[\"%s\"]", cookie_name.data);
 		
 		n = ngx_http_parse_multi_header_lines(&r->headers_in.cookies, &cookie_name, &cookie_value);
 		
