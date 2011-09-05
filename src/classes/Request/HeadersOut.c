@@ -106,7 +106,7 @@ static JSBool
 getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	u_char                     *key;
+	ngx_str_t                   key;
 	ngx_table_elt_t            *header;
 	jsval                       idval;
 	JSString                   *key_jss;
@@ -125,13 +125,12 @@ getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	key = (u_char *) JS_GetStringBytes(key_jss);
-	if (key == NULL)
+	if (!js_str2ngx_str(cx, key_jss, r->pool, &key))
 	{
 		return JS_FALSE;
 	}
 	
-	header = search_headers_out(r, key, 0);
+	header = search_headers_out(r, key.data, key.len);
 	if (header == NULL || header->hash == 0)
 	{
 		*vp = JSVAL_VOID;
@@ -148,7 +147,7 @@ static JSBool
 setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 {
 	ngx_http_request_t         *r;
-	u_char                     *key;
+	ngx_str_t                   key;
 	ngx_table_elt_t            *header;
 	jsval                       idval;
 	JSString                   *key_jss, *value_jss;
@@ -167,13 +166,12 @@ setProperty(JSContext *cx, JSObject *self, jsid id, JSBool strict, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	key = (u_char *) JS_GetStringBytes(key_jss);
-	if (key == NULL)
+	if (!js_str2ngx_str(cx, key_jss, r->pool, &key))
 	{
 		return JS_FALSE;
 	}
 	
-	header = search_headers_out(r, key, 0);
+	header = search_headers_out(r, key.data, key.len);
 	if (header == NULL)
 	{
 		header = ngx_list_push(&r->headers_out.headers);
@@ -1161,15 +1159,6 @@ search_headers_out(ngx_http_request_t *r, u_char *name, u_int len)
 	ngx_assert(r);
 	ngx_assert(name);
 	
-	if (len == 0)
-	{
-		len = strlen((char *) name);
-		if (len == 0)
-		{
-			return NULL;
-		}
-	}
-	
 	// look in all headers
 	
 	part = &r->headers_out.headers.part;
@@ -1190,7 +1179,7 @@ search_headers_out(ngx_http_request_t *r, u_char *name, u_int len)
 		}
 		
 		// LOG("%s", h[i].key.data);
-		if (len != h[i].key.len || ngx_strcasecmp(name, h[i].key.data) != 0)
+		if (len != h[i].key.len || ngx_strncasecmp(name, h[i].key.data, len) != 0)
 		{
 			continue;
 		}
