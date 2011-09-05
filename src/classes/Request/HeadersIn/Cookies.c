@@ -94,16 +94,15 @@ constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 
 
 static JSBool
-getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
+getProperty(JSContext *cx, JSObject *self, jsid id, jsval *vp)
 {
 	ngx_http_request_t         *r;
 	
 	TRACE();
 	GET_PRIVATE(r);
 	
-	if (JSVAL_IS_STRING(id))
+	if (JSID_IS_STRING(id))
 	{
-		char        *name;
 		ngx_int_t    n;
 		ngx_str_t    cookie_name, cookie_value;
 		
@@ -127,9 +126,9 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 		
 		NGX_STRING_to_JS_STRING_to_JSVAL(cx, cookie_value, *vp);
 	}
-	else if (JSVAL_IS_INT(id))
+	else if (JSID_IS_INT(id))
 	{
-		switch (JSVAL_TO_INT(id))
+		switch (JSID_TO_INT(id))
 		{
 			case 1:
 			{
