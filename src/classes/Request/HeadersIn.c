@@ -85,8 +85,8 @@ static JSBool
 constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
-	JS_SET_RVAL(cx, vp, JSVAL_VOID);
-	return JS_TRUE;
+	JS_ReportError(cx, "Nginx.HeadersIn instance may be constucted with request#headersIn only");
+	return JS_FALSE;
 }
 
 #define NGX_HEADER_to_JSVAL(header, v) \

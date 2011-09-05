@@ -87,7 +87,7 @@ static JSBool
 constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
-	JS_ReportError(cx, "new Nginx.Cookie() can be constucted only with request#headersIn#cookies");
+	JS_ReportError(cx, "Nginx.Cookie instance may be constucted with request#cookies only");
 	return JS_FALSE;
 }
 
