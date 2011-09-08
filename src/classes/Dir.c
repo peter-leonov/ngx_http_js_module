@@ -602,7 +602,7 @@ JSClass ngx_http_js__nginx_dir__class =
 {
 	"Dir",
 	JSCLASS_HAS_PRIVATE,
-	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_PropertyStub,
+	JS_PropertyStub, JS_PropertyStub, JS_PropertyStub, JS_StrictPropertyStub,
 	JS_EnumerateStub, JS_ResolveStub, JS_ConvertStub, finalizer,
 	JSCLASS_NO_OPTIONAL_MEMBERS
 };
