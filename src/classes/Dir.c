@@ -23,7 +23,7 @@ JSClass ngx_http_js__nginx_dir__class;
 
 typedef struct
 {
-	JSObject     *onfile, *onenter, *onleave, *onspecial;
+	jsval     onfile, onenter, onleave, onspecial;
 } walkTree_ctx;
 
 
@@ -220,11 +220,6 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->onfile == NULL)
-	{
-		return NGX_OK;
-	}
-	
 	// bake the file path
 	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
 	if (path_jss == NULL)
@@ -249,7 +244,7 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	
 	// call the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onfile), 4, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, wt_ctx->onfile, 4, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -277,11 +272,6 @@ walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->onenter == NULL)
-	{
-		return NGX_OK;
-	}
-	
 	// bake the dir path
 	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
 	if (path_jss == NULL)
@@ -300,7 +290,7 @@ walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	
 	// call the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onenter), 3, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, wt_ctx->onenter, 3, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -328,11 +318,6 @@ walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->onleave == NULL)
-	{
-		return NGX_OK;
-	}
-	
 	// bake the dir path
 	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
 	if (path_jss == NULL)
@@ -351,7 +336,7 @@ walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	
 	// call the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onleave), 3, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, wt_ctx->onleave, 3, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -379,11 +364,6 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	wt_ctx = ctx->data;
 	cx = js_cx;
 	
-	if (wt_ctx->onspecial == NULL)
-	{
-		return NGX_OK;
-	}
-	
 	// bake the file path
 	path_jss = JS_NewStringCopyN(cx, (char *) (path->data), path->len);
 	if (path_jss == NULL)
@@ -393,7 +373,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	args[0] = STRING_TO_JSVAL(path_jss);
 	
 	// call the handler and hope for best ;)
-	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onspecial), 1, args, &rval))
+	if (!JS_CallFunctionValue(cx, js_global, wt_ctx->onspecial, 1, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
 		return NGX_ABORT;
@@ -448,11 +428,12 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		ctx.onfile = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[1]);
+		ctx.onfile = JS_ARGV(cx, vp)[1];
+		tree.file_handler = walkTree_file_handler;
 	}
 	else
 	{
-		ctx.onfile = NULL;
+		tree.file_handler = tree_noop;
 	}
 	
 	// dir enter callback
@@ -464,11 +445,12 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		ctx.onenter = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[2]);
+		ctx.onenter = JS_ARGV(cx, vp)[2];
+		tree.pre_tree_handler = walkTree_pre_tree_handler;
 	}
 	else
 	{
-		ctx.onenter = NULL;
+		tree.pre_tree_handler = tree_noop;
 	}
 	
 	// dir leave callback
@@ -480,11 +462,12 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		ctx.onleave = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[3]);
+		ctx.onleave = JS_ARGV(cx, vp)[3];
+		tree.post_tree_handler = walkTree_post_tree_handler;
 	}
 	else
 	{
-		ctx.onleave = NULL;
+		tree.post_tree_handler = tree_noop;
 	}
 	
 	// special entry callback
@@ -496,19 +479,16 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 			return JS_FALSE;
 		}
 		
-		ctx.onspecial = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[4]);
+		ctx.onspecial = JS_ARGV(cx, vp)[4];
+		tree.spec_handler = walkTree_spec_handler;
 	}
 	else
 	{
-		ctx.onspecial = NULL;
+		tree.spec_handler = tree_noop;
 	}
 	
 	
 	tree.init_handler = NULL;
-	tree.file_handler = walkTree_file_handler;
-	tree.pre_tree_handler = walkTree_pre_tree_handler;
-	tree.post_tree_handler = walkTree_post_tree_handler;
-	tree.spec_handler = walkTree_spec_handler;
 	tree.data = &ctx;
 	tree.alloc = 0;
 	tree.log = js_log();
