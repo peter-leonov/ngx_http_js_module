@@ -440,15 +440,15 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 	
 	
 	// file callback
-	if (argc >= 2 && !JSVAL_IS_NULL(argv[1]))
+	if (argc >= 2 && !JSVAL_IS_NULL(JS_ARGV(cx, vp)[1]))
 	{
-		if (!JSVAL_IS_OBJECT(argv[1]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1])))
+		if (!JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[1]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[1])))
 		{
 			JS_ReportError(cx, "file callback must be a function or a null");
 			return JS_FALSE;
 		}
 		
-		ctx.onfile = JSVAL_TO_OBJECT(argv[1]);
+		ctx.onfile = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[1]);
 	}
 	else
 	{
@@ -456,15 +456,15 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 	}
 	
 	// dir enter callback
-	if (argc >= 3 && !JSVAL_IS_NULL(argv[2]))
+	if (argc >= 3 && !JSVAL_IS_NULL(JS_ARGV(cx, vp)[2]))
 	{
-		if (!JSVAL_IS_OBJECT(argv[2]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[2])))
+		if (!JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[2]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[2])))
 		{
 			JS_ReportError(cx, "directory enter callback must be a function or a null");
 			return JS_FALSE;
 		}
 		
-		ctx.onenter = JSVAL_TO_OBJECT(argv[2]);
+		ctx.onenter = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[2]);
 	}
 	else
 	{
@@ -472,15 +472,15 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 	}
 	
 	// dir leave callback
-	if (argc >= 4 && !JSVAL_IS_NULL(argv[3]))
+	if (argc >= 4 && !JSVAL_IS_NULL(JS_ARGV(cx, vp)[3]))
 	{
-		if (!JSVAL_IS_OBJECT(argv[3]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[3])))
+		if (!JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[3]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[3])))
 		{
 			JS_ReportError(cx, "directory leave callback must be a function or a null");
 			return JS_FALSE;
 		}
 		
-		ctx.onleave = JSVAL_TO_OBJECT(argv[3]);
+		ctx.onleave = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[3]);
 	}
 	else
 	{
@@ -488,15 +488,15 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 	}
 	
 	// special entry callback
-	if (argc >= 5 && !JSVAL_IS_NULL(argv[4]))
+	if (argc >= 5 && !JSVAL_IS_NULL(JS_ARGV(cx, vp)[4]))
 	{
-		if (!JSVAL_IS_OBJECT(argv[4]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[4])))
+		if (!JSVAL_IS_OBJECT(JS_ARGV(cx, vp)[4]) || !JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[4])))
 		{
 			JS_ReportError(cx, "special entry callback must be a function or a null");
 			return JS_FALSE;
 		}
 		
-		ctx.onspecial = JSVAL_TO_OBJECT(argv[4]);
+		ctx.onspecial = JSVAL_TO_OBJECT(JS_ARGV(cx, vp)[4]);
 	}
 	else
 	{
@@ -527,7 +527,7 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 
 
 static JSBool
-method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_remove(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_name;
 	const char      name[NGX_MAX_PATH];
@@ -537,7 +537,7 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	E(argc == 1, "Nginx.Dir#remove takes 1 mandatory argument: name:String");
 	
-	jss_name = JS_ValueToString(cx, argv[0]);
+	jss_name = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_name == NULL)
 	{
 		return JS_FALSE;
