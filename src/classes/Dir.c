@@ -585,11 +585,11 @@ static JSPropertySpec props[] =
 
 static JSFunctionSpec static_funcs[] =
 {
-	JS_FS("create",             method_create,               2, 0, 0),
-	JS_FS("createPath",         method_createPath,           2, 0, 0),
-	JS_FS("remove",             method_remove,               2, 0, 0),
-	JS_FS("removeTree",         method_removeTree,           1, 0, 0),
-	JS_FS("walkTree",           method_walkTree,             1, 0, 0),
+	JS_FS("create",             method_create,               2, 0),
+	JS_FS("createPath",         method_createPath,           2, 0),
+	JS_FS("remove",             method_remove,               2, 0),
+	JS_FS("removeTree",         method_removeTree,           1, 0),
+	JS_FS("walkTree",           method_walkTree,             1, 0),
 	JS_FS_END
 };
 
