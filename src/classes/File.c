@@ -59,7 +59,8 @@ method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	ngx_fd_t         fd;
 	JSString        *jss_name;
 	JSObject        *file;
-	const char      *name;
+	char            name[NGX_MAX_PATH];
+	size_t          len;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -69,17 +70,16 @@ method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	// converting smth. to a string is a very common and rather simple operation,
 	// so on failure it's very likely we have gone out of memory
 	
-	jss_name = JS_ValueToString(cx, argv[0]);
+	jss_name = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_name == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(jss_name);
-	if (name[0] == '\0')
+	len = JS_EncodeStringToBuffer(jss_name, name, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -109,7 +109,8 @@ static JSBool
 method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString        *jss_from, *jss_to;
-	const char      *from, *to;
+	char            from[NGX_MAX_PATH], to[NGX_MAX_PATH];
+	size_t          len;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -119,32 +120,29 @@ method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	// converting smth. to a string is a very common and rather simple operation,
 	// so on failure it's very likely we have gone out of memory
 	
-	jss_from = JS_ValueToString(cx, argv[0]);
+	jss_from = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_from == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	from = JS_GetStringBytes(jss_from);
-	if (from[0] == '\0')
+	len = JS_EncodeStringToBuffer(jss_from, from, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	
-	jss_to = JS_ValueToString(cx, argv[1]);
+	jss_to = JS_ValueToString(cx, JS_ARGV(cx, vp)[1]);
 	if (jss_to == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	to = JS_GetStringBytes(jss_to);
-	if (to[0] == '\0')
+	len = JS_EncodeStringToBuffer(jss_to, to, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -158,7 +156,7 @@ static JSBool
 method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString        *jss_name;
-	const char      *name;
+	char            *name;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -168,22 +166,23 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	// converting smth. to a string is a very common and rather simple operation,
 	// so on failure it's very likely we have gone out of memory
 	
-	jss_name = JS_ValueToString(cx, argv[0]);
+	jss_name = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_name == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
+		// forward exception if any
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(jss_name);
-	if (name[0] == '\0')
+	name = JS_EncodeString(cx, jss_name);
+	if (name == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
 	*rval = INT_TO_JSVAL(ngx_delete_file(name));
+	
+	JS_free(cx, name);
 	
 	return JS_TRUE;
 }
@@ -192,24 +191,24 @@ static JSBool
 method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString        *jss_name;
-	const char      *name;
+	char             name[NGX_MAX_PATH];
+	size_t           len;
 	ngx_file_info_t  fi;
 	
 	TRACE_STATIC_METHOD();
 	
 	E(argc == 1, "Nginx.File#exists takes 1 mandatory argument: name");
 	
-	jss_name = JS_ValueToString(cx, argv[0]);
+	jss_name = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_name == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(jss_name);
-	if (name == NULL)
+	len = JS_EncodeStringToBuffer(jss_name, name, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -236,21 +235,22 @@ static JSBool
 method_getAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 {
 	JSString        *jss_name;
-	const char      *name;
+	char             name[NGX_MAX_PATH];
+	size_t           len;
 	ngx_file_info_t  fi;
 	
 	TRACE_STATIC_METHOD();
 	
 	E(argc == 1, "Nginx.File#getAccess takes 1 mandatory argument: name:String");
 	
-	jss_name = JS_ValueToString(cx, argv[0]);
+	jss_name = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_name == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(jss_name);
-	if (name == NULL)
+	len = JS_EncodeStringToBuffer(jss_name, name, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
@@ -273,20 +273,21 @@ method_setAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *
 	ngx_uint_t       access;
 	JSString        *jss_name;
 	jsdouble         dp;
-	const char      *name;
+	char             name[NGX_MAX_PATH];
+	size_t           len;
 	
 	TRACE_STATIC_METHOD();
 	
 	E(argc == 2, "Nginx.File#setAccess takes 2 mandatory arguments: name:String and access:Number");
 	
-	jss_name = JS_ValueToString(cx, argv[0]);
+	jss_name = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_name == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	name = JS_GetStringBytes(jss_name);
-	if (name == NULL)
+	len = JS_EncodeStringToBuffer(jss_name, name, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
@@ -331,10 +332,9 @@ method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 		return JS_FALSE;
 	}
 	
-	str = JS_GetStringBytes(jss_str);
-	if (str[0] == '\0')
+	str = JS_EncodeString(cx, jss_str);
+	if (str == NULL)
 	{
-		JS_ReportOutOfMemory(cx);
 		return JS_FALSE;
 	}
 	
@@ -342,6 +342,7 @@ method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_write_fd(fd=%d, len=%d)", fd, len);
 	*rval = ngx_write_fd(fd, str, len) == (ssize_t) len ? JSVAL_TRUE : JSVAL_FALSE;
+	JS_free(cx, str);
 	
 	return JS_TRUE;
 }
@@ -373,17 +374,11 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_FALSE;
 	}
 	
-	if (ngx_read_fd(fd, buf, len) != (ssize_t) len)
-	{
-		JS_free(cx, buf);
-		*rval = JSVAL_NULL;
-		return JS_TRUE;
-	}
-	
-	value = JS_NewString(cx, (char *) (buf), len);
+	len = ngx_read_fd(fd, buf, len);
+	value = JS_NewStringCopyN(cx, buf, len);
+	JS_free(cx, buf);
 	if (value == NULL)
 	{
-		JS_free(cx, buf);
 		return JS_FALSE;
 	}
 	
