@@ -54,7 +54,7 @@ ngx_http_js__nginx_file__wrap(JSContext *cx, ngx_fd_t fd)
 }
 
 static JSBool
-method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_open(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_fd_t         fd;
 	JSString        *jss_name;
@@ -88,7 +88,7 @@ method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	
 	if (fd == NGX_INVALID_FILE)
 	{
-		*rval = JSVAL_NULL;
+		JS_SET_RVAL(cx, vp, JSVAL_NULL);
 		return JS_TRUE;
 	}
 	
@@ -101,12 +101,12 @@ method_open(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	
 	open_files++;
 	
-	*rval = OBJECT_TO_JSVAL(file);
+	JS_SET_RVAL(cx, vp, OBJECT_TO_JSVAL(file));
 	return JS_TRUE;
 }
 
 static JSBool
-method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_rename(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_from, *jss_to;
 	char            from[NGX_MAX_PATH], to[NGX_MAX_PATH];
@@ -147,13 +147,13 @@ method_rename(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_rename_file(\"%s\", \"%s\")", from, to);
-	*rval = INT_TO_JSVAL(ngx_rename_file(from, to));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_rename_file(from, to)));
 	
 	return JS_TRUE;
 }
 
 static JSBool
-method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_remove(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_name;
 	char            *name;
@@ -180,7 +180,7 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_delete_file(\"%s\")", name);
-	*rval = INT_TO_JSVAL(ngx_delete_file(name));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_delete_file(name)));
 	
 	JS_free(cx, name);
 	
@@ -188,7 +188,7 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 }
 
 static JSBool
-method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_exists(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_name;
 	char             name[NGX_MAX_PATH];
@@ -216,23 +216,23 @@ method_exists(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	
 	if (ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR)
 	{
-		*rval = JSVAL_NULL;
+		JS_SET_RVAL(cx, vp, JSVAL_NULL);
 		return JS_TRUE;
 	}
 	
 	if (ngx_is_file(&fi))
 	{
-		*rval = JSVAL_TRUE;
+		JS_SET_RVAL(cx, vp, JSVAL_TRUE);
 		return JS_TRUE;
 	}
 	
-	*rval = JSVAL_FALSE;
+	JS_SET_RVAL(cx, vp, JSVAL_FALSE);
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_getAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_getAccess(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_name;
 	char             name[NGX_MAX_PATH];
@@ -258,17 +258,17 @@ method_getAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_file_info(\"%s\")", name);
 	if (ngx_file_info((const char *) name, &fi) == NGX_FILE_ERROR)
 	{
-		*rval = JSVAL_NULL;
+		JS_SET_RVAL(cx, vp, JSVAL_NULL);
 		return JS_TRUE;
 	}
 	
-	*rval = INT_TO_JSVAL(ngx_file_access(&fi));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_file_access(&fi)));
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_setAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_setAccess(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_uint_t       access;
 	JSString        *jss_name;
@@ -292,7 +292,7 @@ method_setAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *
 		return JS_FALSE;
 	}
 	
-	if (!JS_ValueToNumber(cx, argv[1], &dp))
+	if (!JS_ValueToNumber(cx, JS_ARGV(cx, vp)[1], &dp))
 	{
 		return JS_FALSE;
 	}
@@ -300,16 +300,17 @@ method_setAccess(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *
 	access = dp;
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_change_file_access(\"%s\", %d)", name, access);
-	*rval = INT_TO_JSVAL(ngx_change_file_access((const char *) name, access));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_change_file_access((const char *) name, access)));
 	
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_write(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_str;
+	JSObject        *self;
 	char            *str;
 	ngx_fd_t         fd;
 	size_t           len;
@@ -325,7 +326,7 @@ method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	// converting smth. to a string is a very common and rather simple operation,
 	// so on failure it's very likely we have gone out of memory
 	
-	jss_str = JS_ValueToString(cx, argv[0]);
+	jss_str = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_str == NULL)
 	{
 		JS_ReportOutOfMemory(cx);
@@ -341,17 +342,18 @@ method_write(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	len = ngx_strlen(str);
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "ngx_write_fd(fd=%d, len=%d)", fd, len);
-	*rval = ngx_write_fd(fd, str, len) == (ssize_t) len ? JSVAL_TRUE : JSVAL_FALSE;
+	JS_SET_RVAL(cx, vp, ngx_write_fd(fd, str, len) == (ssize_t) len ? JSVAL_TRUE : JSVAL_FALSE);
 	JS_free(cx, str);
 	
 	return JS_TRUE;
 }
 
 static JSBool
-method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_read(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_fd_t         fd;
 	JSString        *value;
+	JSObject        *self;
 	void            *p;
 	size_t           len;
 	char            *buf;
@@ -360,9 +362,9 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 	fd = PTR_TO_FD(p);
 	TRACE_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.File#read takes 1 mandatory argument: length:Number");
+	E(argc == 1 && JSVAL_IS_INT(JS_ARGV(cx, vp)[0]), "Nginx.File#read takes 1 mandatory argument: length:Number");
 	
-	len = JSVAL_TO_INT(argv[0]);
+	len = JSVAL_TO_INT(JS_ARGV(cx, vp)[0]);
 	if (len == 0)
 	{
 		return JS_TRUE;
@@ -382,34 +384,36 @@ method_read(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
 		return JS_FALSE;
 	}
 	
-	*rval = STRING_TO_JSVAL(value);
+	JS_SET_RVAL(cx, vp, STRING_TO_JSVAL(value));
 	return JS_TRUE;
 }
 
 static JSBool
-method_seek(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_seek(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_fd_t         fd;
 	void            *p;
 	size_t           offset;
+	JSObject        *self;
 	
 	GET_PRIVATE(p);
 	fd = PTR_TO_FD(p);
 	TRACE_METHOD();
 	
-	E(argc == 1 && JSVAL_IS_INT(argv[0]), "Nginx.File#seek takes 1 mandatory argument: offset:Number");
+	E(argc == 1 && JSVAL_IS_INT(JS_ARGV(cx, vp)[0]), "Nginx.File#seek takes 1 mandatory argument: offset:Number");
 	
-	offset = JSVAL_TO_INT(argv[0]);
+	offset = JSVAL_TO_INT(JS_ARGV(cx, vp)[0]);
 	
-	*rval = INT_TO_JSVAL(lseek(fd, offset, SEEK_SET));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(lseek(fd, offset, SEEK_SET)));
 	return JS_TRUE;
 }
 
 static JSBool
-method_close(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_close(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_fd_t         fd;
 	void            *p;
+	JSObject        *self;
 	
 	GET_PRIVATE(p);
 	fd = PTR_TO_FD(p);
@@ -418,7 +422,7 @@ method_close(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	if (ngx_close_file(fd) == NGX_FILE_ERROR)
 	{
 		ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno, ngx_close_file_n " Nginx.File (fd=%d, self=%p) failed", fd, self);
-		*rval = JSVAL_FALSE;
+		JS_SET_RVAL(cx, vp, JSVAL_FALSE);
 		return JS_TRUE;
 	}
 	
@@ -426,7 +430,7 @@ method_close(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval
 	
 	open_files--;
 	
-	*rval = JSVAL_TRUE;
+	JS_SET_RVAL(cx, vp, JSVAL_TRUE);
 	return JS_TRUE;
 }
 
@@ -468,10 +472,11 @@ getProperty(JSContext *cx, JSObject *self, jsval id, jsval *vp)
 
 
 static JSBool
-constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
-	JS_SetPrivate(cx, self, NULL);
+	JS_SetPrivate(cx, JS_THIS_OBJECT(cx, vp), NULL);
+	JS_SET_RVAL(cx, vp, JSVAL_VOID);
 	return JS_TRUE;
 }
 
