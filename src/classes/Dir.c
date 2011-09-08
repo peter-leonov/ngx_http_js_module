@@ -34,7 +34,8 @@ method_create(JSContext *cx, uintN argc, jsval *vp)
 	ngx_uint_t       access;
 	JSString        *jss_path;
 	jsdouble         dp;
-	const char      *path;
+	char             path[NGX_MAX_PATH];
+	size_t           len;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -50,8 +51,8 @@ method_create(JSContext *cx, uintN argc, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	path = JS_GetStringBytes(jss_path);
-	if (path == NULL)
+	len = JS_EncodeStringToBuffer(jss_path, path, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
@@ -78,8 +79,8 @@ method_createPath(JSContext *cx, uintN argc, jsval *vp)
 	ngx_uint_t       access;
 	JSString        *jss_path;
 	jsdouble         dp;
-	const char      *path;
-	u_char           fullpath[NGX_MAX_PATH];
+	char             path[NGX_MAX_PATH];
+	size_t           len;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -91,14 +92,11 @@ method_createPath(JSContext *cx, uintN argc, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	path = JS_GetStringBytes(jss_path);
-	if (path == NULL)
+	len = JS_EncodeStringToBuffer(jss_path, path, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
-	
-	// ngx_create_full_path() needs a writable copy of the path
-	ngx_cpystrn(fullpath, (u_char *) path, NGX_MAX_PATH);
 	
 	if (!JS_ValueToNumber(cx, JS_ARGV(cx, vp)[1], &dp))
 	{
@@ -107,7 +105,8 @@ method_createPath(JSContext *cx, uintN argc, jsval *vp)
 	
 	access = dp;
 	
-	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_create_full_path(\"%s\", %d)", fullpath, access);
+	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_create_full_path(\"%s\", %d)", (u_char *) path, access);
+	// ngx_create_full_path() needs a writable copy of the path
 	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_create_full_path((u_char *) path, access)));
 	
 	return JS_TRUE;
@@ -156,8 +155,8 @@ method_removeTree(JSContext *cx, uintN argc, jsval *vp)
 	ngx_int_t        rc;
 	ngx_str_t        path_ns;
 	JSString        *jss_path;
-	const char      *path;
-	u_char           fullpath[NGX_MAX_PATH];
+	u_char           path[NGX_MAX_PATH];
+	size_t           len;
 	
 	TRACE_STATIC_METHOD();
 	
@@ -169,17 +168,14 @@ method_removeTree(JSContext *cx, uintN argc, jsval *vp)
 		return JS_FALSE;
 	}
 	
-	path = JS_GetStringBytes(jss_path);
-	if (path == NULL)
+	len = JS_EncodeStringToBuffer(jss_path, (char *) path, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
 	
-	// prepare a writable copy of the path
-	ngx_cpystrn(fullpath, (u_char *) path, NGX_MAX_PATH);
-	
-	path_ns.len = ngx_strlen(fullpath);
-	path_ns.data = fullpath;
+	path_ns.len = ngx_strlen(path);
+	path_ns.data = path;
 	
 	tree.init_handler = NULL;
 	tree.file_handler = tree_delete_file;
@@ -190,7 +186,7 @@ method_removeTree(JSContext *cx, uintN argc, jsval *vp)
 	tree.alloc = 0;
 	tree.log = js_log();
 	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_walk_tree(\"%s\")", fullpath);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_walk_tree(\"%s\")", path);
 	rc = ngx_walk_tree(&tree, &path_ns);
 	if (rc == NGX_ABORT)
 	{
@@ -204,8 +200,8 @@ method_removeTree(JSContext *cx, uintN argc, jsval *vp)
 		return JS_TRUE;
 	}
 	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_delete_dir(\"%s\")", fullpath);
-	*rval = INT_TO_JSVAL(ngx_delete_dir(fullpath));
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_delete_dir(\"%s\")", path);
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_delete_dir(path)));
 	
 	return JS_TRUE;
 }
@@ -252,7 +248,7 @@ walkTree_file_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 		return NGX_ABORT;
 	}
 	
-	// cal the handler and hope for best ;)
+	// call the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onfile), 4, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
@@ -303,7 +299,7 @@ walkTree_pre_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 		return NGX_ABORT;
 	}
 	
-	// cal the handler and hope for best ;)
+	// call the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onenter), 3, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
@@ -354,7 +350,7 @@ walkTree_post_tree_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 		return NGX_ABORT;
 	}
 	
-	// cal the handler and hope for best ;)
+	// call the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onleave), 3, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
@@ -396,7 +392,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 	}
 	args[0] = STRING_TO_JSVAL(path_jss);
 	
-	// cal the handler and hope for best ;)
+	// call the handler and hope for best ;)
 	if (!JS_CallFunctionValue(cx, js_global, OBJECT_TO_JSVAL(wt_ctx->onspecial), 1, args, &rval))
 	{
 		// TODO: somehow check the exception type and return NGX_ABORT only on OOM one
@@ -419,31 +415,28 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 	ngx_int_t        rc;
 	ngx_str_t        path_ns;
 	JSString        *jss_path;
-	const char      *path;
-	u_char           fullpath[NGX_MAX_PATH];
+	u_char           path[NGX_MAX_PATH];
+	size_t           len;
 	walkTree_ctx     ctx;
 	
 	TRACE_STATIC_METHOD();
 	
 	E(argc >= 1 && argc <= 5, "Nginx.Dir#walkTree takes 1 mandatory argument: path:String, and four optional callbacks");
 	
-	jss_path = JS_ValueToString(cx, argv[0]);
+	jss_path = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_path == NULL)
 	{
 		return JS_FALSE;
 	}
 	
-	path = JS_GetStringBytes(jss_path);
-	if (path == NULL)
+	len = JS_EncodeStringToBuffer(jss_path, (char *) path, NGX_MAX_PATH - 1);
+	if (len == (size_t) -1 || len > NGX_MAX_PATH - 1)
 	{
 		return JS_FALSE;
 	}
 	
-	// prepare a writable copy of the path
-	ngx_cpystrn(fullpath, (u_char *) path, NGX_MAX_PATH);
-	
-	path_ns.len = ngx_strlen(fullpath);
-	path_ns.data = fullpath;
+	path_ns.len = ngx_strlen(path);
+	path_ns.data = path;
 	
 	
 	// file callback
