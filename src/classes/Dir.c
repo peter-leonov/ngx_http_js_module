@@ -29,7 +29,7 @@ typedef struct
 
 
 static JSBool
-method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_create(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_uint_t       access;
 	JSString        *jss_path;
@@ -44,7 +44,7 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	// converting smth. to a string is a very common and rather simple operation,
 	// so on failure it's very likely we have gone out of memory
 	
-	jss_path = JS_ValueToString(cx, argv[0]);
+	jss_path = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_path == NULL)
 	{
 		return JS_FALSE;
@@ -57,7 +57,7 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	
-	if (!JS_ValueToNumber(cx, argv[1], &dp))
+	if (!JS_ValueToNumber(cx, JS_ARGV(cx, vp)[1], &dp))
 	{
 		// forward exception if any
 		return JS_FALSE;
@@ -66,14 +66,14 @@ method_create(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	access = dp;
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_create_dir(\"%s\", %d)", path, access);
-	*rval = INT_TO_JSVAL(ngx_create_dir(path, access));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_create_dir(path, access)));
 	
 	return JS_TRUE;
 }
 
 
 static JSBool
-method_createPath(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_createPath(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_uint_t       access;
 	JSString        *jss_path;
@@ -85,7 +85,7 @@ method_createPath(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	E(argc == 2, "Nginx.Dir#createPath takes 2 mandatory arguments: path:String and access:Number");
 	
-	jss_path = JS_ValueToString(cx, argv[0]);
+	jss_path = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_path == NULL)
 	{
 		return JS_FALSE;
@@ -100,7 +100,7 @@ method_createPath(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	// ngx_create_full_path() needs a writable copy of the path
 	ngx_cpystrn(fullpath, (u_char *) path, NGX_MAX_PATH);
 	
-	if (!JS_ValueToNumber(cx, argv[1], &dp))
+	if (!JS_ValueToNumber(cx, JS_ARGV(cx, vp)[1], &dp))
 	{
 		return JS_FALSE;
 	}
@@ -108,7 +108,7 @@ method_createPath(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	access = dp;
 	
 	ngx_log_debug2(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_create_full_path(\"%s\", %d)", fullpath, access);
-	*rval = INT_TO_JSVAL(ngx_create_full_path(fullpath, access));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_create_full_path((u_char *) path, access)));
 	
 	return JS_TRUE;
 }
@@ -150,7 +150,7 @@ tree_delete_dir(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 
 
 static JSBool
-method_removeTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_removeTree(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_tree_ctx_t   tree;
 	ngx_int_t        rc;
@@ -163,7 +163,7 @@ method_removeTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	E(argc == 1, "Nginx.Dir#removeTree takes 1 mandatory argument: path:String");
 	
-	jss_path = JS_ValueToString(cx, argv[0]);
+	jss_path = JS_ValueToString(cx, JS_ARGV(cx, vp)[0]);
 	if (jss_path == NULL)
 	{
 		return JS_FALSE;
@@ -200,7 +200,7 @@ method_removeTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval 
 	
 	if (rc != NGX_OK)
 	{
-		*rval = INT_TO_JSVAL(rc);
+		JS_SET_RVAL(cx, vp, INT_TO_JSVAL(rc));
 		return JS_TRUE;
 	}
 	
@@ -413,7 +413,7 @@ walkTree_spec_handler(ngx_tree_ctx_t *ctx, ngx_str_t *path)
 
 
 static JSBool
-method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 {
 	ngx_tree_ctx_t   tree;
 	ngx_int_t        rc;
@@ -528,7 +528,7 @@ method_walkTree(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *r
 		return JS_FALSE;
 	}
 	
-	*rval = INT_TO_JSVAL(rc);
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(rc));
 	return JS_TRUE;
 }
 
@@ -557,17 +557,18 @@ method_remove(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rva
 	}
 	
 	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_delete_dir(\"%s\")", name);
-	*rval = INT_TO_JSVAL(ngx_delete_dir(name));
+	JS_SET_RVAL(cx, vp, INT_TO_JSVAL(ngx_delete_dir(name)));
 	
 	return JS_TRUE;
 }
 
 
 static JSBool
-constructor(JSContext *cx, JSObject *self, uintN argc, jsval *argv, jsval *rval)
+constructor(JSContext *cx, uintN argc, jsval *vp)
 {
 	TRACE();
-	JS_SetPrivate(cx, self, NULL);
+	JS_SetPrivate(cx, JS_THIS_OBJECT(cx, vp), NULL);
+	JS_SET_RVAL(cx, vp, JSVAL_VOID);
 	return JS_TRUE;
 }
 
