@@ -513,7 +513,7 @@ method_walkTree(JSContext *cx, uintN argc, jsval *vp)
 	tree.alloc = 0;
 	tree.log = js_log();
 	
-	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_walk_tree(\"%s\")", fullpath);
+	ngx_log_debug1(NGX_LOG_DEBUG_HTTP, js_log(), 0, "ngx_walk_tree(\"%s\")", path);
 	rc = ngx_walk_tree(&tree, &path_ns);
 	if (rc == NGX_ABORT)
 	{
@@ -530,8 +530,8 @@ static JSBool
 method_remove(JSContext *cx, uintN argc, jsval *vp)
 {
 	JSString        *jss_name;
-	const char      name[NGX_MAX_PATH];
-	size_t          len;
+	char             name[NGX_MAX_PATH];
+	size_t           len;
 	
 	TRACE_STATIC_METHOD();
 	
