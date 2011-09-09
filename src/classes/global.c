@@ -146,7 +146,7 @@ ngx_http_js__global__init(JSContext *cx)
 	
 	E(!JS_GetGlobalObject(cx), "global object already defined");
 	
-	E(global = JS_NewObject(cx, &global_class, NULL, NULL), "Can`t create new global object");
+	E(global = JS_NewGlobalObject(cx, &global_class), "Can`t create new global object");
 	
 	JS_SetGlobalObject(cx, global);
 	E(JS_InitStandardClasses(cx, global), "Can`t JS_InitStandardClasses()");
