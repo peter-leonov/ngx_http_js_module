@@ -33,6 +33,12 @@ ulimit -c unlimited
 $NGINX -p $MODULE_ROOT -c nginx.conf -g "$NGINX_OPTS" &
 sleep 1
 
+if [ ! -f $PIDFILE ]; then
+	echo "nginx could not started"
+	exit 1
+fi
+
+
 OPTS="-m 5 --connect-timeout 1" # --http1.0
 
 curl $OPTS "http://127.0.0.1:19090/run/nginx-object?prefix=$MODULE_ROOT&pid=$(cat $PIDFILE)"
