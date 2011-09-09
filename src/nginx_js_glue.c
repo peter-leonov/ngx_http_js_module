@@ -169,7 +169,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		return NGX_CONF_ERROR;
 	
 	JS_SetOptions(cx, JSOPTION_VAROBJFIX);
-	JS_SetVersion(cx, 170);
+	JS_SetVersion(cx, JSVERSION_LATEST);
 	JS_SetErrorReporter(cx, reportError);
 	
 #if (NGX_DEBUG && NGX_HTTP_JS_JS_SETGCZEAL)
