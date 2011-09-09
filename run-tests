@@ -3,7 +3,7 @@
 MODULE_ROOT="$1"
 NGX_OBJS="$2"
 NGINX="$NGX_OBJS/nginx"
-PIDFILE="/tmp/nginx-js.pid"
+PIDFILE="$MODULE_ROOT/nginx.pid"
 TIME=$(date +%s)
 PADDING="$MODULE_ROOT/padding.txt"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib/:/opt/lib/"
@@ -18,7 +18,7 @@ mkdir -p $MODULE_ROOT/logs
 cat $PADDING >> $MODULE_ROOT/logs/error.log
 
 if [ -f $PIDFILE ]; then
-	PID=$(cat $PIDFILE)
+	PID=$(cat "$PIDFILE")
 	kill -QUIT $PID
 	sleep 1
 	if [ -f $PIDFILE ]; then
