@@ -139,10 +139,17 @@ extern char **environ;
 JSBool
 ngx_http_js__global__init(JSContext *cx)
 {
+	static int  inited = 0;
 	JSObject   *global, *string;
 	jsval       val;
 	
 	TRACE();
+	
+	if (inited)
+	{
+		JS_ReportError(cx, "global object is already inited");
+		return JS_FALSE;
+	}
 	
 	E(!JS_GetGlobalObject(cx), "global object already defined");
 	
@@ -184,6 +191,8 @@ ngx_http_js__global__init(JSContext *cx)
 	{
 		THROW("Can`t define property String#method_utf8length");
 	}
+	
+	inited = 1;
 	
 	return JS_TRUE;
 }
