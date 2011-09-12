@@ -115,18 +115,6 @@ ngx_found=no
 . auto/feature
 
 
-ngx_feature_name="NGX_HTTP_JS_JS_SETGCZEAL"
-ngx_feature_run=no
-ngx_feature_incs=
-ngx_feature_test="JS_SetGCZeal();"
-ngx_feature="JS_SetGCZeal()"
-ngx_feature_path="$CORE_INCS"
-ngx_feature_libs="$CORE_LIBS"
-ngx_found=no
-. auto/feature
-
-
-
 # sources
 
 CFLAGS="-I $ngx_addon_dir/src/ $CFLAGS"
