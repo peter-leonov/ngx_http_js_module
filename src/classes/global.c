@@ -17,7 +17,6 @@ method_load(JSContext *cx, uintN argc, jsval *vp)
 	u_char filename[NGX_MAX_PATH], *the_end;
 	JSBool ok;
 	jsval result, name, old;
-	uint32 oldopts;
 	JSObject *global, *script;
 	size_t len;
 	
@@ -51,8 +50,6 @@ method_load(JSContext *cx, uintN argc, jsval *vp)
 		
 		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "global.load %s\n", filename);
 		errno = 0;
-		oldopts = JS_GetOptions(cx);
-		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
 		script = JS_CompileFile(cx, global, (char *) filename);
 		if (errno)
 		{
@@ -70,7 +67,6 @@ method_load(JSContext *cx, uintN argc, jsval *vp)
 			ok = JS_ExecuteScript(cx, global, script, &result);
 			JS_SetProperty(cx, global, filevar_name, &old);
 		}
-		JS_SetOptions(cx, oldopts);
 		
 		if (!ok)
 		{

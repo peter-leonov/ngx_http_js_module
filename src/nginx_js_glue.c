@@ -168,7 +168,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 	if (cx == NULL)
 		return NGX_CONF_ERROR;
 	
-	JS_SetOptions(cx, JSOPTION_VAROBJFIX | JSOPTION_JIT | JSOPTION_METHODJIT);
+	JS_SetOptions(cx, JSOPTION_VAROBJFIX | JSOPTION_JIT | JSOPTION_METHODJIT | JSOPTION_COMPILE_N_GO);
 	JS_SetVersion(cx, JSVERSION_LATEST);
 	JS_SetErrorReporter(cx, reportError);
 	
