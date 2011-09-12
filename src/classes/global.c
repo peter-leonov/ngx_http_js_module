@@ -153,9 +153,8 @@ ngx_http_js__global__init(JSContext *cx)
 	
 	E(!JS_GetGlobalObject(cx), "global object already defined");
 	
-	E(global = JS_NewGlobalObject(cx, &global_class), "Can`t create new global object");
+	E(global = JS_NewCompartmentAndGlobalObject(cx, &global_class, NULL), "Can`t create new global object");
 	
-	JS_SetGlobalObject(cx, global);
 	E(JS_InitStandardClasses(cx, global), "Can`t JS_InitStandardClasses()");
 	E(JS_DefineProperty(cx, global, "self", OBJECT_TO_JSVAL(global), NULL, NULL, 0), "Can`t define property global.self");
 	E(JS_DefineProperty(cx, global, "global", OBJECT_TO_JSVAL(global), NULL, NULL, 0), "Can`t define property global.global");

@@ -168,7 +168,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 	if (cx == NULL)
 		return NGX_CONF_ERROR;
 	
-	JS_SetOptions(cx, JSOPTION_VAROBJFIX);
+	JS_SetOptions(cx, JSOPTION_VAROBJFIX | JSOPTION_JIT | JSOPTION_METHODJIT);
 	JS_SetVersion(cx, JSVERSION_LATEST);
 	JS_SetErrorReporter(cx, reportError);
 	
@@ -182,6 +182,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "global object initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	
 	global = JS_GetGlobalObject(cx);
 	
 	// environment
