@@ -182,6 +182,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "global object initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	global = JS_GetGlobalObject(cx);
 	
@@ -191,6 +192,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "environment object initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx
 	if (!ngx_http_js__nginx__init(cx, global))
@@ -198,6 +200,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx object initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.Request
 	if (!ngx_http_js__nginx_request__init(cx, global))
@@ -205,6 +208,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Request class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.Headers
 	if (!ngx_http_js__nginx_headers_in__init(cx, global))
@@ -212,11 +216,13 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.HeadersIn class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	if (!ngx_http_js__nginx_headers_out__init(cx, global))
 	{
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.HeadersOut class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.Cookies
 	if (!ngx_http_js__nginx_cookies__init(cx, global))
@@ -224,6 +230,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Cookies class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.Variables
 	if (!ngx_http_js__nginx_variables__init(cx, global))
@@ -231,6 +238,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Request.Variables class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.Chain
 	if (!ngx_http_js__nginx_chain__init(cx, global))
@@ -238,6 +246,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Chain class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.File
 	if (!ngx_http_js__nginx_file__init(cx, global))
@@ -245,6 +254,7 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.File class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	// Nginx.Dir
 	if (!ngx_http_js__nginx_dir__init(cx, global))
@@ -252,16 +262,23 @@ ngx_http_js__glue__init_interpreter(ngx_conf_t *cf)
 		ngx_conf_log_error(NGX_LOG_EMERG, cf, ngx_errno, "Nginx.Dir class initialization failed");
 		return NGX_CONF_ERROR;
 	}
+	DEBUG_GC(cx);
 	
 	
 	// call some external func
 	
 	
 	if (ngx_http_js_run_loads(cx, global, &jsmcf->loads, cf->log) != NGX_OK)
+	{
 		return NGX_CONF_ERROR;
+	}
+	DEBUG_GC(cx);
 	
 	if (ngx_http_js_run_requires(cx, global, &jsmcf->requires, cf->log) != NGX_OK)
+	{
 		return NGX_CONF_ERROR;
+	}
+	DEBUG_GC(cx);
 	
 	ngx_http_js_module_js_runtime = rt;
 	ngx_http_js_module_js_context = cx;
