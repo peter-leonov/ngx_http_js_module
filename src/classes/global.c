@@ -13,12 +13,13 @@ method_load(JSContext *cx, uintN argc, jsval *vp)
 {
 	uintN i;
 	JSString *str;
-	char *filename, *filevar_name;
-	u_char real[NGX_MAX_PATH], *the_end;
+	char *filevar_name;
+	u_char filename[NGX_MAX_PATH], *the_end;
 	JSBool ok;
 	jsval result, name, old;
 	uint32 oldopts;
 	JSObject *global, *script;
+	size_t len;
 	
 	TRACE();
 	
@@ -33,22 +34,26 @@ method_load(JSContext *cx, uintN argc, jsval *vp)
 			return JS_FALSE;
 		}
 		name = STRING_TO_JSVAL(str);
-		filename = JS_EncodeString(cx, str);
-		if (filename == NULL)
+		len = JS_EncodeStringToBuffer(str, (char *) filename, NGX_MAX_PATH - 1);
+		if (len == (size_t) -1 || len >= NGX_MAX_PATH - 1)
 		{
 			return JS_FALSE;
 		}
+		filename[len] = '\0';
+		
 		if (filename[0] != '/')
 		{
-			the_end = ngx_snprintf(real, NGX_MAX_PATH, "%*s/%s", ngx_cycle->conf_prefix.len, ngx_cycle->conf_prefix.data, (u_char *) filename);
+			u_char real[NGX_MAX_PATH];
+			the_end = ngx_snprintf(real, NGX_MAX_PATH, "%*s/%s", ngx_cycle->conf_prefix.len, ngx_cycle->conf_prefix.data, filename);
 			the_end[0] = '\0';
-			filename = (char *) real;
+			ngx_cpystrn(filename, real, NGX_MAX_PATH);
 		}
+		
 		ngx_log_debug1(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "global.load %s\n", filename);
 		errno = 0;
 		oldopts = JS_GetOptions(cx);
 		JS_SetOptions(cx, oldopts | JSOPTION_COMPILE_N_GO);
-		script = JS_CompileFile(cx, global, filename);
+		script = JS_CompileFile(cx, global, (char *) filename);
 		if (errno)
 		{
 			ngx_log_debug2(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0, "error loading script %s: %s.\n", filename, strerror(errno));
@@ -66,7 +71,7 @@ method_load(JSContext *cx, uintN argc, jsval *vp)
 			JS_SetProperty(cx, global, filevar_name, &old);
 		}
 		JS_SetOptions(cx, oldopts);
-		JS_free(cx, filename);
+		
 		if (!ok)
 		{
 			return JS_FALSE;
