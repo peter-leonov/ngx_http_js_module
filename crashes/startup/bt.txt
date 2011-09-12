@@ -1,0 +1,11 @@
+Reading symbols for shared libraries . done
+Reading symbols for shared libraries ........................................................................................................................................ done
+#0  0x000000010d4368be in NewFinalizableGCThing<JSObject> [inlined] () at /Users/peter/pro/spidermonkey/jsgcinlines.h:120
+120	    METER(cx->compartment->compartmentStats[thingKind].alloc++);
+(gdb) bt
+#0  0x000000010d4368be in NewFinalizableGCThing<JSObject> [inlined] () at /Users/peter/pro/spidermonkey/jsgcinlines.h:120
+#1  0x000000010d4368be in NewObject<true, false> [inlined] () at jsgcinlines.h:139
+#2  0x000000010d4368be in js_NewGCObject [inlined] () at /Users/peter/pro/spidermonkey/jsgcinlines.h:1131
+#3  0x000000010d4368be in NewNonFunction<Given> [inlined] () at /Users/peter/pro/spidermonkey/jsobjinlines.h:1081
+#4  0x000000010d4368be in JS_NewGlobalObject (cx=0x7fd739c19b30, clasp=0x10d3bbb40) at jsgcinlines.h:3071
+Current language:  auto; currently c++
