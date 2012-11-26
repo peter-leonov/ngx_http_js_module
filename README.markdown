@@ -13,8 +13,8 @@ You can touch the ground running if you have ever seen [ngx_http_perl_module][] 
 
 [node.js]: http://nodejs.org/
 [asynchronous]: http://en.wikipedia.org/wiki/Asynchronous_I/O
-[ngx_http_perl_module]: http://wiki.nginx.org/NginxEmbeddedPerlModule
-[mod_perl]: http://perl.apache.org/
+[ngx_http_perl_module]: http://wiki.nginx.org/HttpPerlModule
+[mod_perl]: http://nginx.org/en/docs/http/ngx_http_perl_module.html
 
 
 
@@ -22,11 +22,11 @@ Features
 =============
 
 * full port of `ngx_http_perl_module`;
-* support for native Nginx sub-requests with JS callback for the the response and its body;
+* support for native nginx sub-requests with JS callback for the the response and its body;
 * cosy headers management (via `Nginx.HeadersIn` and `Nginx.HeaderOut` classes);
 * fast native cookies support with the same code nginx uses itself (via `Nginx.HeadersIn.cookies`);
 * environment variables handling with the code taken from Mozilla's JS interpreter;
-* lots of useful properties of Nginx object (`Nginx.time`, `Nginx.prefix`, `Nginx.version`, etc);
+* lots of useful properties of nginx object (`Nginx.time`, `Nginx.prefix`, `Nginx.version`, etc);
 * plain `require()` function that finds JS files walking through `Nginx.prefix` + `JSLIB` environment variable (like `RUBYLIB` and `PERL5LIB`);
 * initial support for files via `Nginx.File` (create/delete/rename, simple open/close/read/write, all in UTF-8);
 * handy tests suit written in plain JavaScript (using asynchronous test framework from [liby.js][])
@@ -40,7 +40,7 @@ The code uses `ngx_assert()` and `ngx_log_debug()` almost everywhere, so the deb
 Installation
 ============
 
-The installation is straightforward. Just add this module with a familiar `--add-module` configuration directive in [nginx wiki][compiling modules].
+Installation is straightforward. Just add this module with a familiar `--add-module` configuration directive in [nginx wiki][compiling modules].
 
 [compiling modules]: http://wiki.nginx.org/Nginx3rdPartyModules#Compiling_third_party_modules
 
@@ -58,25 +58,18 @@ With a fresh SpiderMonkey build from sources the ngx_http_js_module module was s
 * Mac OS 10.6.3 32-bit and 64-bit (Core Duo and Core 2 Duo iMacs)
 
 
-With a SpiderMonkey installed from ports the following platforms were tested and proved to have an ability to compile and pass almost all tests:
-
-* FreeBSD 7.3 with SM 1.7 port
-* OpenBSD 4.6 with SM 1.7 port
-* Debian 5 32-bit with SM 1.9 package
-* Debian 5 64-bit with SM 1.9 package
-
 
 Requirements
 ------------
 
 * nginx versions: 0.8.11 (tested up to 0.8.54), 0.9.7, 1.0.1;
-* SpiderMonkey 1.7.0 and greater;
+* SpiderMonkey 1.7.0;
 * curl near 7.19 for automated testing.
 
 
 ### installing SpiderMonkey
 
-This module requires the SpiderMonkey 1.7+ (or TraceMonkey, or JaegerMonkey, or anything else with the [JSAPI][] on 2010-03-26) to be properly installed in your system.
+This module requires the SpiderMonkey 1.7 (with the [JSAPI][] on 2010-03-26) being properly installed in your system.
 
 Notes on SpiderMonkey support on different platforms (2010-05-27):
 
@@ -135,7 +128,7 @@ The JS module could be compiled as any other nginx module:
 
 	./configure --add-module=/absolute/path/to/the/ngx_http_js_module/
 
-If you have installed Spidermonkey in a non-standard path, or Nginx cannot automatically find the library, you should set some variables before running configure:
+If you have installed Spidermonkey at non-standard path, or nginx cannot automatically find the library, you should set some variables before running configure:
 
 	export SPIDERMONKEY_INC=/path/to/spidermonkey/include       # allows config to find <jsapi.h>
 	export SPIDERMONKEY_LIB=/path/to/spidermonkey/lib           # allows config to find libmozjs
@@ -144,7 +137,7 @@ If you have installed Spidermonkey in a non-standard path, or Nginx cannot autom
 
 If you are on an ELF-based platform and do not want to bother with `LD_LIBRARY_PATH` please define `LD_RUN_PATH` to set [rpath][] like so:
 
-	export LD_RUN_PATH=/path/to/spidermonkey/lib                # adds the lib path to the directories that Nginx
+	export LD_RUN_PATH=/path/to/spidermonkey/lib                # adds the lib path to the directories that nginx
 	                                                            # will search to find libmozjs on Linux/Solaris
 	
 	./configure ...
@@ -464,7 +457,7 @@ Indicates does the client expect a body in the response or not. It will be `true
 
 ### bodyFilename
 
-Tell us in which file nginx have the request body stored. We have to `getBody()` before use this property to be sure that nginx has the body received already. Nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the [client_body_in_file_only][] directive.
+Tell us in which file nginx have the request body stored. We have to `getBody()` before use this property to be sure that nginx has the body received already. nginx could store the request body in a temporary file if it does not fit in memory or if nginx was configured to so by the [client_body_in_file_only][] directive.
 
 [client_body_in_file_only]: http://wiki.nginx.org/NginxHttpCoreModule#client_body_in_file_only
 
