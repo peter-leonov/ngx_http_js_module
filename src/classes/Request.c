@@ -158,11 +158,11 @@ cleanup_handler(void *data)
 		ctx_r = ngx_http_get_module_ctx(r, ngx_http_js_module);
 		if (ctx_r == NULL)
 		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "empty module context");
+			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "empty module context");
 		}
 		else if (ctx_r != ctx)
 		{
-			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "different module context");
+			ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "different module context");
 		}
 	}
 #endif
