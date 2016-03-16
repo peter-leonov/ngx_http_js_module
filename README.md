@@ -1,3 +1,7 @@
+Please, consider using an upcomming [nginScript](https://www.nginx.com/resources/wiki/nginScript/) official module with a specialized JS virtual machine and a well known nginx stability and memory footprint.
+
+**THIS PROJECT IS ABSOLUTE**, sorry bro.
+
 About
 =====
 
