@@ -37,7 +37,7 @@ Features
 
 The code uses `ngx_assert()` and `ngx_log_debug()` almost everywhere, so the debugging must not be a pain.
 
-[liby.js]: http://kung-fu-tzu.ru/liby/
+[liby.js]: https://github.com/peter-leonov/liby
 
 
 
